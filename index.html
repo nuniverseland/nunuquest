@@ -1,0 +1,1870 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>努努的探險學習地圖</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green-dark: #2d5a27;
+    --green-mid: #4a8c3f;
+    --green-light: #7bc67e;
+    --green-pale: #c8eaab;
+    --yellow: #f5c842;
+    --yellow-dark: #d4a017;
+    --orange: #e8834a;
+    --brown: #8b5e3c;
+    --brown-light: #c4956a;
+    --sky: #87ceeb;
+    --sky-light: #d4f0ff;
+    --white: #fffef7;
+    --cream: #fdf6e3;
+    --shadow: rgba(45, 90, 39, 0.3);
+    --rs-color: #e8834a;
+    --chinese-color: #c0392b;
+    --math-color: #2980b9;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Nunito', 'Noto Sans TC', sans-serif;
+    background: var(--green-dark);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ===== SCREENS ===== */
+  .screen {
+    display: none;
+    min-height: 100vh;
+    width: 100%;
+  }
+  .screen.active { display: flex; }
+
+  /* ===== LOGIN SCREEN ===== */
+  #login-screen {
+    background: linear-gradient(160deg, #1a3a15 0%, #2d5a27 40%, #4a8c3f 100%);
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  #login-screen::before {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 200px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 200'%3E%3Cpath fill='%234a8c3f' fill-opacity='0.5' d='M0,100 C200,20 400,180 600,100 C800,20 1000,180 1200,100 C1300,60 1380,80 1440,100 L1440,200 L0,200 Z'/%3E%3Cpath fill='%232d5a27' fill-opacity='0.7' d='M0,140 C180,80 360,180 540,140 C720,100 900,180 1080,140 C1200,110 1360,130 1440,140 L1440,200 L0,200 Z'/%3E%3C/svg%3E") no-repeat bottom;
+    background-size: cover;
+  }
+
+  /* Floating leaves */
+  .leaf {
+    position: absolute;
+    width: 20px; height: 20px;
+    background: var(--green-light);
+    border-radius: 50% 0 50% 0;
+    opacity: 0.3;
+    animation: floatLeaf 8s infinite ease-in-out;
+  }
+  .leaf:nth-child(1) { top: 10%; left: 5%; animation-delay: 0s; width: 15px; height: 15px; }
+  .leaf:nth-child(2) { top: 20%; right: 8%; animation-delay: 2s; width: 25px; height: 25px; }
+  .leaf:nth-child(3) { top: 60%; left: 3%; animation-delay: 4s; width: 18px; height: 18px; }
+  .leaf:nth-child(4) { top: 40%; right: 5%; animation-delay: 1s; width: 12px; height: 12px; }
+  .leaf:nth-child(5) { top: 75%; right: 10%; animation-delay: 3s; width: 20px; height: 20px; }
+
+  @keyframes floatLeaf {
+    0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.3; }
+    50% { transform: translateY(-20px) rotate(15deg); opacity: 0.5; }
+  }
+
+  .login-box {
+    background: var(--cream);
+    border-radius: 30px;
+    padding: 40px 35px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 0 4px var(--green-light);
+    position: relative;
+    z-index: 1;
+    animation: popIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @keyframes popIn {
+    from { transform: scale(0.7); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .login-title {
+    text-align: center;
+    margin-bottom: 8px;
+  }
+
+  .login-title .emoji-title {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 5px;
+    animation: bounce 2s infinite;
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  .login-title h1 {
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: var(--green-dark);
+    line-height: 1.2;
+  }
+
+  .login-title p {
+    font-size: 0.85rem;
+    color: var(--brown);
+    margin-top: 5px;
+    font-weight: 600;
+  }
+
+  .login-divider {
+    border: none;
+    border-top: 2px dashed var(--green-pale);
+    margin: 20px 0;
+  }
+
+  .login-field {
+    margin-bottom: 18px;
+  }
+
+  .login-field label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: var(--green-dark);
+    margin-bottom: 8px;
+  }
+
+  .login-field label span {
+    font-size: 1rem;
+    margin-right: 5px;
+  }
+
+  .login-field input {
+    width: 100%;
+    padding: 14px 18px;
+    border: 3px solid var(--green-pale);
+    border-radius: 15px;
+    font-size: 1rem;
+    font-family: 'Nunito', 'Noto Sans TC', sans-serif;
+    font-weight: 700;
+    color: var(--green-dark);
+    background: var(--white);
+    transition: all 0.2s;
+    outline: none;
+  }
+
+  .login-field input:focus {
+    border-color: var(--green-mid);
+    box-shadow: 0 0 0 3px rgba(74,140,63,0.2);
+    transform: scale(1.02);
+  }
+
+  .login-field .hint {
+    font-size: 0.78rem;
+    color: var(--brown-light);
+    margin-top: 5px;
+    font-weight: 600;
+  }
+
+  .btn-login {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--green-mid), var(--green-dark));
+    color: white;
+    border: none;
+    border-radius: 15px;
+    font-size: 1.1rem;
+    font-weight: 900;
+    font-family: 'Nunito', 'Noto Sans TC', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 5px 15px var(--shadow);
+    letter-spacing: 1px;
+  }
+
+  .btn-login:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px var(--shadow);
+  }
+
+  .btn-login:active { transform: translateY(0); }
+
+  .login-error {
+    color: #e74c3c;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-align: center;
+    margin-top: 10px;
+    display: none;
+  }
+
+  /* ===== MAP SCREEN ===== */
+  #map-screen {
+    flex-direction: column;
+    background: linear-gradient(180deg, var(--sky) 0%, var(--sky-light) 50%, var(--green-pale) 100%);
+    min-height: 100vh;
+  }
+
+  .top-bar {
+    background: var(--green-dark);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+  }
+
+  .top-bar .player-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .player-avatar {
+    width: 42px; height: 42px;
+    background: var(--green-light);
+    border-radius: 50%;
+    border: 3px solid var(--yellow);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+  }
+
+  .player-name {
+    color: white;
+    font-weight: 800;
+    font-size: 1rem;
+  }
+
+  .player-score {
+    color: var(--yellow);
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+
+  .top-bar-buttons {
+    display: flex;
+    gap: 8px;
+  }
+
+  .btn-icon {
+    background: rgba(255,255,255,0.15);
+    border: 2px solid rgba(255,255,255,0.3);
+    color: white;
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    font-family: 'Nunito', 'Noto Sans TC', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-icon:hover { background: rgba(255,255,255,0.25); }
+
+  .map-title-area {
+    text-align: center;
+    padding: 20px;
+  }
+
+  .map-title-area h2 {
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: var(--green-dark);
+    text-shadow: 2px 2px 0 rgba(255,255,255,0.5);
+  }
+
+  .map-title-area p {
+    color: var(--green-mid);
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+
+  /* Forest Map */
+  .forest-map {
+    flex: 1;
+    position: relative;
+    padding: 10px 20px 30px;
+    max-width: 600px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  /* Subject sections */
+  .subject-section {
+    background: rgba(255,255,255,0.7);
+    border-radius: 20px;
+    padding: 15px;
+    margin-bottom: 15px;
+    border: 2px solid rgba(255,255,255,0.9);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  }
+
+  .subject-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .subject-icon {
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem;
+  }
+
+  .subject-title {
+    font-weight: 900;
+    font-size: 1rem;
+    color: var(--green-dark);
+  }
+
+  .subject-progress {
+    font-size: 0.78rem;
+    font-weight: 700;
+    opacity: 0.7;
+  }
+
+  /* Stage nodes */
+  .stages-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .stage-node {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+  }
+
+  .stage-node.locked { cursor: not-allowed; }
+
+  .stage-star {
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.8rem;
+    transition: all 0.3s;
+    position: relative;
+    border: 3px solid transparent;
+  }
+
+  .stage-node.unlocked .stage-star {
+    background: linear-gradient(135deg, #fff9c4, #f5c842);
+    border-color: var(--yellow-dark);
+    box-shadow: 0 4px 12px rgba(245, 200, 66, 0.5);
+    animation: starGlow 2s infinite;
+  }
+
+  .stage-node.completed .stage-star {
+    background: linear-gradient(135deg, #c8eaab, #7bc67e);
+    border-color: var(--green-mid);
+    box-shadow: 0 4px 12px rgba(123, 198, 126, 0.5);
+  }
+
+  .stage-node.locked .stage-star {
+    background: linear-gradient(135deg, #ddd, #bbb);
+    border-color: #aaa;
+    opacity: 0.6;
+  }
+
+  @keyframes starGlow {
+    0%, 100% { box-shadow: 0 4px 12px rgba(245, 200, 66, 0.5); }
+    50% { box-shadow: 0 4px 20px rgba(245, 200, 66, 0.9), 0 0 30px rgba(245, 200, 66, 0.3); }
+  }
+
+  .stage-node:hover.unlocked .stage-star,
+  .stage-node:hover.completed .stage-star {
+    transform: scale(1.15) translateY(-3px);
+  }
+
+  .stage-label {
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: var(--green-dark);
+    text-align: center;
+    max-width: 65px;
+    line-height: 1.2;
+  }
+
+  .stage-node.locked .stage-label { color: #999; }
+
+  .stage-connector {
+    flex: 1;
+    height: 4px;
+    background: linear-gradient(90deg, var(--green-pale), var(--green-light));
+    border-radius: 2px;
+    min-width: 15px;
+    max-width: 40px;
+  }
+
+  /* Companion widget */
+  .companion-widget {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .companion-bubble {
+    background: white;
+    border-radius: 15px;
+    padding: 8px 12px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--green-dark);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    max-width: 140px;
+    text-align: center;
+    display: none;
+    animation: fadeInUp 0.3s ease;
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .companion-cat {
+    width: 70px; height: 70px;
+    background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
+    border-radius: 50%;
+    border: 3px solid var(--yellow);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.2rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  }
+
+  .companion-cat:hover { transform: scale(1.1) translateY(-3px); }
+  .companion-cat.locked {
+    filter: grayscale(1);
+    border-color: #aaa;
+    cursor: default;
+  }
+
+  .companion-name {
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: var(--green-dark);
+    text-align: center;
+  }
+
+  /* ===== GAME SCREEN ===== */
+  #game-screen {
+    flex-direction: column;
+    background: linear-gradient(180deg, #1a3a15 0%, var(--green-dark) 100%);
+  }
+
+  .game-header {
+    background: rgba(0,0,0,0.4);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .btn-back {
+    background: rgba(255,255,255,0.15);
+    border: 2px solid rgba(255,255,255,0.3);
+    color: white;
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-size: 0.9rem;
+    font-weight: 800;
+    font-family: 'Nunito', 'Noto Sans TC', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-back:hover { background: rgba(255,255,255,0.25); }
+
+  .game-title {
+    flex: 1;
+    color: white;
+    font-weight: 900;
+    font-size: 1.1rem;
+  }
+
+  .game-progress-bar {
+    height: 8px;
+    background: rgba(255,255,255,0.2);
+    position: relative;
+  }
+
+  .game-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--green-light), var(--yellow));
+    border-radius: 0 4px 4px 0;
+    transition: width 0.5s ease;
+  }
+
+  .game-content {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    max-width: 600px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .question-card {
+    background: var(--cream);
+    border-radius: 20px;
+    padding: 25px;
+    margin-bottom: 15px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+  }
+
+  .question-num {
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: var(--brown-light);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .question-text {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--green-dark);
+    line-height: 1.5;
+    margin-bottom: 20px;
+  }
+
+  .question-text .blank {
+    display: inline-block;
+    min-width: 80px;
+    border-bottom: 3px solid var(--green-mid);
+    margin: 0 5px;
+    text-align: center;
+    font-weight: 900;
+    color: var(--green-mid);
+  }
+
+  /* Word bank */
+  .word-bank {
+    background: rgba(123, 198, 126, 0.15);
+    border: 2px dashed var(--green-light);
+    border-radius: 15px;
+    padding: 15px;
+    margin-bottom: 20px;
+  }
+
+  .word-bank-title {
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: var(--green-mid);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .word-bank-words {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .word-chip {
+    background: white;
+    border: 2px solid var(--green-light);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--green-dark);
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+  }
+
+  .word-chip:hover { background: var(--green-light); color: white; border-color: var(--green-mid); }
+  .word-chip.used { opacity: 0.4; cursor: default; text-decoration: line-through; }
+
+  /* Options (MCQ) */
+  .options-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .option-btn {
+    background: white;
+    border: 3px solid var(--green-pale);
+    border-radius: 15px;
+    padding: 14px 10px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    font-family: 'Nunito', 'Noto Sans TC', sans-serif;
+    color: var(--green-dark);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    line-height: 1.3;
+  }
+
+  .option-btn:hover { border-color: var(--green-mid); background: var(--green-pale); transform: scale(1.02); }
+  .option-btn.correct { background: #d4f0c0; border-color: var(--green-mid); color: var(--green-dark); }
+  .option-btn.wrong { background: #ffd5d5; border-color: #e74c3c; color: #c0392b; }
+  .option-btn.disabled { cursor: default; }
+
+  /* Text input */
+  .text-input-area textarea {
+    width: 100%;
+    padding: 14px;
+    border: 3px solid var(--green-pale);
+    border-radius: 15px;
+    font-size: 1rem;
+    font-family: 'Nunito', 'Noto Sans TC', sans-serif;
+    font-weight: 600;
+    color: var(--green-dark);
+    resize: vertical;
+    min-height: 80px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .text-input-area textarea:focus { border-color: var(--green-mid); }
+
+  .feedback-area {
+    background: rgba(123, 198, 126, 0.2);
+    border: 2px solid var(--green-light);
+    border-radius: 12px;
+    padding: 12px 15px;
+    margin-top: 12px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--green-dark);
+    display: none;
+  }
+
+  .feedback-area.error {
+    background: rgba(231, 76, 60, 0.1);
+    border-color: #e74c3c;
+    color: #c0392b;
+  }
+
+  .game-footer {
+    padding: 15px 20px;
+    background: rgba(0,0,0,0.3);
+    display: flex;
+    gap: 10px;
+    max-width: 600px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .btn-submit {
+    flex: 1;
+    padding: 15px;
+    background: linear-gradient(135deg, var(--green-light), var(--green-mid));
+    color: white;
+    border: none;
+    border-radius: 15px;
+    font-size: 1rem;
+    font-weight: 900;
+    font-family: 'Nunito', 'Noto Sans TC', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+
+  .btn-submit:hover { transform: translateY(-2px); }
+  .btn-submit:disabled { opacity: 0.5; cursor: default; transform: none; }
+
+  .btn-hint {
+    padding: 15px 20px;
+    background: rgba(245, 200, 66, 0.2);
+    color: var(--yellow);
+    border: 2px solid var(--yellow);
+    border-radius: 15px;
+    font-size: 0.9rem;
+    font-weight: 800;
+    font-family: 'Nunito', 'Noto Sans TC', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-hint:hover { background: rgba(245, 200, 66, 0.3); }
+  .btn-hint:disabled { opacity: 0.4; cursor: default; }
+
+  /* ===== RESULT SCREEN ===== */
+  #result-screen {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(160deg, #1a3a15, var(--green-dark));
+    padding: 30px 20px;
+  }
+
+  .result-card {
+    background: var(--cream);
+    border-radius: 30px;
+    padding: 40px 30px;
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    animation: popIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .result-emoji { font-size: 4rem; margin-bottom: 10px; }
+
+  .result-title {
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: var(--green-dark);
+    margin-bottom: 8px;
+  }
+
+  .result-score {
+    font-size: 3rem;
+    font-weight: 900;
+    color: var(--green-mid);
+    margin: 10px 0;
+  }
+
+  .result-stars {
+    font-size: 2rem;
+    margin: 10px 0;
+    letter-spacing: 5px;
+  }
+
+  .result-message {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--brown);
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+
+  .unlock-banner {
+    background: linear-gradient(135deg, var(--yellow), var(--orange));
+    border-radius: 15px;
+    padding: 15px;
+    margin: 15px 0;
+    color: white;
+    font-weight: 800;
+    font-size: 0.95rem;
+    display: none;
+  }
+
+  .result-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .btn-retry {
+    padding: 14px;
+    background: var(--green-pale);
+    color: var(--green-dark);
+    border: 3px solid var(--green-light);
+    border-radius: 15px;
+    font-size: 1rem;
+    font-weight: 800;
+    font-family: 'Nunito', 'Noto Sans TC', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-retry:hover { background: var(--green-light); }
+
+  .btn-map {
+    padding: 14px;
+    background: linear-gradient(135deg, var(--green-mid), var(--green-dark));
+    color: white;
+    border: none;
+    border-radius: 15px;
+    font-size: 1rem;
+    font-weight: 800;
+    font-family: 'Nunito', 'Noto Sans TC', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-map:hover { transform: translateY(-2px); }
+
+  /* ===== LEADERBOARD MODAL ===== */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .modal-overlay.active { display: flex; }
+
+  .modal-box {
+    background: var(--cream);
+    border-radius: 25px;
+    padding: 30px 25px;
+    max-width: 420px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .modal-title {
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: var(--green-dark);
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .leaderboard-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    background: white;
+    border: 2px solid var(--green-pale);
+  }
+
+  .leaderboard-row.me { border-color: var(--yellow); background: #fff9e6; }
+
+  .lb-rank {
+    font-size: 1.2rem;
+    font-weight: 900;
+    width: 35px;
+    text-align: center;
+  }
+
+  .lb-name {
+    flex: 1;
+    font-weight: 800;
+    color: var(--green-dark);
+  }
+
+  .lb-score {
+    font-weight: 900;
+    color: var(--green-mid);
+    font-size: 0.9rem;
+  }
+
+  .btn-close-modal {
+    width: 100%;
+    margin-top: 15px;
+    padding: 12px;
+    background: var(--green-dark);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 800;
+    font-family: 'Nunito', 'Noto Sans TC', sans-serif;
+    cursor: pointer;
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 400px) {
+    .login-box { padding: 30px 20px; }
+    .stage-star { width: 52px; height: 52px; font-size: 1.5rem; }
+    .options-grid { grid-template-columns: 1fr; }
+  }
+
+  /* Loading */
+  .loading-dots {
+    display: inline-flex;
+    gap: 4px;
+  }
+
+  .loading-dots span {
+    width: 8px; height: 8px;
+    background: var(--green-light);
+    border-radius: 50%;
+    animation: dotBounce 1.2s infinite;
+  }
+
+  .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes dotBounce {
+    0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+    40% % { transform: scale(1.2); opacity: 1; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== LOGIN SCREEN ===== -->
+<div id="login-screen" class="screen active">
+  <div class="leaf"></div>
+  <div class="leaf"></div>
+  <div class="leaf"></div>
+  <div class="leaf"></div>
+  <div class="leaf"></div>
+
+  <div class="login-box">
+    <div class="login-title">
+      <span class="emoji-title">🌿</span>
+      <h1>努努的<br>探險學習地圖</h1>
+      <p>Nunu's Quest Forest</p>
+    </div>
+    <hr class="login-divider">
+    <div class="login-field">
+      <label><span>🦊</span>你的冒險者名字</label>
+      <input type="text" id="input-nickname" placeholder="輸入你的暱稱" maxlength="10" autocomplete="off">
+    </div>
+    <div class="login-field">
+      <label><span>🎂</span>你的生日</label>
+      <input type="text" id="input-birthday" placeholder="例如：0315" maxlength="4" autocomplete="off" inputmode="numeric">
+      <div class="hint">格式：月份+日期，共4個數字</div>
+    </div>
+    <button class="btn-login" onclick="handleLogin()">🌟 出發探險！</button>
+    <div class="login-error" id="login-error">請輸入暱稱和4位數生日！</div>
+  </div>
+</div>
+
+<!-- ===== MAP SCREEN ===== -->
+<div id="map-screen" class="screen">
+  <div class="top-bar">
+    <div class="player-info">
+      <div class="player-avatar">🦊</div>
+      <div>
+        <div class="player-name" id="display-name">冒險者</div>
+        <div class="player-score" id="display-score">⭐ 0 分</div>
+      </div>
+    </div>
+    <div class="top-bar-buttons">
+      <button class="btn-icon" onclick="showLeaderboard()">🏆 排行榜</button>
+      <button class="btn-icon" onclick="handleLogout()">🚪 登出</button>
+    </div>
+  </div>
+
+  <div class="map-title-area">
+    <h2>🌲 準備森林 🌲</h2>
+    <p>週五考試衝刺！完成所有關卡解鎖白貓夥伴</p>
+  </div>
+
+  <div class="forest-map">
+
+    <!-- RS Section -->
+    <div class="subject-section">
+      <div class="subject-header">
+        <div class="subject-icon" style="background:#fde8d8;">📖</div>
+        <div>
+          <div class="subject-title">RS — Pepita and the Bully</div>
+          <div class="subject-progress" id="rs-progress">0 / 3 關卡完成</div>
+        </div>
+      </div>
+      <div class="stages-row">
+        <div class="stage-node" id="node-rs-1" onclick="startStage('rs-1')">
+          <div class="stage-star">⭐</div>
+          <div class="stage-label">單字探索</div>
+        </div>
+        <div class="stage-connector"></div>
+        <div class="stage-node locked" id="node-rs-2" onclick="startStage('rs-2')">
+          <div class="stage-star">🔒</div>
+          <div class="stage-label">文法冒險</div>
+        </div>
+        <div class="stage-connector"></div>
+        <div class="stage-node locked" id="node-rs-3" onclick="startStage('rs-3')">
+          <div class="stage-star">🔒</div>
+          <div class="stage-label">故事解謎</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chinese Section -->
+    <div class="subject-section">
+      <div class="subject-header">
+        <div class="subject-icon" style="background:#fde8e8;">🖊️</div>
+        <div>
+          <div class="subject-title">國語 — 第五課</div>
+          <div class="subject-progress" id="cn-progress">0 / 2 關卡完成</div>
+        </div>
+      </div>
+      <div class="stages-row">
+        <div class="stage-node" id="node-chinese-1" onclick="startStage('chinese-1')">
+          <div class="stage-star">⭐</div>
+          <div class="stage-label">詞語尋寶</div>
+        </div>
+        <div class="stage-connector"></div>
+        <div class="stage-node locked" id="node-chinese-2" onclick="startStage('chinese-2')">
+          <div class="stage-star">🔒</div>
+          <div class="stage-label">造句任務</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Math Section -->
+    <div class="subject-section">
+      <div class="subject-header">
+        <div class="subject-icon" style="background:#e8f0fd;">🔢</div>
+        <div>
+          <div class="subject-title">數學 — 年月日</div>
+          <div class="subject-progress" id="math-progress">0 / 3 關卡完成</div>
+        </div>
+      </div>
+      <div class="stages-row">
+        <div class="stage-node" id="node-math-1" onclick="startStage('math-1')">
+          <div class="stage-star">⭐</div>
+          <div class="stage-label">月份挑戰</div>
+        </div>
+        <div class="stage-connector"></div>
+        <div class="stage-node locked" id="node-math-2" onclick="startStage('math-2')">
+          <div class="stage-star">🔒</div>
+          <div class="stage-label">換算闖關</div>
+        </div>
+        <div class="stage-connector"></div>
+        <div class="stage-node locked" id="node-math-3" onclick="startStage('math-3')">
+          <div class="stage-star">🔒</div>
+          <div class="stage-label">月曆大師</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Companion Widget -->
+  <div class="companion-widget">
+    <div class="companion-bubble" id="companion-bubble">我來幫你！</div>
+    <div class="companion-cat locked" id="companion-cat" onclick="toggleCompanion()">🐱</div>
+    <div class="companion-name" id="companion-name">??? 待解鎖</div>
+  </div>
+</div>
+
+<!-- ===== GAME SCREEN ===== -->
+<div id="game-screen" class="screen">
+  <div class="game-header">
+    <button class="btn-back" onclick="backToMap()">← 地圖</button>
+    <div class="game-title" id="game-stage-title">關卡</div>
+    <div id="game-q-counter" style="color: var(--yellow); font-weight: 800; font-size: 0.9rem;">1/5</div>
+  </div>
+  <div class="game-progress-bar">
+    <div class="game-progress-fill" id="progress-fill" style="width:0%"></div>
+  </div>
+  <div class="game-content" id="game-content">
+    <!-- Questions rendered here -->
+  </div>
+  <div class="game-footer">
+    <button class="btn-hint" id="btn-hint" onclick="useHint()" disabled>🐱 提示</button>
+    <button class="btn-submit" id="btn-submit" onclick="submitAnswer()">確認答案 →</button>
+  </div>
+</div>
+
+<!-- ===== RESULT SCREEN ===== -->
+<div id="result-screen" class="screen">
+  <div class="result-card">
+    <div class="result-emoji" id="result-emoji">🌟</div>
+    <div class="result-title" id="result-title">太棒了！</div>
+    <div class="result-score" id="result-score">90分</div>
+    <div class="result-stars" id="result-stars">⭐⭐⭐</div>
+    <div class="result-message" id="result-message">你答對了大部分題目！</div>
+    <div class="unlock-banner" id="unlock-banner">🎉 解鎖成功！</div>
+    <div class="result-buttons">
+      <button class="btn-retry" onclick="retryStage()">🔄 再挑戰一次</button>
+      <button class="btn-map" onclick="backToMap()">🗺️ 回到地圖</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== LEADERBOARD MODAL ===== -->
+<div class="modal-overlay" id="lb-modal">
+  <div class="modal-box">
+    <div class="modal-title">🏆 排行榜</div>
+    <div id="lb-list">
+      <div style="text-align:center; padding: 20px; color: var(--brown);">
+        <div class="loading-dots"><span></span><span></span><span></span></div>
+        <div style="margin-top: 10px; font-weight: 700;">載入中...</div>
+      </div>
+    </div>
+    <button class="btn-close-modal" onclick="closeLeaderboard()">關閉</button>
+  </div>
+</div>
+
+<!-- ===== FIREBASE ===== -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+  import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyA-E-IN6185ruhUb-TB9LkDyK5xJayLBxU",
+    authDomain: "nunuquest.firebaseapp.com",
+    projectId: "nunuquest",
+    storageBucket: "nunuquest.firebasestorage.app",
+    messagingSenderId: "374919361286",
+    appId: "1:374919361286:web:64108f0715eaa69f956487",
+    measurementId: "G-52NEV252QK"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // ===== GAME DATA =====
+  const STAGES = {
+    'rs-1': {
+      title: '單字探索 — RS',
+      subject: 'rs',
+      type: 'mcq',
+      questions: [
+        {
+          q: '老師說：「你們可以互相讓步，找到一個大家都同意的方法。」這句話描述的是什麼？',
+          options: ['compromise（妥協）', 'decision（決定）', 'disagreement（爭執）', 'excuses（藉口）'],
+          answer: 0,
+          hint: '這個單字的意思是「兩邊都讓一點，達成共識」'
+        },
+        {
+          q: 'Pepita ____ to stand up for herself when Babette was mean to her.',
+          options: ['mumbled', 'decided', 'yanked', 'dragged'],
+          answer: 1,
+          hint: 'decided = 做了決定'
+        },
+        {
+          q: '哪個單字的意思是「講話很小聲，聽不太清楚」？',
+          options: ['screams（大叫）', 'frown（皺眉）', 'mumbled（喃喃低語）', 'hesitant（猶豫）'],
+          answer: 2,
+          hint: '這個人說話讓別人要靠近才聽得見'
+        },
+        {
+          q: 'The dog ____ the rope from the boy\'s hands during playtime.',
+          options: ['invited', 'wrinkled', 'yanked', 'nearby'],
+          answer: 2,
+          hint: 'yanked = 用力快速地拉'
+        },
+        {
+          q: '「她猶豫著，不確定要不要自己一個人去。」這句話中的「猶豫」是哪個單字？',
+          options: ['excuses', 'hesitant', 'dragged', 'frown'],
+          answer: 1,
+          hint: 'hesitant = 因為不確定而動作緩慢'
+        }
+      ]
+    },
+    'rs-2': {
+      title: '文法冒險 — RS',
+      subject: 'rs',
+      type: 'mcq',
+      questions: [
+        {
+          q: '選出句子中正確的 article：\n"___ moon shines brightly at night."',
+          options: ['A', 'An', 'The', '不需要'],
+          answer: 2,
+          hint: '月亮只有一個，是特定的東西，用 the'
+        },
+        {
+          q: '選出正確的句子：',
+          options: ['She is tallest than her brother.', 'She is taller than her brother.', 'She is more tall than her brother.', 'She is tall than her brother.'],
+          answer: 1,
+          hint: '比較兩個人，加 -er，不是 -est'
+        },
+        {
+          q: '哪個選項是 superlative adjective（最高級）？',
+          options: ['bigger', 'big', 'biggest', 'more big'],
+          answer: 2,
+          hint: '最高級是比較三個以上，加 -est'
+        },
+        {
+          q: '"She sings ___." 選出正確的 adverb：',
+          options: ['beautiful', 'beautifuly', 'beautifully', 'more beautiful'],
+          answer: 2,
+          hint: 'adverb 通常在形容詞後加 -ly'
+        },
+        {
+          q: 'Which sentence uses the correct article?\n"I want to eat ___ apple."',
+          options: ['a apple', 'an apple', 'the apple', 'both b and c can be correct'],
+          answer: 3,
+          hint: 'apple 以母音 a 開頭，用 an。但如果是特定那顆蘋果，也可以用 the！'
+        }
+      ]
+    },
+    'rs-3': {
+      title: '故事解謎 — RS',
+      subject: 'rs',
+      type: 'reading',
+      questions: [
+        {
+          q: 'Beginning: Why did Pepita NOT want to go back to school?',
+          hint: 'Think about Babette... what did she do to Pepita?',
+          sample: 'Pepita did not want to go back to school because Babette was bullying her. Babette made fun of her name, her braids, and her dog Lobo.'
+        },
+        {
+          q: 'Middle: What advice did Pepita\'s family give her?',
+          hint: 'Her parents said one thing, her brother said another thing.',
+          sample: "Pepita's parents told her to try again and be kind. Her brother told her not to fight because bullies like to fight."
+        },
+        {
+          q: 'End: How did the story end? What happened between Pepita and Babette?',
+          hint: 'Did they become enemies or something else?',
+          sample: 'Pepita stood up for herself and Babette started to cry. Pepita realized Babette might be lonely, so she asked Babette to play. They started to become friends.'
+        }
+      ]
+    },
+    'chinese-1': {
+      title: '詞語尋寶 — 國語',
+      subject: 'chinese',
+      type: 'mcq',
+      questions: [
+        {
+          q: '「剛剛」這個詞的意思是什麼？',
+          options: ['很久以前', '不久前才發生', '明天', '很遠的地方'],
+          answer: 1,
+          hint: '「我剛剛吃完飯。」——不久前剛發生的事'
+        },
+        {
+          q: '「不管」用來造句時，後面通常接什麼？',
+          options: ['因為', '都', '所以', '如果'],
+          answer: 1,
+          hint: '不管⋯⋯都⋯⋯是固定的句型！'
+        },
+        {
+          q: '「汗水直流」描述的是什麼情況？',
+          options: ['在河邊玩水', '很努力工作，流了很多汗', '天氣很冷', '在喝水'],
+          answer: 1,
+          hint: '汗水＝汗，直流＝一直流下來'
+        },
+        {
+          q: '「堅固」這個詞的意思是什麼？',
+          options: ['很漂亮', '結實、不容易壞', '很快速', '很柔軟'],
+          answer: 1,
+          hint: '蓋房子要用堅固的材料，才不會倒'
+        },
+        {
+          q: '下面哪個是正確的詞語？',
+          options: ['採花', '採月', '採風', '採書'],
+          answer: 0,
+          hint: '採＝摘取，可以採什麼？'
+        }
+      ]
+    },
+    'chinese-2': {
+      title: '造句任務 — 國語',
+      subject: 'chinese',
+      type: 'writing',
+      questions: [
+        {
+          q: '用「不管⋯⋯都⋯⋯」造一個句子。\n\n例：不管天氣多冷，我都要去上學。',
+          hint: '想一件不管什麼情況，你都會做的事情！',
+          sample: '不管作業有多難，我都會認真完成。'
+        },
+        {
+          q: '用「告訴」造一個句子。',
+          hint: '誰告訴誰什麼事呢？',
+          sample: '媽媽告訴我要早點睡覺。'
+        },
+        {
+          q: '用「辛苦」造一個句子。',
+          hint: '想想誰做了很辛苦的事？',
+          sample: '農夫辛苦地在田裡工作，種出好吃的蔬菜。'
+        }
+      ]
+    },
+    'math-1': {
+      title: '月份挑戰 — 數學',
+      subject: 'math',
+      type: 'mcq',
+      questions: [
+        {
+          q: '下面哪個月份是「大月」（31天）？',
+          options: ['4月', '6月', '8月', '9月'],
+          answer: 2,
+          hint: '暑假（7月、8月）連續都是大月！'
+        },
+        {
+          q: '平年的2月有幾天？',
+          options: ['28天', '29天', '30天', '31天'],
+          answer: 0,
+          hint: '平年365天，閏年366天，2月比較特別！'
+        },
+        {
+          q: '一年有幾個小月（30天）？',
+          options: ['3個', '4個', '5個', '7個'],
+          answer: 1,
+          hint: '小月是：4、6、9、11月，數數看幾個？'
+        },
+        {
+          q: '閏年的2月有幾天？',
+          options: ['27天', '28天', '29天', '30天'],
+          answer: 2,
+          hint: '閏年每4年一次，2月多一天！'
+        },
+        {
+          q: '下面哪個月份是「小月」（30天）？',
+          options: ['1月', '3月', '11月', '12月'],
+          answer: 2,
+          hint: '小月：4、6、9、11月'
+        }
+      ]
+    },
+    'math-2': {
+      title: '換算闖關 — 數學',
+      subject: 'math',
+      type: 'mcq',
+      questions: [
+        {
+          q: '1年4個月，換算成月份，共有幾個月？',
+          options: ['14個月', '16個月', '18個月', '20個月'],
+          answer: 1,
+          hint: '1年＝12個月，12＋4＝？'
+        },
+        {
+          q: '25個月等於幾年又幾個月？',
+          options: ['1年又13個月', '2年又1個月', '2年又3個月', '3年又1個月'],
+          answer: 1,
+          hint: '25÷12＝2餘1，所以是2年又1個月'
+        },
+        {
+          q: '13天等於幾個星期又幾天？',
+          options: ['1星期又6天', '1星期又5天', '2星期又1天', '1星期又7天'],
+          answer: 0,
+          hint: '1星期＝7天，13÷7＝1餘6'
+        },
+        {
+          q: '2年3個月，換算成月份，共有幾個月？',
+          options: ['23個月', '24個月', '27個月', '26個月'],
+          answer: 2,
+          hint: '2年＝24個月，再加3個月'
+        },
+        {
+          q: '20天等於幾個星期又幾天？',
+          options: ['2星期又4天', '2星期又6天', '3星期又1天', '2星期又3天'],
+          answer: 1,
+          hint: '20÷7＝2餘6'
+        }
+      ]
+    },
+    'math-3': {
+      title: '月曆大師 — 數學',
+      subject: 'math',
+      type: 'mcq',
+      questions: [
+        {
+          q: '從6月14日到6月25日，共有幾天？',
+          options: ['10天', '11天', '12天', '13天'],
+          answer: 2,
+          hint: '公式：後面日期－前面日期＋1\n25－14＋1＝？'
+        },
+        {
+          q: '6月11日開始數，第8天是幾月幾日？',
+          options: ['6月17日', '6月18日', '6月19日', '6月20日'],
+          answer: 1,
+          hint: '公式：開始日期＋經過天數－1\n11＋8－1＝？'
+        },
+        {
+          q: '每週三上音樂課。如果這個月1日是週一，這個月的音樂課共有幾堂？（這個月有30天）',
+          options: ['3堂', '4堂', '5堂', '6堂'],
+          answer: 1,
+          hint: '1日週一，那3日是週三。之後每7天一次：3、10、17、24日'
+        },
+        {
+          q: '特賣會從8月5日（週一）開始，舉行兩個星期，請問最後一天是幾月幾日？',
+          options: ['8月18日', '8月19日', '8月16日', '8月17日'],
+          answer: 0,
+          hint: '兩個星期＝14天。8月5日開始，加13天（因為包含第一天）\n5＋13＝18'
+        },
+        {
+          q: '從3月20日到4月5日，共有幾天？（3月有31天）',
+          options: ['15天', '16天', '17天', '18天'],
+          answer: 2,
+          hint: '3月20日到3月31日：31－20＋1＝12天\n再加4月1日到5日：5天\n12＋5＝？'
+        }
+      ]
+    }
+  };
+
+  // ===== GAME STATE =====
+  window.gameState = {
+    user: null,
+    userId: null,
+    progress: {},
+    companion: { unlocked: false, accessories: [] },
+    totalScore: 0,
+    currentStage: null,
+    currentQ: 0,
+    currentAnswers: [],
+    hintUsed: false,
+    stageScore: 0
+  };
+
+  // ===== AUTH =====
+  window.handleLogin = async function() {
+    const nickname = document.getElementById('input-nickname').value.trim();
+    const birthday = document.getElementById('input-birthday').value.trim();
+    const errorEl = document.getElementById('login-error');
+
+    if (!nickname || birthday.length !== 4 || !/^\d{4}$/.test(birthday)) {
+      errorEl.style.display = 'block';
+      return;
+    }
+
+    errorEl.style.display = 'none';
+    const userId = `${nickname}_${birthday}`;
+
+    try {
+      const userRef = doc(db, 'users', userId);
+      const snap = await getDoc(userRef);
+
+      if (!snap.exists()) {
+        await setDoc(userRef, {
+          nickname,
+          birthday,
+          createdAt: new Date(),
+          totalScore: 0,
+          companion: { unlocked: false, accessories: [] },
+          progress: {
+            'rs-1': { completed: false, highScore: 0 },
+            'rs-2': { completed: false, highScore: 0 },
+            'rs-3': { completed: false, highScore: 0 },
+            'chinese-1': { completed: false, highScore: 0 },
+            'chinese-2': { completed: false, highScore: 0 },
+            'math-1': { completed: false, highScore: 0 },
+            'math-2': { completed: false, highScore: 0 },
+            'math-3': { completed: false, highScore: 0 }
+          }
+        });
+      }
+
+      const data = snap.exists() ? snap.data() : (await getDoc(userRef)).data();
+      gameState.user = data;
+      gameState.userId = userId;
+      gameState.progress = data.progress || {};
+      gameState.companion = data.companion || { unlocked: false, accessories: [] };
+      gameState.totalScore = data.totalScore || 0;
+
+      showScreen('map-screen');
+      renderMap();
+    } catch(e) {
+      console.error(e);
+      errorEl.textContent = '連線失敗，請檢查網路後重試';
+      errorEl.style.display = 'block';
+    }
+  };
+
+  window.handleLogout = function() {
+    gameState.user = null;
+    gameState.userId = null;
+    showScreen('login-screen');
+  };
+
+  // ===== MAP =====
+  window.renderMap = function() {
+    const p = gameState.progress;
+    document.getElementById('display-name').textContent = gameState.user.nickname;
+    document.getElementById('display-score').textContent = `⭐ ${gameState.totalScore} 分`;
+
+    const stages = ['rs-1','rs-2','rs-3','chinese-1','chinese-2','math-1','math-2','math-3'];
+    const groups = {
+      rs: ['rs-1','rs-2','rs-3'],
+      chinese: ['chinese-1','chinese-2'],
+      math: ['math-1','math-2','math-3']
+    };
+
+    stages.forEach(id => {
+      const node = document.getElementById(`node-${id}`);
+      if (!node) return;
+      const star = node.querySelector('.stage-star');
+      if (p[id]?.completed) {
+        node.className = 'stage-node completed';
+        star.textContent = '✅';
+      } else if (isUnlocked(id)) {
+        node.className = 'stage-node unlocked';
+        star.textContent = '⭐';
+      } else {
+        node.className = 'stage-node locked';
+        star.textContent = '🔒';
+      }
+    });
+
+    // Progress labels
+    const rsCount = groups.rs.filter(id => p[id]?.completed).length;
+    const cnCount = groups.chinese.filter(id => p[id]?.completed).length;
+    const mathCount = groups.math.filter(id => p[id]?.completed).length;
+    document.getElementById('rs-progress').textContent = `${rsCount} / 3 關卡完成`;
+    document.getElementById('cn-progress').textContent = `${cnCount} / 2 關卡完成`;
+    document.getElementById('math-progress').textContent = `${mathCount} / 3 關卡完成`;
+
+    // Companion
+    const totalCompleted = stages.filter(id => p[id]?.completed).length;
+    const companionCat = document.getElementById('companion-cat');
+    const companionName = document.getElementById('companion-name');
+
+    if (totalCompleted > 0 || gameState.companion.unlocked) {
+      companionCat.classList.remove('locked');
+      companionName.textContent = '小白 🐱';
+    } else {
+      companionCat.classList.add('locked');
+      companionName.textContent = '??? 待解鎖';
+    }
+  };
+
+  function isUnlocked(stageId) {
+    const p = gameState.progress;
+    const order = { rs: ['rs-1','rs-2','rs-3'], chinese: ['chinese-1','chinese-2'], math: ['math-1','math-2','math-3'] };
+    for (const [, arr] of Object.entries(order)) {
+      const idx = arr.indexOf(stageId);
+      if (idx === -1) continue;
+      if (idx === 0) return true;
+      return p[arr[idx-1]]?.completed === true;
+    }
+    return false;
+  }
+
+  // ===== GAME =====
+  window.startStage = function(stageId) {
+    if (!isUnlocked(stageId) && !gameState.progress[stageId]?.completed) {
+      const node = document.getElementById(`node-${stageId}`);
+      if (node?.classList.contains('locked')) {
+        node.style.animation = 'none';
+        node.offsetHeight;
+        node.style.animation = 'shake 0.4s ease';
+        setTimeout(() => node.style.animation = '', 400);
+        return;
+      }
+    }
+
+    gameState.currentStage = stageId;
+    gameState.currentQ = 0;
+    gameState.currentAnswers = [];
+    gameState.hintUsed = false;
+    gameState.stageScore = 0;
+
+    const stage = STAGES[stageId];
+    document.getElementById('game-stage-title').textContent = stage.title;
+    document.getElementById('btn-hint').disabled = gameState.companion.unlocked ? false : true;
+
+    showScreen('game-screen');
+    renderQuestion();
+  };
+
+  function renderQuestion() {
+    const stage = STAGES[gameState.currentStage];
+    const q = stage.questions[gameState.currentQ];
+    const total = stage.questions.length;
+
+    document.getElementById('game-q-counter').textContent = `${gameState.currentQ + 1}/${total}`;
+    document.getElementById('progress-fill').style.width = `${(gameState.currentQ / total) * 100}%`;
+
+    const content = document.getElementById('game-content');
+
+    if (stage.type === 'mcq') {
+      content.innerHTML = `
+        <div class="question-card">
+          <div class="question-num">問題 ${gameState.currentQ + 1} / ${total}</div>
+          <div class="question-text">${q.q.replace(/\n/g, '<br>')}</div>
+          <div class="options-grid">
+            ${q.options.map((opt, i) => `
+              <button class="option-btn" onclick="selectOption(${i})" data-idx="${i}">${opt}</button>
+            `).join('')}
+          </div>
+          <div class="feedback-area" id="feedback"></div>
+        </div>
+      `;
+      document.getElementById('btn-submit').disabled = true;
+      document.getElementById('btn-submit').textContent = '請選擇答案';
+    } else if (stage.type === 'reading' || stage.type === 'writing') {
+      content.innerHTML = `
+        <div class="question-card">
+          <div class="question-num">問題 ${gameState.currentQ + 1} / ${total}</div>
+          <div class="question-text">${q.q.replace(/\n/g, '<br>')}</div>
+          <div class="text-input-area">
+            <textarea id="text-answer" placeholder="在這裡寫下你的答案..." rows="4"></textarea>
+          </div>
+          <div class="feedback-area" id="feedback"></div>
+        </div>
+      `;
+      document.getElementById('btn-submit').disabled = false;
+      document.getElementById('btn-submit').textContent = '確認答案 →';
+    }
+
+    gameState.hintUsed = false;
+    if (gameState.companion.unlocked) {
+      document.getElementById('btn-hint').disabled = false;
+      document.getElementById('btn-hint').textContent = '🐱 提示';
+    }
+  }
+
+  window.selectOption = function(idx) {
+    document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
+    document.querySelectorAll('.option-btn')[idx].style.borderColor = 'var(--green-mid)';
+    document.querySelectorAll('.option-btn')[idx].style.background = 'var(--green-pale)';
+    gameState.selectedOption = idx;
+    document.getElementById('btn-submit').disabled = false;
+    document.getElementById('btn-submit').textContent = '確認答案 →';
+  };
+
+  window.submitAnswer = function() {
+    const stage = STAGES[gameState.currentStage];
+    const q = stage.questions[gameState.currentQ];
+    const feedback = document.getElementById('feedback');
+    feedback.style.display = 'block';
+
+    if (stage.type === 'mcq') {
+      const selected = gameState.selectedOption;
+      const buttons = document.querySelectorAll('.option-btn');
+      buttons.forEach(b => { b.disabled = true; b.classList.add('disabled'); });
+
+      if (selected === q.answer) {
+        buttons[selected].classList.add('correct');
+        feedback.className = 'feedback-area';
+        feedback.textContent = '✅ 答對了！很棒！';
+        gameState.stageScore += 20;
+      } else {
+        buttons[selected].classList.add('wrong');
+        buttons[q.answer].classList.add('correct');
+        feedback.className = 'feedback-area error';
+        feedback.textContent = `❌ 正確答案是：${q.options[q.answer]}`;
+      }
+
+      document.getElementById('btn-submit').textContent = '下一題 →';
+      document.getElementById('btn-submit').onclick = nextQuestion;
+
+    } else {
+      const answer = document.getElementById('text-answer').value.trim();
+      if (!answer) return;
+      feedback.className = 'feedback-area';
+      feedback.innerHTML = `📝 很好！老師批改時的參考答案：<br><br><em>${q.sample}</em>`;
+      gameState.stageScore += 20;
+      document.getElementById('btn-submit').textContent = '下一題 →';
+      document.getElementById('btn-submit').onclick = nextQuestion;
+    }
+  };
+
+  function nextQuestion() {
+    const stage = STAGES[gameState.currentStage];
+    gameState.currentQ++;
+    document.getElementById('btn-submit').onclick = submitAnswer;
+
+    if (gameState.currentQ >= stage.questions.length) {
+      finishStage();
+    } else {
+      renderQuestion();
+    }
+  }
+
+  async function finishStage() {
+    const stageId = gameState.currentStage;
+    const score = Math.min(gameState.stageScore, 100);
+    const stage = STAGES[stageId];
+    const oldScore = gameState.progress[stageId]?.highScore || 0;
+    const isNewBest = score > oldScore;
+    const wasCompleted = gameState.progress[stageId]?.completed;
+
+    // Update progress
+    gameState.progress[stageId] = { completed: true, highScore: Math.max(score, oldScore) };
+
+    // Score
+    if (!wasCompleted) {
+      gameState.totalScore += score;
+    } else if (isNewBest) {
+      gameState.totalScore += (score - oldScore);
+    }
+
+    // Companion unlock
+    let newUnlock = null;
+    const totalCompleted = Object.values(gameState.progress).filter(p => p.completed).length;
+    if (totalCompleted >= 1 && !gameState.companion.unlocked) {
+      gameState.companion.unlocked = true;
+      newUnlock = 'companion';
+    }
+
+    // Accessory unlock
+    const rsCompleted = ['rs-1','rs-2','rs-3'].every(id => gameState.progress[id]?.completed);
+    const cnCompleted = ['chinese-1','chinese-2'].every(id => gameState.progress[id]?.completed);
+    const mathCompleted = ['math-1','math-2','math-3'].every(id => gameState.progress[id]?.completed);
+
+    if (rsCompleted && !gameState.companion.accessories.includes('rs')) {
+      gameState.companion.accessories.push('rs');
+      newUnlock = 'rs-accessory';
+    }
+    if (cnCompleted && !gameState.companion.accessories.includes('chinese')) {
+      gameState.companion.accessories.push('chinese');
+      newUnlock = 'chinese-accessory';
+    }
+    if (mathCompleted && !gameState.companion.accessories.includes('math')) {
+      gameState.companion.accessories.push('math');
+      newUnlock = 'math-accessory';
+    }
+
+    // Save to Firebase
+    try {
+      await updateDoc(doc(db, 'users', gameState.userId), {
+        [`progress.${stageId}`]: gameState.progress[stageId],
+        totalScore: gameState.totalScore,
+        companion: gameState.companion
+      });
+
+      // Update leaderboard
+      await setDoc(doc(db, 'leaderboard', gameState.userId), {
+        nickname: gameState.user.nickname,
+        totalScore: gameState.totalScore,
+        totalCompleted,
+        companions: gameState.companion.accessories.length + (gameState.companion.unlocked ? 1 : 0)
+      });
+    } catch(e) { console.error(e); }
+
+    showResult(score, newUnlock);
+  }
+
+  function showResult(score, newUnlock) {
+    const emoji = score >= 80 ? '🌟' : score >= 60 ? '😊' : '💪';
+    const title = score >= 80 ? '太厲害了！' : score >= 60 ? '做得好！' : '繼續加油！';
+    const stars = score >= 80 ? '⭐⭐⭐' : score >= 60 ? '⭐⭐' : '⭐';
+    const msg = score >= 80 ? '滿分衝刺中！週五考試一定沒問題！' : score >= 60 ? '不錯喔！再練習幾次就能更好！' : '不用擔心，多練習幾次你一定做得到！';
+
+    document.getElementById('result-emoji').textContent = emoji;
+    document.getElementById('result-title').textContent = title;
+    document.getElementById('result-score').textContent = `${score}分`;
+    document.getElementById('result-stars').textContent = stars;
+    document.getElementById('result-message').textContent = msg;
+
+    const banner = document.getElementById('unlock-banner');
+    if (newUnlock === 'companion') {
+      banner.style.display = 'block';
+      banner.textContent = '🐱 白貓小白解鎖了！牠會幫你提示！';
+    } else if (newUnlock === 'rs-accessory') {
+      banner.style.display = 'block';
+      banner.textContent = '🧣 小白獲得了紅色領巾！RS 征服完畢！';
+    } else if (newUnlock === 'chinese-accessory') {
+      banner.style.display = 'block';
+      banner.textContent = '🖌️ 小白獲得了毛筆頭飾！國語完全制霸！';
+    } else if (newUnlock === 'math-accessory') {
+      banner.style.display = 'block';
+      banner.textContent = '👓 小白獲得了金框眼鏡！數學天才！';
+    } else {
+      banner.style.display = 'none';
+    }
+
+    showScreen('result-screen');
+  }
+
+  window.retryStage = function() {
+    startStage(gameState.currentStage);
+  };
+
+  window.backToMap = function() {
+    showScreen('map-screen');
+    renderMap();
+  };
+
+  // ===== HINT =====
+  window.useHint = function() {
+    if (gameState.hintUsed) return;
+    const stage = STAGES[gameState.currentStage];
+    const q = stage.questions[gameState.currentQ];
+    gameState.hintUsed = true;
+
+    const bubble = document.getElementById('companion-bubble');
+    // Show hint in a floating toast
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+      position: fixed; bottom: 100px; right: 20px; left: 20px; max-width: 340px; margin: 0 auto;
+      background: white; border-radius: 15px; padding: 15px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.3); z-index: 999;
+      font-weight: 700; color: var(--green-dark); font-size: 0.9rem;
+      border: 3px solid var(--yellow);
+      animation: fadeInUp 0.3s ease;
+    `;
+    toast.innerHTML = `🐱 小白說：${q.hint}<br><button onclick="this.parentElement.remove()" style="margin-top:10px; background:var(--green-dark); color:white; border:none; border-radius:8px; padding:6px 14px; font-weight:700; cursor:pointer; font-family:inherit;">謝謝！</button>`;
+    document.body.appendChild(toast);
+
+    document.getElementById('btn-hint').disabled = true;
+    document.getElementById('btn-hint').textContent = '🐱 已使用';
+  };
+
+  // ===== COMPANION =====
+  window.toggleCompanion = function() {
+    if (!gameState.companion.unlocked) return;
+    const bubble = document.getElementById('companion-bubble');
+    const msgs = ['加油！你可以的！🌟', '要不要用提示呢？', '相信自己！💪', '週五考試一定沒問題！'];
+    bubble.textContent = msgs[Math.floor(Math.random() * msgs.length)];
+    bubble.style.display = bubble.style.display === 'block' ? 'none' : 'block';
+    setTimeout(() => { bubble.style.display = 'none'; }, 3000);
+  };
+
+  // ===== LEADERBOARD =====
+  window.showLeaderboard = async function() {
+    document.getElementById('lb-modal').classList.add('active');
+    const list = document.getElementById('lb-list');
+
+    try {
+      const q = query(collection(db, 'leaderboard'), orderBy('totalScore', 'desc'));
+      const snap = await getDocs(q);
+      const medals = ['🥇', '🥈', '🥉'];
+
+      if (snap.empty) {
+        list.innerHTML = '<div style="text-align:center; padding:20px; color:var(--brown); font-weight:700;">還沒有玩家資料！</div>';
+        return;
+      }
+
+      list.innerHTML = snap.docs.map((d, i) => {
+        const data = d.data();
+        const isMe = d.id === gameState.userId;
+        const rank = i < 3 ? medals[i] : `${i+1}`;
+        return `
+          <div class="leaderboard-row ${isMe ? 'me' : ''}">
+            <div class="lb-rank">${rank}</div>
+            <div class="lb-name">${data.nickname} ${isMe ? '👈' : ''}</div>
+            <div class="lb-score">⭐ ${data.totalScore}分<br>
+              <span style="font-size:0.75rem; opacity:0.7">${data.totalCompleted || 0}/8 關</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    } catch(e) {
+      list.innerHTML = '<div style="text-align:center; color:red; font-weight:700;">載入失敗</div>';
+    }
+  };
+
+  window.closeLeaderboard = function() {
+    document.getElementById('lb-modal').classList.remove('active');
+  };
+
+  // ===== UTILS =====
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  // Enter key for login
+  document.getElementById('input-birthday').addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleLogin();
+  });
+</script>
+
+<style>
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+  }
+</style>
+
+</body>
+</html>
