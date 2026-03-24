@@ -330,9 +330,9 @@
   .stage-node.locked { cursor: not-allowed; }
 
   .stage-star {
-    width: 62px; height: 62px;
+    width: 80px; height: 80px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 2.2rem;
+    font-size: 2.8rem;
     transition: all 0.3s;
     filter: drop-shadow(0 3px 6px rgba(0,0,0,0.5));
   }
@@ -1553,9 +1553,17 @@
   }
 
   window.selectOption = function(idx) {
-    document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
-    document.querySelectorAll('.option-btn')[idx].style.borderColor = 'var(--green-mid)';
-    document.querySelectorAll('.option-btn')[idx].style.background = 'var(--green-pale)';
+    // Reset all buttons first
+    document.querySelectorAll('.option-btn').forEach(btn => {
+      btn.style.borderColor = '';
+      btn.style.background = '';
+      btn.classList.remove('selected');
+    });
+    // Highlight only the selected one
+    const selected = document.querySelectorAll('.option-btn')[idx];
+    selected.style.borderColor = 'var(--green-mid)';
+    selected.style.background = 'var(--green-pale)';
+    selected.classList.add('selected');
     gameState.selectedOption = idx;
     document.getElementById('btn-submit').disabled = false;
     document.getElementById('btn-submit').textContent = '確認答案 →';
@@ -1570,18 +1578,25 @@
     if (stage.type === 'mcq') {
       const selected = gameState.selectedOption;
       const buttons = document.querySelectorAll('.option-btn');
-      buttons.forEach(b => { b.disabled = true; b.classList.add('disabled'); });
+
+      // Reset all inline styles first, then disable
+      buttons.forEach(b => {
+        b.style.borderColor = '';
+        b.style.background = '';
+        b.disabled = true;
+        b.classList.add('disabled');
+      });
 
       if (selected === q.answer) {
         buttons[selected].classList.add('correct');
         feedback.className = 'feedback-area';
-        feedback.textContent = '✅ 答對了！很棒！';
+        feedback.textContent = '✅ Correct! Well done!';
         gameState.stageScore += 20;
       } else {
         buttons[selected].classList.add('wrong');
         buttons[q.answer].classList.add('correct');
         feedback.className = 'feedback-area error';
-        feedback.textContent = `❌ 正確答案是：${q.options[q.answer]}`;
+        feedback.textContent = `❌ The correct answer is: ${q.options[q.answer]}`;
       }
 
       document.getElementById('btn-submit').textContent = '下一題 →';
