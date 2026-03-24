@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0046)file:///Users/vivianhsu/Downloads/index_6.html -->
+<!-- saved from url=(0046)file:///Users/vivianhsu/Downloads/index_7.html -->
 <html lang="zh-TW"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -999,7 +999,10 @@
   <!-- Companion Widget -->
   <div class="companion-widget">
     <div class="companion-bubble" id="companion-bubble">我來幫你！</div>
-    <div class="companion-cat locked" id="companion-cat" onclick="toggleCompanion()">🐱</div>
+    <div class="companion-cat locked" id="companion-cat" onclick="toggleCompanion()">
+      <img id="companion-img" src="file:///Users/vivianhsu/Downloads/companion-base.png" alt="白貓" style="width:100%;height:100%;object-fit:contain;display:none;border-radius:50%;">
+      <span id="companion-emoji">🐱</span>
+    </div>
     <div class="companion-name" id="companion-name">??? 待解鎖</div>
   </div>
 </div>
@@ -1380,6 +1383,11 @@
 
     errorEl.style.display = 'none';
     const userId = `${nickname}_${birthday}`;
+    
+    // Show loading state
+    const btn = document.querySelector('.btn-login');
+    btn.textContent = '🌿 載入中...';
+    btn.disabled = true;
 
     try {
       const userRef = doc(db, 'users', userId);
@@ -1418,6 +1426,9 @@
       console.error(e);
       errorEl.textContent = '連線失敗，請檢查網路後重試';
       errorEl.style.display = 'block';
+      const btn = document.querySelector('.btn-login');
+      btn.textContent = '🌟 出發探險！';
+      btn.disabled = false;
     }
   };
 
@@ -1468,12 +1479,33 @@
     const totalCompleted = stages.filter(id => p[id]?.completed).length;
     const companionCat = document.getElementById('companion-cat');
     const companionName = document.getElementById('companion-name');
+    const companionImg = document.getElementById('companion-img');
+    const companionEmoji = document.getElementById('companion-emoji');
 
     if (totalCompleted > 0 || gameState.companion.unlocked) {
       companionCat.classList.remove('locked');
-      companionName.textContent = '小白 🐱';
+      companionEmoji.style.display = 'none';
+      companionImg.style.display = 'block';
+      
+      // Show accessory version if unlocked
+      const accessories = gameState.companion.accessories || [];
+      if (accessories.includes('math')) {
+        companionImg.src = 'companion-accessory-math.png';
+        companionName.textContent = '小白 👓';
+      } else if (accessories.includes('chinese')) {
+        companionImg.src = 'companion-accessory-chinese.png';
+        companionName.textContent = '小白 🖌️';
+      } else if (accessories.includes('rs')) {
+        companionImg.src = 'companion-accessory-rs.png';
+        companionName.textContent = '小白 🧣';
+      } else {
+        companionImg.src = 'companion-base.png';
+        companionName.textContent = '小白 🐱';
+      }
     } else {
       companionCat.classList.add('locked');
+      companionEmoji.style.display = 'block';
+      companionImg.style.display = 'none';
       companionName.textContent = '??? 待解鎖';
     }
   };
