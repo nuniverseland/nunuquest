@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<!-- saved from url=(0046)file:///Users/vivianhsu/Downloads/index_7.html -->
-<html lang="zh-TW"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>努努的探險學習地圖</title>
-<link href="./努努的探險學習地圖_files/css2" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
   :root {
     --green-dark: #2d5a27;
@@ -785,6 +785,85 @@
 
   .btn-map:hover { transform: translateY(-2px); }
 
+  /* ===== COMPANION MODAL ===== */
+  .companion-modal-img {
+    width: 180px;
+    height: 180px;
+    object-fit: contain;
+    margin: 0 auto;
+    display: block;
+    animation: companionBounce 2s infinite ease-in-out;
+  }
+
+  @keyframes companionBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  .companion-modal-name {
+    text-align: center;
+    font-size: 1.3rem;
+    font-weight: 900;
+    color: var(--green-dark);
+    margin: 10px 0 5px;
+  }
+
+  .companion-dialog {
+    background: linear-gradient(135deg, var(--green-pale), #fff);
+    border: 2px solid var(--green-light);
+    border-radius: 15px;
+    padding: 12px 16px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--green-dark);
+    text-align: center;
+    margin: 10px 0 15px;
+    position: relative;
+    line-height: 1.5;
+  }
+
+  .companion-dialog::before {
+    content: '🐱';
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1.2rem;
+  }
+
+  .accessories-grid {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin: 10px 0 15px;
+  }
+
+  .accessory-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background: white;
+    border: 2px solid var(--green-pale);
+    border-radius: 12px;
+    padding: 8px 12px;
+    flex: 1;
+  }
+
+  .accessory-item.unlocked {
+    border-color: var(--yellow);
+    background: #fff9e6;
+  }
+
+  .accessory-icon { font-size: 1.4rem; }
+  .accessory-name {
+    font-size: 0.68rem;
+    font-weight: 800;
+    color: var(--green-dark);
+    text-align: center;
+  }
+  .accessory-status { font-size: 0.75rem; }
+
   /* ===== LEADERBOARD MODAL ===== */
   .modal-overlay {
     display: none;
@@ -865,6 +944,56 @@
     cursor: pointer;
   }
 
+  /* ===== GAME ENTRIES ===== */
+  .game-entry {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    z-index: 3;
+    transform: translate(-50%, -50%);
+  }
+
+  .game-alien {
+    font-size: 2.2rem;
+    animation: alienFloat 1.8s infinite ease-in-out;
+    filter: drop-shadow(0 4px 10px rgba(0,0,0,0.6));
+    transition: transform 0.2s;
+  }
+
+  .game-entry:hover .game-alien {
+    transform: scale(1.3);
+    animation: none;
+  }
+
+  @keyframes alienFloat {
+    0%, 100% { transform: translateY(0) rotate(-5deg); }
+    50% { transform: translateY(-8px) rotate(5deg); }
+  }
+
+  .game-entry-label {
+    font-size: 0.68rem;
+    font-weight: 900;
+    color: white;
+    text-shadow: 1px 1px 3px rgba(0,0,0,1);
+    background: rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 8px;
+    padding: 2px 8px;
+    white-space: nowrap;
+  }
+
+  .game-entry.locked-game .game-alien {
+    filter: grayscale(1) drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+    opacity: 0.5;
+  }
+
+  .game-entry.locked-game .game-entry-label {
+    color: #aaa;
+  }
+
   /* ===== RESPONSIVE ===== */
   @media (max-width: 400px) {
     .login-box { padding: 30px 20px; }
@@ -932,7 +1061,7 @@
       <div class="player-avatar">🦊</div>
       <div>
         <div class="player-name" id="display-name">冒險者</div>
-        <div class="player-score" id="display-score">⭐ 0 分</div>
+        <div class="player-score" id="display-clover" style="color:#4af; font-size:0.9rem;">🍀 0 幸運草</div>
       </div>
     </div>
     <div class="top-bar-buttons">
@@ -950,41 +1079,41 @@
 
     <!-- RS nodes - left side near tree tunnel -->
     <div class="subject-pill" style="left:18%; top:14%">📖 RS</div>
-    <div class="stage-node" id="node-rs-1" onclick="startStage(&#39;rs-1&#39;)" style="left:14%; top:22%">
+    <div class="stage-node" id="node-rs-1" onclick="startStage('rs-1')" style="left:14%; top:22%">
       <div class="stage-star">⭐</div>
       <div class="stage-label">單字探索</div>
     </div>
-    <div class="stage-node locked" id="node-rs-2" onclick="startStage(&#39;rs-2&#39;)" style="left:26%; top:18%">
+    <div class="stage-node locked" id="node-rs-2" onclick="startStage('rs-2')" style="left:26%; top:18%">
       <div class="stage-star">🔒</div>
       <div class="stage-label">文法冒險</div>
     </div>
-    <div class="stage-node locked" id="node-rs-3" onclick="startStage(&#39;rs-3&#39;)" style="left:20%; top:32%">
+    <div class="stage-node locked" id="node-rs-3" onclick="startStage('rs-3')" style="left:20%; top:32%">
       <div class="stage-star">🔒</div>
       <div class="stage-label">故事解謎</div>
     </div>
 
     <!-- Chinese nodes - middle bridge area -->
     <div class="subject-pill" style="left:38%; top:52%">🖊️ 國語</div>
-    <div class="stage-node" id="node-chinese-1" onclick="startStage(&#39;chinese-1&#39;)" style="left:33%; top:62%">
+    <div class="stage-node" id="node-chinese-1" onclick="startStage('chinese-1')" style="left:33%; top:62%">
       <div class="stage-star">⭐</div>
       <div class="stage-label">詞語尋寶</div>
     </div>
-    <div class="stage-node locked" id="node-chinese-2" onclick="startStage(&#39;chinese-2&#39;)" style="left:48%; top:66%">
+    <div class="stage-node locked" id="node-chinese-2" onclick="startStage('chinese-2')" style="left:48%; top:66%">
       <div class="stage-star">🔒</div>
       <div class="stage-label">造句任務</div>
     </div>
 
     <!-- Math nodes - right side meadow -->
     <div class="subject-pill" style="left:62%; top:28%">🔢 數學</div>
-    <div class="stage-node" id="node-math-1" onclick="startStage(&#39;math-1&#39;)" style="left:60%; top:38%">
+    <div class="stage-node" id="node-math-1" onclick="startStage('math-1')" style="left:60%; top:38%">
       <div class="stage-star">⭐</div>
       <div class="stage-label">月份挑戰</div>
     </div>
-    <div class="stage-node locked" id="node-math-2" onclick="startStage(&#39;math-2&#39;)" style="left:74%; top:44%">
+    <div class="stage-node locked" id="node-math-2" onclick="startStage('math-2')" style="left:74%; top:44%">
       <div class="stage-star">🔒</div>
       <div class="stage-label">換算闖關</div>
     </div>
-    <div class="stage-node locked" id="node-math-3" onclick="startStage(&#39;math-3&#39;)" style="left:80%; top:30%">
+    <div class="stage-node locked" id="node-math-3" onclick="startStage('math-3')" style="left:80%; top:30%">
       <div class="stage-star">🔒</div>
       <div class="stage-label">月曆大師</div>
     </div>
@@ -994,13 +1123,29 @@
     <div id="cn-progress" style="display:none">0 / 2</div>
     <div id="math-progress" style="display:none">0 / 3</div>
 
+    <!-- Game entries -->
+    <div class="game-entry" id="game-rs" onclick="enterGame('rs')" style="left:22%; top:45%">
+      <div class="game-alien">👾</div>
+      <div class="game-entry-label">🚀 RS 射擊戰</div>
+    </div>
+
+    <div class="game-entry locked-game" id="game-chinese" onclick="enterGame('chinese')" style="left:50%; top:80%">
+      <div class="game-alien">👾</div>
+      <div class="game-entry-label">🖊️ 國語闖關 🔒</div>
+    </div>
+
+    <div class="game-entry locked-game" id="game-math" onclick="enterGame('math')" style="left:78%; top:60%">
+      <div class="game-alien">👾</div>
+      <div class="game-entry-label">🔢 數學塔防 🔒</div>
+    </div>
+
   </div>
 
   <!-- Companion Widget -->
   <div class="companion-widget">
     <div class="companion-bubble" id="companion-bubble">我來幫你！</div>
     <div class="companion-cat locked" id="companion-cat" onclick="toggleCompanion()">
-      <img id="companion-img" src="file:///Users/vivianhsu/Downloads/companion-base.png" alt="白貓" style="width:100%;height:100%;object-fit:contain;display:none;border-radius:50%;">
+      <img id="companion-img" src="companion-base.png" alt="白貓" style="width:100%;height:100%;object-fit:contain;display:none;border-radius:50%;">
       <span id="companion-emoji">🐱</span>
     </div>
     <div class="companion-name" id="companion-name">??? 待解鎖</div>
@@ -1021,7 +1166,7 @@
     <!-- Questions rendered here -->
   </div>
   <div class="game-footer">
-    <button class="btn-hint" id="btn-hint" onclick="useHint()" disabled="">🐱 提示</button>
+    <button class="btn-hint" id="btn-hint" onclick="useHint()" disabled>🐱 提示</button>
     <button class="btn-submit" id="btn-submit" onclick="submitAnswer()">確認答案 →</button>
   </div>
 </div>
@@ -1031,7 +1176,7 @@
   <div class="result-card">
     <div class="result-emoji" id="result-emoji">🌟</div>
     <div class="result-title" id="result-title">太棒了！</div>
-    <div class="result-score" id="result-score">90分</div>
+    <div class="result-score" id="result-score">🍀 90</div>
     <div class="result-stars" id="result-stars">⭐⭐⭐</div>
     <div class="result-message" id="result-message">你答對了大部分題目！</div>
     <div class="unlock-banner" id="unlock-banner">🎉 解鎖成功！</div>
@@ -1053,6 +1198,37 @@
       </div>
     </div>
     <button class="btn-close-modal" onclick="closeLeaderboard()">關閉</button>
+  </div>
+</div>
+
+<!-- ===== COMPANION MODAL ===== -->
+<div class="modal-overlay" id="companion-modal">
+  <div class="modal-box" style="text-align:center;">
+    <img id="companion-modal-img" src="companion-base.png" alt="小白" class="companion-modal-img">
+    <div class="companion-modal-name" id="companion-modal-name">小白</div>
+    <button onclick="renameCompanion()" style="background:none;border:none;font-size:0.75rem;font-weight:800;color:var(--brown-light);cursor:pointer;margin-bottom:2px;">✏️ 幫我取名字</button>
+    <div class="companion-dialog" id="companion-dialog">
+      你好！我是小白，我會陪著你一起冒險！
+    </div>
+    <div style="font-size:0.8rem; font-weight:800; color:var(--green-dark); margin-bottom:8px;">收集配件</div>
+    <div class="accessories-grid">
+      <div class="accessory-item" id="acc-rs">
+        <div class="accessory-icon">🧣</div>
+        <div class="accessory-name">RS 領巾</div>
+        <div class="accessory-status">🔒</div>
+      </div>
+      <div class="accessory-item" id="acc-chinese">
+        <div class="accessory-icon">🖌️</div>
+        <div class="accessory-name">國語毛筆</div>
+        <div class="accessory-status">🔒</div>
+      </div>
+      <div class="accessory-item" id="acc-math">
+        <div class="accessory-icon">👓</div>
+        <div class="accessory-name">數學眼鏡</div>
+        <div class="accessory-status">🔒</div>
+      </div>
+    </div>
+    <button class="btn-close-modal" onclick="closeCompanionModal()">關閉</button>
   </div>
 </div>
 
@@ -1363,6 +1539,8 @@
     progress: {},
     companion: { unlocked: false, accessories: [] },
     totalScore: 0,
+    clover: 0,
+    diamonds: 0,
     currentStage: null,
     currentQ: 0,
     currentAnswers: [],
@@ -1417,7 +1595,9 @@
       gameState.user = data;
       gameState.userId = userId;
       gameState.progress = data.progress || {};
-      gameState.companion = data.companion || { unlocked: false, accessories: [] };
+      gameState.companion = data.companion || { unlocked: false, accessories: [], name: '小白' };
+      gameState.clover = data.clover || 0;
+      gameState.diamonds = data.diamonds || 0;
       gameState.totalScore = data.totalScore || 0;
 
       showScreen('map-screen');
@@ -1432,6 +1612,35 @@
     }
   };
 
+  window.enterGame = async function(subject) {
+    if(subject === 'rs') {
+      const cost = 50;
+      if((gameState.clover || 0) < cost) {
+        const bubble = document.getElementById('companion-bubble');
+        bubble.textContent = `🍀 幸運草不夠！還需要 ${cost - (gameState.clover||0)} 個，去做題目賺更多！`;
+        bubble.style.display = 'block';
+        setTimeout(() => { bubble.style.display = 'none'; }, 3000);
+        return;
+      }
+      // Deduct clover
+      gameState.clover -= cost;
+      try {
+        await updateDoc(doc(db, 'users', gameState.userId), { clover: gameState.clover });
+      } catch(e) { console.error(e); }
+      // Save user info for game
+      sessionStorage.setItem('nunuUserId', gameState.userId);
+      sessionStorage.setItem('nunuClover', gameState.clover);
+      sessionStorage.setItem('nunuNickname', gameState.user.nickname);
+      window.location.href = 'game-space.html';
+    } else {
+      // Show coming soon bubble
+      const bubble = document.getElementById('companion-bubble');
+      bubble.textContent = '這個遊戲還在製作中！先去打射擊戰吧！';
+      bubble.style.display = 'block';
+      setTimeout(() => { bubble.style.display = 'none'; }, 2500);
+    }
+  };
+
   window.handleLogout = function() {
     gameState.user = null;
     gameState.userId = null;
@@ -1442,7 +1651,7 @@
   window.renderMap = function() {
     const p = gameState.progress;
     document.getElementById('display-name').textContent = gameState.user.nickname;
-    document.getElementById('display-score').textContent = `⭐ ${gameState.totalScore} 分`;
+    document.getElementById('display-clover').textContent = `🍀 ${gameState.clover || 0} 幸運草`;
 
     const stages = ['rs-1','rs-2','rs-3','chinese-1','chinese-2','math-1','math-2','math-3'];
     const groups = {
@@ -1500,7 +1709,7 @@
         companionName.textContent = '小白 🧣';
       } else {
         companionImg.src = 'companion-base.png';
-        companionName.textContent = '小白 🐱';
+        companionName.textContent = (gameState.companion.name || '小白') + ' 🐱';
       }
     } else {
       companionCat.classList.add('locked');
@@ -1634,7 +1843,7 @@
       if (selected === q.answer) {
         buttons[selected].classList.add('correct');
         feedback.className = 'feedback-area';
-        feedback.textContent = '✅ Correct! Well done!';
+        feedback.textContent = '✅ Correct! +20 🍀';
         gameState.stageScore += 20;
       } else {
         buttons[selected].classList.add('wrong');
@@ -1713,12 +1922,17 @@
       newUnlock = 'math-accessory';
     }
 
+    // Award clover based on score
+    const cloverEarned = Math.floor(score / 10) + (score >= 100 ? 20 : 0); // bonus for perfect
+    gameState.clover = (gameState.clover || 0) + cloverEarned;
+
     // Save to Firebase
     try {
       await updateDoc(doc(db, 'users', gameState.userId), {
         [`progress.${stageId}`]: gameState.progress[stageId],
         totalScore: gameState.totalScore,
-        companion: gameState.companion
+        companion: gameState.companion,
+        clover: gameState.clover
       });
 
       // Update leaderboard
@@ -1737,13 +1951,15 @@
     const emoji = score >= 80 ? '🌟' : score >= 60 ? '😊' : '💪';
     const title = score >= 80 ? '太厲害了！' : score >= 60 ? '做得好！' : '繼續加油！';
     const stars = score >= 80 ? '⭐⭐⭐' : score >= 60 ? '⭐⭐' : '⭐';
-    const msg = score >= 80 ? '滿分衝刺中！週五考試一定沒問題！' : score >= 60 ? '不錯喔！再練習幾次就能更好！' : '不用擔心，多練習幾次你一定做得到！';
+    const msg = score >= 80 ? '滿分！週五考試一定沒問題！' : score >= 60 ? '不錯喔！再練習幾次就能更好！' : '不用擔心，多練習幾次你一定做得到！';
 
     document.getElementById('result-emoji').textContent = emoji;
     document.getElementById('result-title').textContent = title;
-    document.getElementById('result-score').textContent = `${score}分`;
+    document.getElementById('result-score').textContent = `🍀 ${score}`;
     document.getElementById('result-stars').textContent = stars;
     document.getElementById('result-message').textContent = msg;
+    const cloverEarned = Math.floor(score / 10) + (score >= 100 ? 20 : 0);
+    document.getElementById('result-message').textContent = msg + ` 獲得 🍀${cloverEarned} 幸運草！`;
 
     const banner = document.getElementById('unlock-banner');
     if (newUnlock === 'companion') {
@@ -1801,12 +2017,82 @@
 
   // ===== COMPANION =====
   window.toggleCompanion = function() {
-    if (!gameState.companion.unlocked) return;
-    const bubble = document.getElementById('companion-bubble');
-    const msgs = ['加油！你可以的！🌟', '要不要用提示呢？', '相信自己！💪', '週五考試一定沒問題！'];
-    bubble.textContent = msgs[Math.floor(Math.random() * msgs.length)];
-    bubble.style.display = bubble.style.display === 'block' ? 'none' : 'block';
-    setTimeout(() => { bubble.style.display = 'none'; }, 3000);
+    if (!gameState.companion.unlocked) {
+      // Show teaser message
+      const bubble = document.getElementById('companion-bubble');
+      bubble.textContent = '完成一關就能解鎖我！';
+      bubble.style.display = 'block';
+      setTimeout(() => { bubble.style.display = 'none'; }, 2500);
+      return;
+    }
+    showCompanionModal();
+  };
+
+  window.showCompanionModal = function() {
+    const accessories = gameState.companion.accessories || [];
+    const modal = document.getElementById('companion-modal');
+    const img = document.getElementById('companion-modal-img');
+    const dialog = document.getElementById('companion-dialog');
+
+    // Set image based on accessories
+    if (accessories.includes('math')) {
+      img.src = 'companion-accessory-math.png';
+    } else if (accessories.includes('chinese')) {
+      img.src = 'companion-accessory-chinese.png';
+    } else if (accessories.includes('rs')) {
+      img.src = 'companion-accessory-rs.png';
+    } else {
+      img.src = 'companion-base.png';
+    }
+
+    // Set dialog based on state
+    const totalAcc = accessories.length;
+    const dialogs = {
+      0: '主人！快去解鎖更多關卡，我想要配件！✨',
+      1: '謝謝你的禮物！我還想要更多配件！🎁',
+      2: '我越來越漂亮了！再一個就集滿了！💪',
+      3: '我們是最強的組合！所有配件都集滿了！🏆'
+    };
+    dialog.textContent = dialogs[totalAcc] || dialogs[0];
+
+    // Update accessory status
+    ['rs', 'chinese', 'math'].forEach(subject => {
+      const el = document.getElementById(`acc-${subject}`);
+      if (accessories.includes(subject)) {
+        el.classList.add('unlocked');
+        el.querySelector('.accessory-status').textContent = '✅';
+      } else {
+        el.classList.remove('unlocked');
+        el.querySelector('.accessory-status').textContent = '🔒';
+      }
+    });
+
+    // Show companion name
+    const companionName = gameState.companion.name || '小白';
+    document.getElementById('companion-modal-name').textContent = companionName;
+
+    modal.classList.add('active');
+  };
+
+  window.renameCompanion = async function() {
+    const currentName = gameState.companion.name || '小白';
+    const newName = prompt(`幫你的夥伴取個名字吧！`, currentName);
+    if (!newName || !newName.trim()) return;
+    const trimmed = newName.trim().substring(0, 8); // max 8 chars
+    gameState.companion.name = trimmed;
+    document.getElementById('companion-modal-name').textContent = trimmed;
+    document.getElementById('companion-name').textContent = trimmed + ' 🐱';
+
+    // Save to Firebase
+    try {
+      await updateDoc(doc(db, 'users', gameState.userId), {
+        'companion.name': trimmed
+      });
+    } catch(e) { console.error(e); }
+  };
+
+  window.closeCompanionModal = function() {
+    document.getElementById('companion-modal').classList.remove('active');
   };
 
   // ===== LEADERBOARD =====
@@ -1832,7 +2118,7 @@
           <div class="leaderboard-row ${isMe ? 'me' : ''}">
             <div class="lb-rank">${rank}</div>
             <div class="lb-name">${data.nickname} ${isMe ? '👈' : ''}</div>
-            <div class="lb-score">⭐ ${data.totalScore}分<br>
+            <div class="lb-score">🍀 ${data.totalScore}<br>
               <span style="font-size:0.75rem; opacity:0.7">${data.totalCompleted || 0}/8 關</span>
             </div>
           </div>
@@ -1867,6 +2153,5 @@
   }
 </style>
 
-
-
-</body></html>
+</body>
+</html>
