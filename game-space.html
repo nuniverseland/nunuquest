@@ -543,7 +543,7 @@ function showWrong(q,cb){
   document.getElementById('wrong-overlay').style.display='flex';
   gameRunning=false;if(raf){cancelAnimationFrame(raf);raf=null;}
 }
-function dismissWrong(){
+window.dismissWrong = function(){
   document.getElementById('wrong-overlay').style.display='none';
   gameRunning=true;lastTime=performance.now();loop(lastTime);
   if(wrongDoneCb){wrongDoneCb();wrongDoneCb=null;}
@@ -784,7 +784,7 @@ async function endGame(){
 }
 
 // ── MENU ──────────────────────────────────────────────────────────
-function showMenu(){
+window.showMenu = function(){
   const ov=document.getElementById('overlay');
   ov.innerHTML=`
     <h1>🚀 宇宙大冒險</h1>
@@ -802,11 +802,11 @@ function showMenu(){
   ov.style.display='flex';
 }
 
-function goBack(){
+window.goBack = function(){
   window.location.href='index.html';
 }
 
-function startGame(){
+window.startGame = function(){
   document.getElementById('overlay').style.display='none';
   score=0;lives=3;combo=0;wave=1;clover=0;
   rapidFire=false;rapidFireTimer=0;maxAmmo=8;
