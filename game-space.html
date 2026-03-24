@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-<meta charset="UTF-8">
+<!-- saved from url=(0051)file:///Users/vivianhsu/Downloads/game-space_5.html -->
+<html lang="zh-TW"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🚀 宇宙大冒險 — RS 射擊戰</title>
 <style>
@@ -95,6 +95,41 @@ canvas{position:absolute;inset:0;display:block;}
 }
 #qtopic{font-size:10px;color:#7ecfff;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;font-family:monospace;}
 #qtext{font-size:15px;color:#eee;line-height:1.5;font-family:monospace;}
+
+/* Berserk mode overlay */
+#berserk-overlay{
+  position:absolute;inset:0;z-index:45;
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  background:rgba(180,0,0,0.85);text-align:center;padding:24px;
+  animation:berserkFlash 0.3s ease;
+}
+@keyframes berserkFlash{
+  0%{background:rgba(255,50,0,0.95);}
+  100%{background:rgba(180,0,0,0.85);}
+}
+.berserk-title{
+  font-size:3rem;font-weight:900;color:#fff;font-family:monospace;
+  letter-spacing:4px;text-shadow:0 0 30px rgba(255,200,0,1);
+  animation:berserkPulse 0.5s infinite alternate;
+}
+@keyframes berserkPulse{
+  from{transform:scale(1);}to{transform:scale(1.08);}
+}
+.berserk-sub{font-size:1.1rem;color:#ffd166;font-family:monospace;margin-top:10px;}
+.berserk-timer{
+  font-size:4rem;font-weight:900;color:#ffd166;font-family:monospace;
+  margin-top:16px;text-shadow:0 0 20px rgba(255,209,102,0.8);
+}
+
+/* Berserk HUD indicator */
+#berserk-hud{
+  position:absolute;top:58px;left:50%;transform:translateX(-50%);
+  background:rgba(200,0,0,0.8);border:2px solid #ff4444;
+  border-radius:20px;padding:4px 16px;
+  font-size:0.9rem;font-weight:900;color:#fff;font-family:monospace;
+  display:none;z-index:10;letter-spacing:2px;
+  animation:berserkPulse 0.5s infinite alternate;
+}
 
 /* Bonus question overlay */
 #bonus-overlay{
@@ -210,13 +245,23 @@ canvas{position:absolute;inset:0;display:block;}
       <div id="qtopic">SHOOT THE CORRECT ANSWER</div>
       <div id="qtext">Loading...</div>
     </div>
-    <div id="lives-row"></div>
-    <div id="ammo-bar"></div>
+    <div id="lives-row"><span class="heart">❤️</span><span class="heart">❤️</span><span class="heart">❤️</span></div>
+    <div id="ammo-bar"><div class="ammo-pip"></div><div class="ammo-pip"></div><div class="ammo-pip"></div><div class="ammo-pip"></div><div class="ammo-pip"></div><div class="ammo-pip"></div><div class="ammo-pip"></div><div class="ammo-pip"></div></div>
     <div id="xp-bar-wrap">
       <div id="xp-bar-bg"><div id="xp-bar-fill"></div></div>
       <div id="xp-label"></div>
     </div>
   </div>
+
+  <!-- Berserk mode -->
+  <div id="berserk-overlay">
+    <div class="berserk-title">🔥 暴打模式！🔥</div>
+    <div class="berserk-sub">20秒內盡情打！不用答題！</div>
+    <div class="berserk-timer" id="berserk-countdown">3</div>
+  </div>
+
+  <!-- Berserk HUD -->
+  <div id="berserk-hud">🔥 暴打模式 <span id="berserk-time">20</span>s</div>
 
   <!-- Bonus question -->
   <div id="bonus-overlay">
@@ -236,7 +281,19 @@ canvas{position:absolute;inset:0;display:block;}
   </div>
 
   <!-- Main overlay -->
-  <div id="overlay"></div>
+  <div id="overlay" style="display: flex;">
+    <h1>🚀 宇宙大冒險</h1>
+    <p class="sub">RS 射擊戰！打倒帶著正確答案的外星人！<br>每 5 波出現 Bonus 題目，答對得連發子彈！</p>
+    <div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:12px 20px;margin:8px 0;max-width:360px;width:100%;font-family:monospace;font-size:12px;color:#aaa;line-height:1.9;text-align:left;">
+      🖱️ 點擊射擊正確答案<br>
+      空白鍵 按住自動連射<br>
+      ✅ 答對 → +🍀幸運草<br>
+      ❌ 答錯 → -❤️生命<br>
+      ⚡ 每5波 → Bonus題目→連發！
+    </div>
+    <button class="gbtn" onclick="startGame()" style="font-size:17px;padding:14px 42px;">出發！🚀</button>
+    <button class="gbtn back" onclick="goBack()">← 回到地圖（幸運草已存入）</button>
+  </div>
 </div>
 </div>
 
@@ -263,27 +320,98 @@ let sessionBestScore = 0;
 
 // ── QUESTIONS (RS - Pepita and the Bully) ──────────────────────
 const QS = [
+  // ── Irregular Verbs: Have / Has / Had & Do / Does / Did ──
+  {q:'Chad ___ a dentist appointment today.', a:'has', w:['has','have','had','does']},
+  {q:'We ___ many chores to do this weekend.', a:'have', w:['have','has','had','did']},
+  {q:'Lydia ___ fun bowling last night.', a:'had', w:['had','has','have','did']},
+  {q:'Our dogs ___ to get a bath yesterday.', a:'had', w:['had','has','have','did']},
+  {q:'Yesterday the children ___ homework.', a:'did', w:['did','does','do','have']},
+  {q:'Now we ___ our favorite exercises.', a:'do', w:['do','does','did','have']},
+  {q:'Jana ___ gymnastics every day.', a:'does', w:['does','do','did','has']},
+  {q:'The airplane ___ not arrive on time last night.', a:'did', w:['did','does','do','had']},
+  {q:'The hikers ___ a big climb last Friday.', a:'did', w:['did','do','does','had']},
+  {q:'Mom ___ a goat when she was a teenager.', a:'had', w:['had','have','has','did']},
+  {q:'This flashlight ___ not have any batteries.', a:'does', w:['does','do','did','has']},
+  {q:'Some oranges ___ lots of seeds.', a:'have', w:['have','has','had','do']},
+  {q:'Yesterday, Mike ___ a sore throat.', a:'had', w:['had','have','has','did']},
+  {q:'Our cat ___ tricks!', a:'does', w:['does','do','did','has']},
+  {q:"Bella's friends ___ nice manners.", a:'have', w:['have','has','had','do']},
+  {q:'Last week they ___ chores with Jake.', a:'did', w:['did','do','does','had']},
+  {q:'Uncle Bill ___ a boat now.', a:'has', w:['has','have','had','does']},
+  {q:'Last weekend we ___ laundry.', a:'did', w:['did','do','does','had']},
+
+  // ── Irregular Action Verbs ──
+  {q:'Marcy ___ under a blanket yesterday.', a:'hid', w:['hid','hide','hides','hiding']},
+  {q:'We like to ___ popcorn for a snack each day.', a:'eat', w:['eat','ate','eaten','eats']},
+  {q:'Now our cousins ___ they miss us.', a:'say', w:['say','said','says','telling']},
+  {q:'Last week, Dylan ___ us about his vacation.', a:'told', w:['told','tell','tells','telling']},
+  {q:'Felix ___ to the store to buy milk an hour ago.', a:'ran', w:['ran','run','runs','running']},
+  {q:'The chickens ___ around the coop yesterday.', a:'ran', w:['ran','run','runs','running']},
+  {q:'Thom ___ in the office yesterday.', a:'sat', w:['sat','sit','sits','sitting']},
+  {q:'The mice ___ from the cat yesterday.', a:'hid', w:['hid','hide','hides','hidden']},
+  {q:'Yesterday the librarian ___ a story.', a:'told', w:['told','tell','tells','telling']},
+  {q:'The foxes ___ to their dens now.', a:'go', w:['go','went','goes','going']},
+  {q:'Jenny ___ a walk and found a penny.', a:'took', w:['took','take','takes','taking']},
+  {q:'Now we ___ how to solve the problem.', a:'see', w:['see','saw','seen','sees']},
+  {q:'Percy ___ me a birthday card yesterday.', a:'gave', w:['gave','give','gives','giving']},
+  {q:'Now they ___ they will build their own tree house.', a:'say', w:['say','said','says','telling']},
+  {q:'The woman ___ a bat last night.', a:'saw', w:['saw','see','sees','seen']},
+  {q:'Parents ___ the talent show now.', a:'run', w:['run','ran','runs','running']},
+  {q:'Deacon ___ so well that nobody found him.', a:'hid', w:['hid','hide','hides','hidden']},
+  {q:'Please ___ me money for the tickets.', a:'give', w:['give','gave','gives','giving']},
+  {q:'Yesterday we ___ to the playground.', a:'went', w:['went','go','goes','going']},
+  {q:'I ___ the rainbow yesterday.', a:'saw', w:['saw','see','seen','sees']},
+
+  // ── Types of Adjectives + Articles ──
+  {q:'"I heard a loud crash." LOUD describes...', a:'how it sounds', w:['how it sounds','how it looks','how it feels','how it tastes']},
+  {q:'"My mom wore a fuzzy sweater." FUZZY describes...', a:'how it feels', w:['how it feels','how it looks','how it sounds','how it tastes']},
+  {q:'"Owen made a spicy chili." SPICY describes...', a:'how it tastes', w:['how it tastes','how it smells','how it feels','how it sounds']},
+  {q:'"It had a peppery smell." PEPPERY describes...', a:'how it smells', w:['how it smells','how it tastes','how it feels','how it looks']},
+  {q:'I see ___ ant. (any ant)', a:'an', w:['an','a','the','some']},
+  {q:'I see ___ spider. (any spider)', a:'a', w:['a','an','the','one']},
+  {q:'I like ___ orange butterfly. (specific)', a:'the', w:['the','a','an','some']},
+  {q:'There is ___ firefly outside. (any firefly)', a:'a', w:['a','an','the','two']},
+  {q:'I saw ___ insect on the leaf. (any insect)', a:'an', w:['an','a','the','some']},
+  {q:'___ ladybug sat on the windowsill. (specific)', a:'The', w:['The','A','An','Some']},
+  {q:'There was ___ earthworm in the dirt. (any)', a:'an', w:['an','a','the','one']},
+  {q:'I like the ___ smell of cut grass.', a:'fresh', w:['fresh','yellow','a','the']},
+  {q:'The ___ flowers are my favorite.', a:'yellow', w:['yellow','fresh','a','the']},
+  {q:'I like to visit ___ garden each morning. (specific)', a:'the', w:['the','yellow','fresh','a']},
+  {q:'I saw ___ bird in the cherry tree. (any bird)', a:'a', w:['a','yellow','fresh','the']},
+  {q:'The ___ berries taste bad. (taste)', a:'bitter', w:['bitter','wet','an','buzzing']},
+  {q:'I heard the ___ bees by their hive. (sound)', a:'buzzing', w:['buzzing','wet','an','bitter']},
+  {q:'Hang your ___ swimsuit on the hook. (feel)', a:'wet', w:['wet','an','buzzing','bitter']},
+  {q:'Does the mall have ___ elevator? (any)', a:'an', w:['an','wet','buzzing','bitter']},
+
+  // ── Using Adjectives: -er / -est ──
+  {q:'This string is ___ than that string.', a:'longer', w:['longer','longest','long','most long']},
+  {q:'Mr. Bennett has the ___ classroom in school.', a:'biggest', w:['biggest','bigger','big','most big']},
+  {q:'Lem is the ___ runner on the track team.', a:'fastest', w:['fastest','faster','fast','most fast']},
+  {q:'The nail is ___ than the wood.', a:'harder', w:['harder','hardest','hard','more hard']},
+  {q:'Blake is the ___ person in his family.', a:'youngest', w:['youngest','younger','young','most young']},
+  {q:'I am ___ than my cousin.', a:'older', w:['older','oldest','old','most old']},
+  {q:'The hospital is the ___ building on Main Street.', a:'biggest', w:['biggest','bigger','big','most big']},
+  {q:'A chipmunk is ___ than a squirrel.', a:'smaller', w:['smaller','smallest','small','more small']},
+  {q:'We always look for the ___ star in the sky.', a:'brightest', w:['brightest','brighter','bright','most bright']},
+  {q:'The orange is ___ than the grapefruit.', a:'sweeter', w:['sweeter','sweetest','sweet','more sweet']},
+  {q:'Add ___ to compare TWO things.', a:'-er', w:['-er','-est','-ed','-ing']},
+  {q:'Add ___ to compare MORE THAN TWO things.', a:'-est', w:['-est','-er','-ed','-s']},
+  {q:'My cat is ___ than my dog.', a:'smarter', w:['smarter','smartest','smart','more smart']},
+  {q:'Of all my pets, my cat is the ___.', a:'smartest', w:['smartest','smarter','smart','most smart']},
+
+  // ── Pepita Vocabulary (original) ──
   {q:'Which word means "an agreement where each person gives up a little"?', a:'compromise', w:['compromise','decision','disagreement','excuses']},
-  {q:'Pepita ____ to stand up for herself.', a:'decided', w:['decided','mumbled','yanked','dragged']},
+  {q:'Pepita ___ to stand up for herself.', a:'decided', w:['decided','mumbled','yanked','dragged']},
   {q:'Which word means "to speak quietly and not very clearly"?', a:'mumbled', w:['mumbled','screams','frown','hesitant']},
-  {q:'The dog ____ the rope from the boy\'s hands.', a:'yanked', w:['yanked','invited','wrinkled','nearby']},
-  {q:'She was ____ to go down the slide alone.', a:'hesitant', w:['hesitant','excuses','dragged','frown']},
+  {q:"The dog ___ the rope from the boy's hands.", a:'yanked', w:['yanked','invited','wrinkled','nearby']},
+  {q:'She was ___ to go down the slide alone.', a:'hesitant', w:['hesitant','excuses','dragged','frown']},
   {q:'Which word means "a sad or angry look on the face"?', a:'frown', w:['frown','nearby','invited','screams']},
-  {q:'Colin ____ the heavy suitcase out of the room.', a:'dragged', w:['dragged','mumbled','wrinkled','invited']},
-  {q:'Alex tried to make ____ about the broken vase.', a:'excuses', w:['excuses','compromise','decision','disagreement']},
-  {q:'When I eat a snack, my dog is always ____.', a:'nearby', w:['nearby','hesitant','frown','yanked']},
-  {q:'He ____ us to come to the lunchroom.', a:'invited', w:['invited','dragged','mumbled','screams']},
-  {q:'"Use ___ before words starting with a vowel sound."', a:'an', w:['an','a','the','some']},
-  {q:'"Use ___ before words starting with a consonant sound."', a:'a', w:['a','an','the','one']},
-  {q:'"Use ___ when talking about one specific thing."', a:'the', w:['the','a','an','some']},
-  {q:'Which is a COMPARATIVE adjective (comparing 2 things)?', a:'taller', w:['taller','tallest','tall','more tall']},
-  {q:'Which is a SUPERLATIVE adjective (comparing 3+ things)?', a:'fastest', w:['fastest','faster','fast','most fast']},
-  {q:'"She sings ____." Which adverb fits?', a:'beautifully', w:['beautifully','beautiful','beauty','beautify']},
-  {q:'Which adverb tells WHEN?', a:'soon', w:['soon','here','beautiful','tall']},
-  {q:'Which adverb tells WHERE?', a:'inside', w:['inside','now','quickly','biggest']},
-  {q:'Babette made fun of Pepita\'s name. This is called _____.', a:'bullying', w:['bullying','compromise','hesitant','dragged']},
-  {q:'At the END of the story, Pepita ____ Babette to play.', a:'invited', w:['invited','yanked','screamed','dragged']},
+  {q:'Colin ___ the heavy suitcase out of the room.', a:'dragged', w:['dragged','mumbled','wrinkled','invited']},
+  {q:'Alex tried to make ___ about the broken vase.', a:'excuses', w:['excuses','compromise','decision','disagreement']},
+  {q:'When I eat a snack, my dog is always ___.', a:'nearby', w:['nearby','hesitant','frown','yanked']},
+  {q:'He ___ us to come to the lunchroom.', a:'invited', w:['invited','dragged','mumbled','screams']},
 ];
+
 
 const BONUS_QS = [
   {q:'In the BEGINNING, why did Pepita not want to go back to school?', a:'Babette was bullying her', w:['She forgot her homework','Babette was bullying her','She was sick','She missed the bus']},
@@ -295,6 +423,8 @@ const BONUS_QS = [
 
 // ── GAME STATE ──────────────────────────────────────────────────
 let score=0, lives=3, combo=0, wave=1;
+let berserkMode=false, berserkTimer=0, berserkInterval=null;
+let lastBerserkAt=0; // score at last berserk trigger
 let clover=0; // 幸運草
 let qPool=[], qIdx=0, curQ=null;
 let aliens=[], particles=[], bullets=[], stars=[];
@@ -416,8 +546,7 @@ class Alien{
   }
   update(dt){
     this.y+=this.speed*dt*0.055;
-    this.wobble+=this.wobbleSpeed*dt;
-    this.x+=Math.sin(this.wobble)*0.5;
+    // No wobble - straight down
     this.eyeT+=dt*0.08;
     if(this.hitFlash>0)this.hitFlash-=dt*0.06;
   }
@@ -446,9 +575,9 @@ class Alien{
     // Word label
     ctx.font='bold 13px monospace';
     const tw=ctx.measureText(this.word).width;
-    ctx.fillStyle=this.isCorrect?'rgba(6,80,50,0.9)':'rgba(30,10,10,0.85)';
+    ctx.fillStyle='rgba(10,10,30,0.88)';
     ctx.beginPath();ctx.roundRect(-tw/2-10,24,tw+20,22,5);ctx.fill();
-    ctx.strokeStyle=this.isCorrect?'#06d6a0':'rgba(255,100,100,0.4)';
+    ctx.strokeStyle='rgba(255,255,255,0.2)';
     ctx.lineWidth=1.5;ctx.stroke();
     ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='middle';
     ctx.fillText(this.word,0,35);
@@ -573,7 +702,11 @@ function showBonusQ(cb){
       }else{
         btn.classList.add('wrong');
         document.querySelectorAll('.bo-btn').forEach(b=>{if(b.textContent===q.a)b.classList.add('correct');});
-        setTimeout(()=>{document.getElementById('bonus-overlay').style.display='none';if(cb)cb();},1500);
+        setTimeout(()=>{
+          const boSub2=document.querySelector('.bo-sub');
+          boSub2.innerHTML='繼續加油！3秒後回到遊戲...';
+          setTimeout(()=>{document.getElementById('bonus-overlay').style.display='none';if(cb)cb();},2000);
+        },1200);
       }
     };
     opts.appendChild(btn);
@@ -606,6 +739,12 @@ function spawnWave(){
 
 // ── FIRING ────────────────────────────────────────────────────────
 function fireAt(tx,ty){
+  if(berserkMode){
+    // Berserk: unlimited ammo, ignore waitNext
+    bullets.push(new Bullet(ship.x,ship.y-28,tx,ty,true));
+    playSound('shoot');
+    return;
+  }
   if(ammo<=0||waitNext)return;
   ammo--;updAmmo();
   const isRapid=rapidFire;
@@ -619,12 +758,97 @@ function fireAt(tx,ty){
   playSound('shoot');
 }
 
+// ── BERSERK MODE ─────────────────────────────────────────────
+function triggerBerserk(){
+  if(berserkMode) return;
+  berserkMode = true;
+  berserkTimer = 20;
+  lastBerserkAt = score;
+  gameRunning = false;
+  if(raf){cancelAnimationFrame(raf);raf=null;}
+
+  // Show berserk intro overlay with countdown
+  const overlay = document.getElementById('berserk-overlay');
+  const countdown = document.getElementById('berserk-countdown');
+  overlay.style.display = 'flex';
+  let count = 3;
+  countdown.textContent = count;
+  playSound('berserk');
+
+  const countInterval = setInterval(() => {
+    count--;
+    if(count <= 0){
+      clearInterval(countInterval);
+      overlay.style.display = 'none';
+      startBerserkMode();
+    } else {
+      countdown.textContent = count;
+    }
+  }, 800);
+}
+
+function startBerserkMode(){
+  waitNext = false;
+  aliens = [];
+  gameRunning = true;
+  lastTime = performance.now();
+  loop(lastTime);
+
+  // Show HUD indicator
+  document.getElementById('berserk-hud').style.display = 'block';
+  document.getElementById('berserk-time').textContent = berserkTimer;
+
+  // Spawn berserk aliens (no correct/wrong, just targets)
+  spawnBerserkWave();
+
+  // Countdown timer
+  berserkInterval = setInterval(() => {
+    berserkTimer--;
+    document.getElementById('berserk-time').textContent = berserkTimer;
+    if(berserkTimer % 3 === 0) spawnBerserkWave(); // spawn more every 3s
+    if(berserkTimer <= 0){
+      endBerserkMode();
+    }
+  }, 1000);
+}
+
+function spawnBerserkWave(){
+  const count = 4 + Math.floor(wave/2);
+  for(let i=0; i<count; i++){
+    const x = 60 + Math.random()*(W-120);
+    const color = COLORS[Math.floor(Math.random()*COLORS.length)];
+    const a = new Alien(x, '💥', false, color, wave);
+    a.isBerserk = true;
+    a.y = -30 - Math.random()*100;
+    a.word = ['★','●','▲','◆','♦'][Math.floor(Math.random()*5)];
+    aliens.push(a);
+  }
+}
+
+function endBerserkMode(){
+  clearInterval(berserkInterval);
+  berserkMode = false;
+  berserkTimer = 0;
+  aliens = [];
+  document.getElementById('berserk-hud').style.display = 'none';
+  showBonus('🔥 暴打結束！繼續加油！', '#ffd166');
+  setTimeout(loadQ, 500);
+}
+
 function checkBulletHits(){
   bullets.forEach(b=>{
     aliens.forEach(a=>{
       if(a.dead)return;
       if(a.checkBullet(b)){
         b.life=0;a.hitFlash=1;
+        if(a.isBerserk){
+          // Berserk mode - just kill and score
+          a.dead=true;boom(a.x,a.y,a.color,true);
+          score+=5;updHUD();
+          aliens=aliens.filter(al=>al!==a);
+          playSound('hit');
+          return;
+        }
         if(a.isCorrect){
           a.dead=true;boom(a.x,a.y,a.color,true);
           combo++;
@@ -636,6 +860,11 @@ function checkBulletHits(){
           else showBonus('+'+gained+' pts +🍀'+cloverGained,'#06d6a0');
           aliens=aliens.filter(al=>al!==a);
           waitNext=true;
+          // Check berserk trigger every 200 points
+          if(!berserkMode && score>=200 && Math.floor(score/200) > Math.floor((score-gained)/200)){
+            setTimeout(triggerBerserk, 500);
+            return;
+          }
           // Check bonus wave
           bonusWaveCounter++;
           const afterWave=()=>{
@@ -673,7 +902,8 @@ function checkBulletHits(){
 // ── AUTOFIRE ─────────────────────────────────────────────────────
 let lastAutoFire=0;
 function handleAutoFire(now){
-  if(!spaceHeld||!gameRunning||waitNext)return;
+  if(!spaceHeld||!gameRunning)return;
+  if(!berserkMode && waitNext)return;
   const interval=rapidFire?120:280;
   if(now-lastAutoFire>interval){
     lastAutoFire=now;
@@ -721,6 +951,7 @@ function loop(now){
   aliens.forEach(a=>{
     if(a.dead)return;a.update(dt);a.draw(ctx);
     if(a.y>dangerY+14&&!waitNext){
+      if(a.isBerserk){ a.dead=true;aliens=aliens.filter(al=>al!==a);return; }
       lives--;combo=0;boom(a.x,a.y,'#ff4444',false);playSound('land');
       a.dead=true;aliens=aliens.filter(al=>al!==a);
       shakeShip();updHUD();updLives();waitNext=true;
@@ -822,6 +1053,19 @@ let AC=null;try{AC=new(window.AudioContext||window.webkitAudioContext)();}catch(
 function playSound(type){
   if(!AC)return;try{
     const o=AC.createOscillator(),g=AC.createGain();o.connect(g);g.connect(AC.destination);
+    if(type==='berserk'){
+      // Epic berserk sound
+      for(let i=0;i<3;i++){
+        setTimeout(()=>{
+          const o2=AC.createOscillator(),g2=AC.createGain();o2.connect(g2);g2.connect(AC.destination);
+          o2.type='sawtooth';o2.frequency.setValueAtTime(200+i*100,AC.currentTime);
+          o2.frequency.exponentialRampToValueAtTime(800+i*200,AC.currentTime+0.3);
+          g2.gain.setValueAtTime(0.15,AC.currentTime);g2.gain.exponentialRampToValueAtTime(0.001,AC.currentTime+0.4);
+          o2.start();o2.stop(AC.currentTime+0.4);
+        },i*150);
+      }
+      return;
+    }
     if(type==='shoot'){
       o.type='square';o.frequency.setValueAtTime(rapidFire?600:440,AC.currentTime);
       o.frequency.exponentialRampToValueAtTime(rapidFire?1400:900,AC.currentTime+0.08);
@@ -843,7 +1087,8 @@ function playSound(type){
 
 // ── CONTROLS ─────────────────────────────────────────────────────
 document.addEventListener('click',e=>{
-  if(!gameRunning||waitNext)return;
+  if(!gameRunning)return;
+  if(!berserkMode && waitNext)return;
   if(AC&&AC.state==='suspended')AC.resume();
   const rect=canvas.getBoundingClientRect();
   const scaleX=W/rect.width,scaleY=H/rect.height;
@@ -877,7 +1122,8 @@ document.addEventListener('touchmove',e=>{
 },{passive:false});
 
 document.addEventListener('touchstart',e=>{
-  if(!gameRunning||waitNext)return;e.preventDefault();
+  if(!gameRunning)return;e.preventDefault();
+  if(!berserkMode && waitNext)return;
   if(AC&&AC.state==='suspended')AC.resume();
   const rect=canvas.getBoundingClientRect();
   const scaleX=W/rect.width,scaleY=H/rect.height;
@@ -903,5 +1149,6 @@ window.addEventListener('DOMContentLoaded',()=>{
   showMenu();
 });
 </script>
-</body>
-</html>
+
+
+</body></html>
