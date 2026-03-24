@@ -995,10 +995,71 @@
   }
 
   /* ===== RESPONSIVE ===== */
+
+  /* 手機版（768px 以下） */
+  @media (max-width: 768px) {
+    /* Top bar 手機版 */
+    .top-bar { padding: 8px 12px; }
+    .player-avatar { width: 34px; height: 34px; font-size: 1.1rem; }
+    .player-name { font-size: 0.85rem; }
+    .player-score { font-size: 0.72rem; }
+    .btn-icon { padding: 6px 8px; font-size: 0.72rem; }
+    .top-bar-buttons { gap: 5px; }
+
+    /* 地圖標題 */
+    .map-title-area h2 { font-size: 1.1rem; }
+    .map-title-area p { font-size: 0.72rem; }
+    .map-title-area { padding: 5px 12px 3px; }
+
+    /* 關卡節點縮小 */
+    .stage-star { width: 52px; height: 52px; font-size: 1.8rem; }
+    .stage-label {
+      font-size: 0.6rem;
+      max-width: 56px;
+      white-space: normal;   /* ← 讓標籤可以換行 */
+      text-align: center;
+      padding: 2px 4px;
+    }
+
+    /* Subject pill 縮小 */
+    .subject-pill { font-size: 0.6rem; padding: 3px 7px; }
+
+    /* 遊戲入口（外星人）縮小 */
+    .game-alien { font-size: 1.7rem; }
+    .game-entry-label { font-size: 0.6rem; padding: 2px 6px; }
+
+    /* 夥伴小白縮小 */
+    .companion-cat { width: 55px; height: 55px; font-size: 1.8rem; }
+    .companion-name { font-size: 0.65rem; }
+    .companion-widget { bottom: 15px; right: 12px; }
+
+    /* 答題頁調整 */
+    .game-content { padding: 12px 14px; }
+    .question-card { padding: 18px 16px; }
+    .question-text { font-size: 0.95rem; }
+    .options-grid { gap: 8px; }
+    .option-btn { padding: 12px 8px; font-size: 0.85rem; }
+    .game-footer { padding: 10px 14px; gap: 8px; }
+    .btn-submit { font-size: 0.9rem; padding: 12px; }
+    .btn-hint { padding: 12px 14px; font-size: 0.82rem; }
+
+    /* 結果頁 */
+    .result-card { padding: 28px 20px; }
+    .result-emoji { font-size: 3rem; }
+    .result-title { font-size: 1.4rem; }
+    .result-score { font-size: 2.2rem; }
+  }
+
+  /* 超小手機（400px 以下） */
   @media (max-width: 400px) {
-    .login-box { padding: 30px 20px; }
-    .stage-star { width: 52px; height: 52px; font-size: 1.5rem; }
+    .login-box { padding: 28px 18px; }
+    .stage-star { width: 44px; height: 44px; font-size: 1.5rem; }
+    .stage-label { font-size: 0.55rem; max-width: 48px; }
     .options-grid { grid-template-columns: 1fr; }
+    .subject-pill { font-size: 0.55rem; padding: 2px 6px; }
+    .game-alien { font-size: 1.5rem; }
+    /* top-bar：排行榜縮成圖示 */
+    .btn-icon .btn-text { display: none; }
   }
 
   /* Loading */
@@ -1065,8 +1126,8 @@
       </div>
     </div>
     <div class="top-bar-buttons">
-      <button class="btn-icon" onclick="showLeaderboard()">🏆 排行榜</button>
-      <button class="btn-icon" onclick="handleLogout()">🚪 登出</button>
+      <button class="btn-icon" onclick="showLeaderboard()">🏆<span class="btn-text"> 排行榜</span></button>
+      <button class="btn-icon" onclick="handleLogout()">🚪<span class="btn-text"> 登出</span></button>
     </div>
   </div>
 
