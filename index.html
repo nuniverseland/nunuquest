@@ -278,166 +278,116 @@
 
   .map-title-area {
     text-align: center;
-    padding: 20px;
+    padding: 8px 20px 4px;
+    position: relative;
+    z-index: 1;
   }
 
   .map-title-area h2 {
-    font-size: 1.8rem;
+    font-size: 1.5rem;
     font-weight: 900;
-    color: var(--green-dark);
-    text-shadow: 2px 2px 0 rgba(255,255,255,0.5);
+    color: white;
+    text-shadow: 2px 2px 6px rgba(0,0,0,0.7);
   }
 
   .map-title-area p {
-    color: var(--green-mid);
+    color: var(--yellow);
     font-weight: 700;
-    font-size: 0.9rem;
+    font-size: 0.82rem;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.7);
   }
 
-  /* Forest Map */
+  /* Forest Map - full screen */
   .forest-map {
     flex: 1;
     position: relative;
-    padding: 10px 20px 30px;
-    max-width: 600px;
-    margin: 0 auto;
     width: 100%;
   }
 
   #map-screen {
     background: url('forest-map.png') no-repeat center center;
     background-size: cover;
-    background-attachment: fixed;
-  }
-
-  #map-screen::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: rgba(255,255,255,0.15);
-    pointer-events: none;
-    z-index: 0;
   }
 
   #map-screen .top-bar,
-  #map-screen .map-title-area,
-  #map-screen .forest-map {
+  #map-screen .map-title-area {
     position: relative;
     z-index: 1;
   }
 
-  /* Subject sections */
-  .subject-section {
-    background: rgba(255,255,255,0.7);
-    border-radius: 20px;
-    padding: 15px;
-    margin-bottom: 15px;
-    border: 2px solid rgba(255,255,255,0.9);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-  }
-
-  .subject-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 12px;
-  }
-
-  .subject-icon {
-    width: 40px; height: 40px;
-    border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.3rem;
-  }
-
-  .subject-title {
-    font-weight: 900;
-    font-size: 1rem;
-    color: var(--green-dark);
-  }
-
-  .subject-progress {
-    font-size: 0.78rem;
-    font-weight: 700;
-    opacity: 0.7;
-  }
-
-  /* Stage nodes */
-  .stages-row {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    flex-wrap: wrap;
-  }
-
+  /* Stage nodes - absolute on map */
   .stage-node {
-    position: relative;
+    position: absolute;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 5px;
+    gap: 4px;
     cursor: pointer;
+    z-index: 2;
+    transform: translate(-50%, -50%);
   }
 
   .stage-node.locked { cursor: not-allowed; }
 
   .stage-star {
-    width: 60px; height: 60px;
-    border-radius: 50%;
+    width: 62px; height: 62px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 1.8rem;
+    font-size: 2.2rem;
     transition: all 0.3s;
-    position: relative;
-    border: 3px solid transparent;
+    filter: drop-shadow(0 3px 6px rgba(0,0,0,0.5));
   }
 
   .stage-node.unlocked .stage-star {
-    background: linear-gradient(135deg, #fff9c4, #f5c842);
-    border-color: var(--yellow-dark);
-    box-shadow: 0 4px 12px rgba(245, 200, 66, 0.5);
     animation: starGlow 2s infinite;
   }
 
   .stage-node.completed .stage-star {
-    background: linear-gradient(135deg, #c8eaab, #7bc67e);
-    border-color: var(--green-mid);
-    box-shadow: 0 4px 12px rgba(123, 198, 126, 0.5);
+    filter: drop-shadow(0 3px 8px rgba(100,220,100,0.7));
   }
 
   .stage-node.locked .stage-star {
-    background: linear-gradient(135deg, #ddd, #bbb);
-    border-color: #aaa;
-    opacity: 0.6;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)) grayscale(0.8);
+    opacity: 0.65;
   }
 
   @keyframes starGlow {
-    0%, 100% { box-shadow: 0 4px 12px rgba(245, 200, 66, 0.5); }
-    50% { box-shadow: 0 4px 20px rgba(245, 200, 66, 0.9), 0 0 30px rgba(245, 200, 66, 0.3); }
+    0%, 100% { filter: drop-shadow(0 3px 10px rgba(255,210,0,0.9)); transform: scale(1); }
+    50% { filter: drop-shadow(0 3px 20px rgba(255,210,0,1)); transform: scale(1.1); }
   }
 
-  .stage-node:hover.unlocked .stage-star,
-  .stage-node:hover.completed .stage-star {
-    transform: scale(1.15) translateY(-3px);
+  .stage-node:hover:not(.locked) .stage-star {
+    transform: scale(1.2) translateY(-5px);
   }
 
   .stage-label {
     font-size: 0.7rem;
-    font-weight: 800;
-    color: var(--green-dark);
+    font-weight: 900;
+    color: white;
     text-align: center;
-    max-width: 65px;
+    max-width: 72px;
     line-height: 1.2;
+    text-shadow: 1px 1px 3px rgba(0,0,0,1);
+    background: rgba(0,0,0,0.4);
+    border-radius: 8px;
+    padding: 2px 6px;
+    white-space: nowrap;
   }
 
-  .stage-node.locked .stage-label { color: #999; }
+  .stage-node.locked .stage-label { color: #ccc; }
 
-  .stage-connector {
-    flex: 1;
-    height: 4px;
-    background: linear-gradient(90deg, var(--green-pale), var(--green-light));
-    border-radius: 2px;
-    min-width: 15px;
-    max-width: 40px;
+  /* Subject progress pills */
+  .subject-pill {
+    position: absolute;
+    background: rgba(255,255,255,0.88);
+    backdrop-filter: blur(4px);
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 0.68rem;
+    font-weight: 900;
+    color: var(--green-dark);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    z-index: 3;
+    white-space: nowrap;
   }
 
   /* Companion widget */
@@ -998,81 +948,51 @@
 
   <div class="forest-map">
 
-    <!-- RS Section -->
-    <div class="subject-section">
-      <div class="subject-header">
-        <div class="subject-icon" style="background:#fde8d8;">📖</div>
-        <div>
-          <div class="subject-title">RS — Pepita and the Bully</div>
-          <div class="subject-progress" id="rs-progress">0 / 3 關卡完成</div>
-        </div>
-      </div>
-      <div class="stages-row">
-        <div class="stage-node" id="node-rs-1" onclick="startStage('rs-1')">
-          <div class="stage-star">⭐</div>
-          <div class="stage-label">單字探索</div>
-        </div>
-        <div class="stage-connector"></div>
-        <div class="stage-node locked" id="node-rs-2" onclick="startStage('rs-2')">
-          <div class="stage-star">🔒</div>
-          <div class="stage-label">文法冒險</div>
-        </div>
-        <div class="stage-connector"></div>
-        <div class="stage-node locked" id="node-rs-3" onclick="startStage('rs-3')">
-          <div class="stage-star">🔒</div>
-          <div class="stage-label">故事解謎</div>
-        </div>
-      </div>
+    <!-- RS nodes - left side near tree tunnel -->
+    <div class="subject-pill" style="left:18%; top:14%">📖 RS</div>
+    <div class="stage-node" id="node-rs-1" onclick="startStage('rs-1')" style="left:14%; top:22%">
+      <div class="stage-star">⭐</div>
+      <div class="stage-label">單字探索</div>
+    </div>
+    <div class="stage-node locked" id="node-rs-2" onclick="startStage('rs-2')" style="left:26%; top:18%">
+      <div class="stage-star">🔒</div>
+      <div class="stage-label">文法冒險</div>
+    </div>
+    <div class="stage-node locked" id="node-rs-3" onclick="startStage('rs-3')" style="left:20%; top:32%">
+      <div class="stage-star">🔒</div>
+      <div class="stage-label">故事解謎</div>
     </div>
 
-    <!-- Chinese Section -->
-    <div class="subject-section">
-      <div class="subject-header">
-        <div class="subject-icon" style="background:#fde8e8;">🖊️</div>
-        <div>
-          <div class="subject-title">國語 — 第五課</div>
-          <div class="subject-progress" id="cn-progress">0 / 2 關卡完成</div>
-        </div>
-      </div>
-      <div class="stages-row">
-        <div class="stage-node" id="node-chinese-1" onclick="startStage('chinese-1')">
-          <div class="stage-star">⭐</div>
-          <div class="stage-label">詞語尋寶</div>
-        </div>
-        <div class="stage-connector"></div>
-        <div class="stage-node locked" id="node-chinese-2" onclick="startStage('chinese-2')">
-          <div class="stage-star">🔒</div>
-          <div class="stage-label">造句任務</div>
-        </div>
-      </div>
+    <!-- Chinese nodes - middle bridge area -->
+    <div class="subject-pill" style="left:38%; top:52%">🖊️ 國語</div>
+    <div class="stage-node" id="node-chinese-1" onclick="startStage('chinese-1')" style="left:33%; top:62%">
+      <div class="stage-star">⭐</div>
+      <div class="stage-label">詞語尋寶</div>
+    </div>
+    <div class="stage-node locked" id="node-chinese-2" onclick="startStage('chinese-2')" style="left:48%; top:66%">
+      <div class="stage-star">🔒</div>
+      <div class="stage-label">造句任務</div>
     </div>
 
-    <!-- Math Section -->
-    <div class="subject-section">
-      <div class="subject-header">
-        <div class="subject-icon" style="background:#e8f0fd;">🔢</div>
-        <div>
-          <div class="subject-title">數學 — 年月日</div>
-          <div class="subject-progress" id="math-progress">0 / 3 關卡完成</div>
-        </div>
-      </div>
-      <div class="stages-row">
-        <div class="stage-node" id="node-math-1" onclick="startStage('math-1')">
-          <div class="stage-star">⭐</div>
-          <div class="stage-label">月份挑戰</div>
-        </div>
-        <div class="stage-connector"></div>
-        <div class="stage-node locked" id="node-math-2" onclick="startStage('math-2')">
-          <div class="stage-star">🔒</div>
-          <div class="stage-label">換算闖關</div>
-        </div>
-        <div class="stage-connector"></div>
-        <div class="stage-node locked" id="node-math-3" onclick="startStage('math-3')">
-          <div class="stage-star">🔒</div>
-          <div class="stage-label">月曆大師</div>
-        </div>
-      </div>
+    <!-- Math nodes - right side meadow -->
+    <div class="subject-pill" style="left:62%; top:28%">🔢 數學</div>
+    <div class="stage-node" id="node-math-1" onclick="startStage('math-1')" style="left:60%; top:38%">
+      <div class="stage-star">⭐</div>
+      <div class="stage-label">月份挑戰</div>
     </div>
+    <div class="stage-node locked" id="node-math-2" onclick="startStage('math-2')" style="left:74%; top:44%">
+      <div class="stage-star">🔒</div>
+      <div class="stage-label">換算闖關</div>
+    </div>
+    <div class="stage-node locked" id="node-math-3" onclick="startStage('math-3')" style="left:80%; top:30%">
+      <div class="stage-star">🔒</div>
+      <div class="stage-label">月曆大師</div>
+    </div>
+
+    <!-- Hidden progress trackers -->
+    <div id="rs-progress" style="display:none">0 / 3</div>
+    <div id="cn-progress" style="display:none">0 / 2</div>
+    <div id="math-progress" style="display:none">0 / 3</div>
 
   </div>
 
