@@ -304,6 +304,27 @@
     width: 100%;
   }
 
+  #map-screen {
+    background: url('forest-map.png') no-repeat center center fixed;
+    background-size: cover;
+  }
+
+  #map-screen::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: rgba(255,255,255,0.15);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  #map-screen .top-bar,
+  #map-screen .map-title-area,
+  #map-screen .forest-map {
+    position: relative;
+    z-index: 1;
+  }
+
   /* Subject sections */
   .subject-section {
     background: rgba(255,255,255,0.7);
