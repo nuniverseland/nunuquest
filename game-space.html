@@ -1,299 +1,139 @@
 <!DOCTYPE html>
-<!-- saved from url=(0051)file:///Users/vivianhsu/Downloads/game-space_5.html -->
 <html lang="zh-TW"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🚀 宇宙大冒險 — RS 射擊戰</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{
-  font-family:'Nunito',-apple-system,sans-serif;
-  background:#03030a;min-height:100vh;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px;
-}
+body{ font-family:'Nunito',-apple-system,sans-serif; background:#03030a;min-height:100vh; display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px; }
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap');
-
 #game-wrap{width:100%;max-width:800px;}
-
-h1.title{
-  color:#ffd166;font-size:20px;font-weight:900;text-align:center;
-  margin-bottom:8px;letter-spacing:2px;font-family:monospace;
-}
-
-#g{
-  width:100%;height:600px;
-  background:#06060f;border-radius:16px;
-  position:relative;overflow:hidden;
-  border:2px solid rgba(255,209,102,0.2);
-  cursor:crosshair;user-select:none;
-}
+h1.title{ color:#ffd166;font-size:20px;font-weight:900;text-align:center; margin-bottom:8px;letter-spacing:2px;font-family:monospace; }
+#g{ width:100%;height:600px; background:#06060f;border-radius:16px; position:relative;overflow:hidden; border:2px solid rgba(255,209,102,0.2); cursor:crosshair;user-select:none; }
 canvas{position:absolute;inset:0;display:block;}
 #ui{position:absolute;inset:0;pointer-events:none;z-index:20;}
-
-/* HUD */
-#hud{
-  display:flex;justify-content:space-between;align-items:center;
-  padding:10px 16px;background:rgba(0,0,0,0.7);gap:8px;
-  border-bottom:1px solid rgba(255,255,255,0.05);
-}
+#hud{ display:flex;justify-content:space-between;align-items:center; padding:10px 16px;background:rgba(0,0,0,0.7);gap:8px; border-bottom:1px solid rgba(255,255,255,0.05); }
 .hstat{text-align:center;min-width:48px;}
 .hlab{font-size:10px;color:#555;letter-spacing:1px;font-family:monospace;}
 .hval{font-size:18px;font-weight:900;color:#fff;font-family:monospace;}
 #companion-hud{display:flex;align-items:center;gap:8px;}
-#companion-photo{
-  width:40px;height:40px;border-radius:50%;
-  border:2px solid #ffd166;background:#1a1a2e;
-  overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:20px;
-  flex-shrink:0;
-}
+#companion-photo{ width:40px;height:40px;border-radius:50%; border:2px solid #ffd166;background:#1a1a2e; overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:20px; flex-shrink:0; }
 #companion-photo img{width:100%;height:100%;object-fit:contain;border-radius:50%;}
 #companion-info{font-size:10px;color:#ffd166;font-family:monospace;line-height:1.4;}
-
-/* Bonus flash */
-#bonus-flash{
-  position:absolute;top:60px;left:50%;transform:translateX(-50%);
-  font-size:20px;font-weight:900;color:#ffd166;font-family:monospace;
-  letter-spacing:2px;opacity:0;pointer-events:none;
-  text-shadow:0 0 20px rgba(255,209,102,0.8);
-  transition:opacity 0.3s,transform 0.2s;
-}
-
-/* Wave banner */
-#wave-banner{
-  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-  font-size:28px;font-weight:900;color:#ffd166;font-family:monospace;
-  letter-spacing:3px;opacity:0;pointer-events:none;
-  text-shadow:0 0 20px rgba(255,209,102,0.5);
-  transition:opacity 0.4s;
-}
-
-/* Lives & ammo */
-#lives-row{
-  position:absolute;bottom:58px;left:50%;transform:translateX(-50%);
-  display:flex;gap:6px;pointer-events:none;
-}
+#bonus-flash{ position:absolute;top:60px;left:50%;transform:translateX(-50%); font-size:20px;font-weight:900;color:#ffd166;font-family:monospace; letter-spacing:2px;opacity:0;pointer-events:none; text-shadow:0 0 20px rgba(255,209,102,0.8); transition:opacity 0.3s,transform 0.2s; }
+#wave-banner{ position:absolute;top:50%;left:50%;transform:translate(-50%,-50%); font-size:28px;font-weight:900;color:#ffd166;font-family:monospace; letter-spacing:3px;opacity:0;pointer-events:none; text-shadow:0 0 20px rgba(255,209,102,0.5); transition:opacity 0.4s; }
+#lives-row{ position:absolute;bottom:58px;left:50%;transform:translateX(-50%); display:flex;gap:6px;pointer-events:none; }
 .heart{font-size:18px;}
-#ammo-bar{
-  position:absolute;bottom:34px;left:50%;transform:translateX(-50%);
-  display:flex;gap:3px;pointer-events:none;
-}
+#ammo-bar{ position:absolute;bottom:34px;left:50%;transform:translateX(-50%); display:flex;gap:3px;pointer-events:none; }
 .ammo-pip{width:8px;height:14px;border-radius:2px;background:#ffd166;transition:background 0.15s;}
 .ammo-pip.empty{background:rgba(255,255,255,0.1);}
-
-/* XP bar */
 #xp-bar-wrap{position:absolute;bottom:14px;left:12px;right:12px;pointer-events:none;}
 #xp-bar-bg{height:4px;background:rgba(255,255,255,0.08);border-radius:2px;}
 #xp-bar-fill{height:4px;background:linear-gradient(90deg,#4af,#ffd166);border-radius:2px;width:0%;transition:width 0.7s;}
 #xp-label{font-size:9px;color:#555;font-family:monospace;text-align:right;margin-top:2px;}
-
-/* Question overlay */
-#qbox{
-  position:absolute;left:50%;transform:translateX(-50%);
-  bottom:82px;width:calc(100% - 24px);max-width:720px;
-  background:rgba(6,6,20,0.88);border:1px solid rgba(255,255,255,0.1);
-  border-radius:10px;padding:10px 18px;text-align:center;pointer-events:none;
-}
+#qbox{ position:absolute;left:50%;transform:translateX(-50%); bottom:82px;width:calc(100% - 24px);max-width:720px; background:rgba(6,6,20,0.88);border:1px solid rgba(255,255,255,0.1); border-radius:10px;padding:10px 18px;text-align:center;pointer-events:none; }
 #qtopic{font-size:10px;color:#7ecfff;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;font-family:monospace;}
 #qtext{font-size:15px;color:#eee;line-height:1.5;font-family:monospace;}
-
-/* Berserk mode overlay */
-#berserk-overlay{
-  position:absolute;inset:0;z-index:45;
-  display:none;flex-direction:column;align-items:center;justify-content:center;
-  background:rgba(180,0,0,0.85);text-align:center;padding:24px;
-  animation:berserkFlash 0.3s ease;
-}
-@keyframes berserkFlash{
-  0%{background:rgba(255,50,0,0.95);}
-  100%{background:rgba(180,0,0,0.85);}
-}
-.berserk-title{
-  font-size:3rem;font-weight:900;color:#fff;font-family:monospace;
-  letter-spacing:4px;text-shadow:0 0 30px rgba(255,200,0,1);
-  animation:berserkPulse 0.5s infinite alternate;
-}
-@keyframes berserkPulse{
-  from{transform:scale(1);}to{transform:scale(1.08);}
-}
+#berserk-overlay{ position:absolute;inset:0;z-index:45; display:none;flex-direction:column;align-items:center;justify-content:center; background:rgba(180,0,0,0.85);text-align:center;padding:24px; animation:berserkFlash 0.3s ease; }
+@keyframes berserkFlash{ 0%{background:rgba(255,50,0,0.95);} 100%{background:rgba(180,0,0,0.85);} }
+.berserk-title{ font-size:3rem;font-weight:900;color:#fff;font-family:monospace; letter-spacing:4px;text-shadow:0 0 30px rgba(255,200,0,1); animation:berserkPulse 0.5s infinite alternate; }
+@keyframes berserkPulse{ from{transform:scale(1);}to{transform:scale(1.08);} }
 .berserk-sub{font-size:1.1rem;color:#ffd166;font-family:monospace;margin-top:10px;}
-.berserk-timer{
-  font-size:4rem;font-weight:900;color:#ffd166;font-family:monospace;
-  margin-top:16px;text-shadow:0 0 20px rgba(255,209,102,0.8);
-}
-
-/* Berserk HUD indicator */
-#berserk-hud{
-  position:absolute;top:58px;left:50%;transform:translateX(-50%);
-  background:rgba(200,0,0,0.8);border:2px solid #ff4444;
-  border-radius:20px;padding:4px 16px;
-  font-size:0.9rem;font-weight:900;color:#fff;font-family:monospace;
-  display:none;z-index:10;letter-spacing:2px;
-  animation:berserkPulse 0.5s infinite alternate;
-}
-
-/* Bonus question overlay */
-#bonus-overlay{
-  position:absolute;inset:0;z-index:38;
-  display:none;flex-direction:column;align-items:center;justify-content:center;
-  background:rgba(6,6,15,0.95);text-align:center;padding:24px;
-}
+.berserk-timer{ font-size:4rem;font-weight:900;color:#ffd166;font-family:monospace; margin-top:16px;text-shadow:0 0 20px rgba(255,209,102,0.8); }
+#berserk-hud{ position:absolute;top:58px;left:50%;transform:translateX(-50%); background:rgba(200,0,0,0.8);border:2px solid #ff4444; border-radius:20px;padding:4px 16px; font-size:0.9rem;font-weight:900;color:#fff;font-family:monospace; display:none;z-index:10;letter-spacing:2px; animation:berserkPulse 0.5s infinite alternate; }
+#bonus-overlay{ position:absolute;inset:0;z-index:38; display:none;flex-direction:column;align-items:center;justify-content:center; background:rgba(6,6,15,0.95);text-align:center;padding:24px; }
 .bo-title{font-size:22px;font-weight:900;color:#ffd166;font-family:monospace;margin-bottom:6px;}
 .bo-sub{font-size:13px;color:#aaa;margin-bottom:16px;}
-.bo-q{
-  font-size:18px;color:#fff;font-family:monospace;line-height:1.7;
-  background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);
-  border-radius:12px;padding:14px 20px;max-width:540px;margin-bottom:16px;
-}
+.bo-q{ font-size:18px;color:#fff;font-family:monospace;line-height:1.7; background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12); border-radius:12px;padding:14px 20px;max-width:540px;margin-bottom:16px; }
 .bo-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:440px;width:100%;}
-.bo-btn{
-  background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.2);
-  color:#eee;border-radius:10px;padding:12px 10px;
-  font-size:15px;font-weight:700;cursor:pointer;font-family:monospace;
-  transition:all 0.15s;pointer-events:all;
-}
+.bo-btn{ background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.2); color:#eee;border-radius:10px;padding:12px 10px; font-size:15px;font-weight:700;cursor:pointer;font-family:monospace; transition:all 0.15s;pointer-events:all; }
 .bo-btn:hover{background:rgba(255,209,102,0.15);border-color:#ffd166;}
 .bo-btn.correct{background:rgba(6,214,160,0.2);border-color:#06d6a0;color:#06d6a0;}
 .bo-btn.wrong{background:rgba(255,100,100,0.2);border-color:#ff6b6b;color:#ff6b6b;}
 .bo-btn.disabled{cursor:default;}
-
-/* Wrong answer */
-#wrong-overlay{
-  position:absolute;inset:0;z-index:35;
-  display:none;flex-direction:column;align-items:center;justify-content:center;
-  background:rgba(6,6,15,0.96);text-align:center;padding:24px;
-}
+#wrong-overlay{ position:absolute;inset:0;z-index:35; display:none;flex-direction:column;align-items:center;justify-content:center; background:rgba(6,6,15,0.96);text-align:center;padding:24px; }
 .wo-icon{font-size:48px;margin-bottom:10px;}
 .wo-title{font-size:20px;font-weight:900;color:#ff6b6b;font-family:monospace;margin-bottom:10px;}
-.wo-sentence{
-  font-size:18px;color:#fff;font-family:monospace;line-height:1.7;
-  background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);
-  border-radius:12px;padding:14px 22px;max-width:500px;margin-bottom:8px;
-}
+.wo-sentence{ font-size:18px;color:#fff;font-family:monospace;line-height:1.7; background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12); border-radius:12px;padding:14px 22px;max-width:500px;margin-bottom:8px; }
 .wo-sentence b{color:#06d6a0;font-size:20px;}
 .wo-hint{font-size:13px;color:#888;margin-bottom:18px;}
-.wo-btn{
-  background:rgba(6,214,160,0.12);border:2px solid #06d6a0;
-  color:#06d6a0;border-radius:10px;padding:12px 32px;
-  font-size:16px;font-weight:900;cursor:pointer;font-family:monospace;
-  pointer-events:all;transition:background 0.15s;
-}
+.wo-btn{ background:rgba(6,214,160,0.12);border:2px solid #06d6a0; color:#06d6a0;border-radius:10px;padding:12px 32px; font-size:16px;font-weight:900;cursor:pointer;font-family:monospace; pointer-events:all;transition:background 0.15s; }
 .wo-btn:hover{background:rgba(6,214,160,0.25);}
-
-/* Main overlay */
-#overlay{
-  position:absolute;inset:0;z-index:30;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  background:rgba(6,6,15,0.97);color:#fff;text-align:center;
-  padding:20px;overflow-y:auto;
-}
+#overlay{ position:absolute;inset:0;z-index:30; display:flex;flex-direction:column;align-items:center;justify-content:center; background:rgba(6,6,15,0.97);color:#fff;text-align:center; padding:20px;overflow-y:auto; }
 #overlay h1{font-size:22px;font-weight:900;color:#ffd166;margin-bottom:6px;font-family:monospace;letter-spacing:2px;}
 .sub{font-size:13px;color:#aaa;max-width:440px;line-height:1.7;margin-bottom:10px;}
-.gbtn{
-  background:rgba(255,209,102,0.12);border:1.5px solid #ffd166;
-  color:#ffd166;border-radius:12px;padding:12px 32px;
-  font-size:15px;cursor:pointer;margin-top:10px;font-family:monospace;
-  letter-spacing:1px;pointer-events:all;transition:background 0.15s;
-}
+.gbtn{ background:rgba(255,209,102,0.12);border:1.5px solid #ffd166; color:#ffd166;border-radius:12px;padding:12px 32px; font-size:15px;cursor:pointer;margin-top:10px;font-family:monospace; letter-spacing:1px;pointer-events:all;transition:background 0.15s; }
 .gbtn:hover{background:rgba(255,209,102,0.25);}
 .gbtn.back{font-size:12px;padding:8px 18px;border-color:rgba(255,255,255,0.2);color:#888;}
 .gbtn.back:hover{background:rgba(255,255,255,0.08);}
-
-/* Score big */
 #score-big{font-size:52px;font-weight:900;color:#ffd166;font-family:monospace;margin:8px 0;}
-
-/* Powerup indicator */
-#powerup-bar{
-  position:absolute;top:58px;right:12px;
-  display:flex;flex-direction:column;gap:4px;pointer-events:none;
-}
-.powerup-chip{
-  background:rgba(0,0,0,0.7);border:1.5px solid #ffd166;
-  border-radius:20px;padding:3px 10px;
-  font-size:11px;font-weight:900;color:#ffd166;font-family:monospace;
-  animation:chipPop 0.3s cubic-bezier(0.34,1.56,0.64,1);
-}
+#powerup-bar{ position:absolute;top:58px;right:12px; display:flex;flex-direction:column;gap:4px;pointer-events:none; }
+.powerup-chip{ background:rgba(0,0,0,0.7);border:1.5px solid #ffd166; border-radius:20px;padding:3px 10px; font-size:11px;font-weight:900;color:#ffd166;font-family:monospace; animation:chipPop 0.3s cubic-bezier(0.34,1.56,0.64,1); }
 @keyframes chipPop{from{transform:scale(0);}to{transform:scale(1);}}
-
-/* Shoot mode indicator */
-#shoot-mode{
-  position:absolute;top:58px;left:12px;
-  font-size:11px;color:#555;font-family:monospace;pointer-events:none;
-}
+#shoot-mode{ position:absolute;top:58px;left:12px; font-size:11px;color:#555;font-family:monospace;pointer-events:none; }
 </style>
 </head>
 <body>
 <div id="game-wrap">
 <h1 class="title">🚀 宇宙大冒險 — RS 射擊戰</h1>
 <div id="g">
-  <canvas id="c" width="800" height="600"></canvas>
-  <div id="ui">
-    <div id="hud">
-      <div id="companion-hud">
-        <div id="companion-photo">🐱</div>
-        <div id="companion-info">小白<br><span style="color:#555;font-size:9px;">你的夥伴</span></div>
-      </div>
-      <div class="hstat"><div class="hlab">SCORE</div><div class="hval" id="sv">0</div></div>
-      <div class="hstat"><div class="hlab">WAVE</div><div class="hval" id="wv">1</div></div>
-
-      <div class="hstat"><div class="hlab">COMBO</div><div class="hval" id="cv">x1</div></div>
+<canvas id="c" width="800" height="600"></canvas>
+<div id="ui">
+  <div id="hud">
+    <div id="companion-hud">
+      <div id="companion-photo">🐱</div>
+      <div id="companion-info">小白<br><span style="color:#555;font-size:9px;">你的夥伴</span></div>
     </div>
-    <div id="bonus-flash"></div>
-    <div id="wave-banner"></div>
-    <div id="powerup-bar"></div>
-    <div id="shoot-mode">點擊射擊 / 按住空白鍵連發</div>
-    <div id="qbox">
-      <div id="qtopic">SHOOT THE CORRECT ANSWER</div>
-      <div id="qtext">Loading...</div>
-    </div>
-    <div id="lives-row"><span class="heart">❤️</span><span class="heart">❤️</span><span class="heart">❤️</span></div>
-    <div id="ammo-bar"><div class="ammo-pip"></div><div class="ammo-pip"></div><div class="ammo-pip"></div><div class="ammo-pip"></div><div class="ammo-pip"></div><div class="ammo-pip"></div><div class="ammo-pip"></div><div class="ammo-pip"></div></div>
-    <div id="xp-bar-wrap">
-      <div id="xp-bar-bg"><div id="xp-bar-fill"></div></div>
-      <div id="xp-label"></div>
-    </div>
+    <div class="hstat"><div class="hlab">SCORE</div><div class="hval" id="sv">0</div></div>
+    <div class="hstat"><div class="hlab">WAVE</div><div class="hval" id="wv">1</div></div>
+    <div class="hstat"><div class="hlab">COMBO</div><div class="hval" id="cv">x1</div></div>
   </div>
-
-  <!-- Berserk mode -->
-  <div id="berserk-overlay">
-    <div class="berserk-title">🔥 暴打模式！🔥</div>
-    <div class="berserk-sub">20秒內盡情打！不用答題！</div>
-    <div class="berserk-timer" id="berserk-countdown">3</div>
+  <div id="bonus-flash"></div>
+  <div id="wave-banner"></div>
+  <div id="powerup-bar"></div>
+  <div id="shoot-mode">點擊射擊 / 按住空白鍵連發</div>
+  <div id="qbox">
+    <div id="qtopic">SHOOT THE CORRECT ANSWER</div>
+    <div id="qtext">Loading...</div>
   </div>
-
-  <!-- Berserk HUD -->
-  <div id="berserk-hud">🔥 暴打模式 <span id="berserk-time">20</span>s</div>
-
-  <!-- Bonus question -->
-  <div id="bonus-overlay">
-    <div class="bo-title">⚡ BONUS CHALLENGE!</div>
-    <div class="bo-sub">答對得獎勵！</div>
-    <div class="bo-q" id="bo-qtext"></div>
-    <div class="bo-options" id="bo-options"></div>
+  <div id="lives-row"><span class="heart">❤️</span><span class="heart">❤️</span><span class="heart">❤️</span></div>
+  <div id="ammo-bar"></div>
+  <div id="xp-bar-wrap">
+    <div id="xp-bar-bg"><div id="xp-bar-fill"></div></div>
+    <div id="xp-label"></div>
   </div>
-
-  <!-- Wrong answer -->
-  <div id="wrong-overlay">
-    <div class="wo-icon">🔍</div>
-    <div class="wo-title">正確答案是：</div>
-    <div class="wo-sentence" id="wo-sentence"></div>
-    <div class="wo-hint" id="wo-hint"></div>
-    <button class="wo-btn" onclick="dismissWrong()">✓ 我記住了！繼續！</button>
+</div>
+<div id="berserk-overlay">
+  <div class="berserk-title">🔥 暴打模式！🔥</div>
+  <div class="berserk-sub">20秒內盡情打！不用答題！</div>
+  <div class="berserk-timer" id="berserk-countdown">3</div>
+</div>
+<div id="berserk-hud">🔥 暴打模式 <span id="berserk-time">20</span>s</div>
+<div id="bonus-overlay">
+  <div class="bo-title">⚡ BONUS CHALLENGE!</div>
+  <div class="bo-sub">答對得獎勵！</div>
+  <div class="bo-q" id="bo-qtext"></div>
+  <div class="bo-options" id="bo-options"></div>
+</div>
+<div id="wrong-overlay">
+  <div class="wo-icon">🔍</div>
+  <div class="wo-title">正確答案是：</div>
+  <div class="wo-sentence" id="wo-sentence"></div>
+  <div class="wo-hint" id="wo-hint"></div>
+  <button class="wo-btn" onclick="dismissWrong()">✓ 我記住了！繼續！</button>
+</div>
+<div id="overlay" style="display:flex;">
+  <h1>🚀 宇宙大冒險</h1>
+  <p class="sub">RS 射擊戰！打倒帶著正確答案的外星人！<br>每 5 波出現 Bonus 題目，答對得連發子彈！</p>
+  <div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:12px 20px;margin:8px 0;max-width:360px;width:100%;font-family:monospace;font-size:12px;color:#aaa;line-height:1.9;text-align:left;">
+    🖱️ 點擊射擊正確答案<br>
+    空白鍵 按住自動連射<br>
+    ✅ 答對 → +🍀幸運草<br>
+    ❌ 答錯 → -❤️生命<br>
+    ⚡ 每5波 → Bonus題目→連發！
   </div>
-
-  <!-- Main overlay -->
-  <div id="overlay" style="display: flex;">
-    <h1>🚀 宇宙大冒險</h1>
-    <p class="sub">RS 射擊戰！打倒帶著正確答案的外星人！<br>每 5 波出現 Bonus 題目，答對得連發子彈！</p>
-    <div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:12px 20px;margin:8px 0;max-width:360px;width:100%;font-family:monospace;font-size:12px;color:#aaa;line-height:1.9;text-align:left;">
-      🖱️ 點擊射擊正確答案<br>
-      空白鍵 按住自動連射<br>
-      ✅ 答對 → +🍀幸運草<br>
-      ❌ 答錯 → -❤️生命<br>
-      ⚡ 每5波 → Bonus題目→連發！
-    </div>
-    <button class="gbtn" onclick="startGame()" style="font-size:17px;padding:14px 42px;">出發！🚀</button>
-    <button class="gbtn back" onclick="goBack()">← 回到地圖（幸運草已存入）</button>
-  </div>
+  <button class="gbtn" onclick="startGame()" style="font-size:17px;padding:14px 42px;">出發！🚀</button>
+  <button class="gbtn back" onclick="goBack()">← 回到地圖（幸運草已存入）</button>
+</div>
 </div>
 </div>
 
@@ -312,15 +152,11 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Get current user from sessionStorage (set by index.html)
 let currentUserId = sessionStorage.getItem('nunuUserId') || null;
 let currentUserClover = parseInt(sessionStorage.getItem('nunuClover') || '0');
 let currentNickname = sessionStorage.getItem('nunuNickname') || '冒險者';
-let sessionBestScore = 0;
 
-// ── QUESTIONS (RS - Pepita and the Bully) ──────────────────────
 const QS = [
-  // ── Irregular Verbs: Have / Has / Had & Do / Does / Did ──
   {q:'Chad ___ a dentist appointment today.', a:'has', w:['has','have','had','does']},
   {q:'We ___ many chores to do this weekend.', a:'have', w:['have','has','had','did']},
   {q:'Lydia ___ fun bowling last night.', a:'had', w:['had','has','have','did']},
@@ -339,8 +175,6 @@ const QS = [
   {q:'Last week they ___ chores with Jake.', a:'did', w:['did','do','does','had']},
   {q:'Uncle Bill ___ a boat now.', a:'has', w:['has','have','had','does']},
   {q:'Last weekend we ___ laundry.', a:'did', w:['did','do','does','had']},
-
-  // ── Irregular Action Verbs ──
   {q:'Marcy ___ under a blanket yesterday.', a:'hid', w:['hid','hide','hides','hiding']},
   {q:'We like to ___ popcorn for a snack each day.', a:'eat', w:['eat','ate','eaten','eats']},
   {q:'Now our cousins ___ they miss us.', a:'say', w:['say','said','says','telling']},
@@ -361,8 +195,6 @@ const QS = [
   {q:'Please ___ me money for the tickets.', a:'give', w:['give','gave','gives','giving']},
   {q:'Yesterday we ___ to the playground.', a:'went', w:['went','go','goes','going']},
   {q:'I ___ the rainbow yesterday.', a:'saw', w:['saw','see','seen','sees']},
-
-  // ── Types of Adjectives + Articles ──
   {q:'"I heard a loud crash." LOUD describes...', a:'how it sounds', w:['how it sounds','how it looks','how it feels','how it tastes']},
   {q:'"My mom wore a fuzzy sweater." FUZZY describes...', a:'how it feels', w:['how it feels','how it looks','how it sounds','how it tastes']},
   {q:'"Owen made a spicy chili." SPICY describes...', a:'how it tastes', w:['how it tastes','how it smells','how it feels','how it sounds']},
@@ -382,8 +214,6 @@ const QS = [
   {q:'I heard the ___ bees by their hive. (sound)', a:'buzzing', w:['buzzing','wet','an','bitter']},
   {q:'Hang your ___ swimsuit on the hook. (feel)', a:'wet', w:['wet','an','buzzing','bitter']},
   {q:'Does the mall have ___ elevator? (any)', a:'an', w:['an','wet','buzzing','bitter']},
-
-  // ── Using Adjectives: -er / -est ──
   {q:'This string is ___ than that string.', a:'longer', w:['longer','longest','long','most long']},
   {q:'Mr. Bennett has the ___ classroom in school.', a:'biggest', w:['biggest','bigger','big','most big']},
   {q:'Lem is the ___ runner on the track team.', a:'fastest', w:['fastest','faster','fast','most fast']},
@@ -398,8 +228,6 @@ const QS = [
   {q:'Add ___ to compare MORE THAN TWO things.', a:'-est', w:['-est','-er','-ed','-s']},
   {q:'My cat is ___ than my dog.', a:'smarter', w:['smarter','smartest','smart','more smart']},
   {q:'Of all my pets, my cat is the ___.', a:'smartest', w:['smartest','smarter','smart','most smart']},
-
-  // ── Pepita Vocabulary (original) ──
   {q:'Which word means "an agreement where each person gives up a little"?', a:'compromise', w:['compromise','decision','disagreement','excuses']},
   {q:'Pepita ___ to stand up for herself.', a:'decided', w:['decided','mumbled','yanked','dragged']},
   {q:'Which word means "to speak quietly and not very clearly"?', a:'mumbled', w:['mumbled','screams','frown','hesitant']},
@@ -412,34 +240,31 @@ const QS = [
   {q:'He ___ us to come to the lunchroom.', a:'invited', w:['invited','dragged','mumbled','screams']},
 ];
 
-
 const BONUS_QS = [
-  {q:'In the BEGINNING, why did Pepita not want to go back to school?', a:'Babette was bullying her', w:['She forgot her homework','Babette was bullying her','She was sick','She missed the bus']},
-  {q:'What did Pepita\'s BROTHER tell her about bullies?', a:'Bullies like to fight', w:['Bullies like to fight','Bullies are friendly','Ignore them','Tell the teacher']},
-  {q:'When Babette cried, what did Pepita REALIZE?', a:'Babette might be lonely', w:['Babette was mean','Babette was lonely','Babette was sick','Babette was happy']},
+  {q:'In the BEGINNING, why did Pepita not want to go back to school?', a:'Babette was bullying her', w:['Babette was bullying her','She forgot her homework','She was sick','She missed the bus']},
+  {q:"What did Pepita's BROTHER tell her about bullies?", a:'Bullies like to fight', w:['Bullies like to fight','Bullies are friendly','Ignore them','Tell the teacher']},
+  {q:'When Babette cried, what did Pepita REALIZE?', a:'Babette might be lonely', w:['Babette might be lonely','Babette was mean','Babette was sick','Babette was happy']},
   {q:'What is a COMPROMISE?', a:'Both sides give up a little', w:['Both sides give up a little','One person wins','Everyone gets angry','Nobody agrees']},
   {q:'Which word has the SAME meaning as "hesitant"?', a:'unsure', w:['unsure','happy','fast','angry']},
 ];
 
-// ── GAME STATE ──────────────────────────────────────────────────
 let score=0, lives=3, combo=0, wave=1;
 let berserkMode=false, berserkTimer=0, berserkInterval=null;
-let lastBerserkAt=0; // score at last berserk trigger
-let clover=0; // 幸運草
+let lastBerserkAt=0; // ✅ 追蹤上次觸發暴打時的分數
+let clover=0;
 let qPool=[], qIdx=0, curQ=null;
 let aliens=[], particles=[], bullets=[], stars=[];
 let ship={x:0, y:0, shakeX:0, shakeT:0};
 let gameRunning=false, waitNext=false;
 let lastTime=0, raf=null;
 let ammo=8, maxAmmo=8;
-let canvas, ctx, W, H;
 let powerups=[];
 let rapidFire=false, rapidFireTimer=0;
 let spaceHeld=false, autoFireTimer=0;
-let bonusWaveCounter=0; // every 5 waves, bonus question
+let bonusWaveCounter=0;
 const COLORS=['#ff6b6b','#ffd166','#06d6a0','#a78bfa','#f472b6','#60a5fa','#fb923c'];
+let canvas, ctx, W, H;
 
-// ── CANVAS ──────────────────────────────────────────────────────
 function initCanvas(){
   canvas=document.getElementById('c');
   ctx=canvas.getContext('2d');
@@ -449,21 +274,15 @@ function initCanvas(){
   ship.x=W/2; ship.y=H-72;
 }
 
-// ── STARS ────────────────────────────────────────────────────────
 function makeStars(){
   stars=Array.from({length:120},()=>({
     x:Math.random()*W, y:Math.random()*H,
-    r:Math.random()*1.8+0.2,
-    s:Math.random()*0.4+0.06,
-    b:Math.random()*0.5+0.3
+    r:Math.random()*1.8+0.2, s:Math.random()*0.4+0.06, b:Math.random()*0.5+0.3
   }));
 }
-function updateStars(dt){
-  stars.forEach(s=>{
-    s.y+=s.s*dt*0.06;
-    if(s.y>H){s.y=0;s.x=Math.random()*W;}
-  });
-}
+
+function updateStars(dt){ stars.forEach(s=>{ s.y+=s.s*dt*0.06; if(s.y>H){s.y=0;s.x=Math.random()*W;} }); }
+
 function drawStars(){
   stars.forEach(s=>{
     ctx.globalAlpha=s.b*(0.6+0.4*Math.sin(Date.now()*0.002+s.x));
@@ -473,16 +292,12 @@ function drawStars(){
   ctx.globalAlpha=1;
 }
 
-// ── SHIP ──────────────────────────────────────────────────────────
 function drawShip(){
   const x=ship.x+ship.shakeX, y=ship.y;
-  // Engine flame
   const fl=12+Math.sin(Date.now()*0.018)*6;
   const gr=ctx.createLinearGradient(x,y+24,x,y+24+fl);
   gr.addColorStop(0,'rgba(255,160,0,0.95)');gr.addColorStop(1,'rgba(255,60,0,0)');
   ctx.fillStyle=gr;ctx.beginPath();ctx.ellipse(x,y+26,7,fl,0,0,Math.PI*2);ctx.fill();
-
-  // Double engine if rapid fire
   if(rapidFire){
     const fl2=8+Math.sin(Date.now()*0.022)*4;
     const gr2=ctx.createLinearGradient(x-10,y+24,x-10,y+24+fl2);
@@ -492,120 +307,81 @@ function drawShip(){
     gr3.addColorStop(0,'rgba(0,200,255,0.9)');gr3.addColorStop(1,'rgba(0,100,255,0)');
     ctx.fillStyle=gr3;ctx.beginPath();ctx.ellipse(x+10,y+24,4,fl2,0,0,Math.PI*2);ctx.fill();
   }
-
-  // Body
   ctx.fillStyle='#7ecfff';
   ctx.beginPath();ctx.moveTo(x,y-28);ctx.lineTo(x+18,y+22);ctx.lineTo(x-18,y+22);ctx.closePath();ctx.fill();
-  // Wings
   ctx.fillStyle='#4dabcc';
   ctx.beginPath();ctx.moveTo(x-18,y+14);ctx.lineTo(x-30,y+24);ctx.lineTo(x-10,y+22);ctx.closePath();ctx.fill();
   ctx.beginPath();ctx.moveTo(x+18,y+14);ctx.lineTo(x+30,y+24);ctx.lineTo(x+10,y+22);ctx.closePath();ctx.fill();
-  // Cockpit
   ctx.fillStyle='rgba(10,20,40,0.9)';ctx.strokeStyle='#7ecfff';ctx.lineWidth=1.5;
   ctx.beginPath();ctx.ellipse(x,y-6,7,10,0,0,Math.PI*2);ctx.fill();ctx.stroke();
-  // Cat ears on ship (fun detail!)
   ctx.fillStyle='#ffd166';
   ctx.beginPath();ctx.moveTo(x-8,y-28);ctx.lineTo(x-4,y-38);ctx.lineTo(x-1,y-28);ctx.closePath();ctx.fill();
   ctx.beginPath();ctx.moveTo(x+8,y-28);ctx.lineTo(x+4,y-38);ctx.lineTo(x+1,y-28);ctx.closePath();ctx.fill();
 }
 
-// ── BULLET ────────────────────────────────────────────────────────
 class Bullet{
   constructor(x,y,targetX,targetY,isRapid){
     this.x=x;this.y=y;
     const angle=Math.atan2(targetY-y,targetX-x);
     const speed=isRapid?14:10;
-    this.vx=Math.cos(angle)*speed;
-    this.vy=Math.sin(angle)*speed;
-    this.life=1;
-    this.isRapid=isRapid;
-    this.r=isRapid?3:4;
+    this.vx=Math.cos(angle)*speed; this.vy=Math.sin(angle)*speed;
+    this.life=1; this.isRapid=isRapid; this.r=isRapid?3:4;
     this.color=isRapid?'#00cfff':'#06d6a0';
   }
   update(){this.x+=this.vx;this.y+=this.vy;this.life-=0.012;}
   draw(ctx){
-    ctx.save();
-    ctx.globalAlpha=this.life;
-    ctx.shadowColor=this.color;ctx.shadowBlur=10;
-    ctx.fillStyle=this.color;
+    ctx.save();ctx.globalAlpha=this.life;
+    ctx.shadowColor=this.color;ctx.shadowBlur=10;ctx.fillStyle=this.color;
     ctx.beginPath();ctx.ellipse(this.x,this.y,this.r,this.r*1.8,-Math.atan2(this.vx,this.vy),0,Math.PI*2);
-    ctx.fill();
-    ctx.restore();
+    ctx.fill();ctx.restore();
   }
 }
 
-// ── ALIEN ────────────────────────────────────────────────────────
 class Alien{
   constructor(x,word,isCorrect,color,wave){
     this.x=x;this.y=-60;this.word=word;this.isCorrect=isCorrect;
     this.color=color;this.dead=false;this.eyeT=0;this.hitFlash=0;
-    this.hp=isCorrect?1:1;
-    this.speed=0.55+wave*0.07+(Math.random()*0.12);
-    this.wobble=Math.random()*Math.PI*2;
-    this.wobbleSpeed=0.02+Math.random()*0.02;
+    this.hp=1; this.speed=0.55+wave*0.07+(Math.random()*0.12);
+    this.wobble=Math.random()*Math.PI*2; this.wobbleSpeed=0.02+Math.random()*0.02;
   }
-  update(dt){
-    this.y+=this.speed*dt*0.055;
-    // No wobble - straight down
-    this.eyeT+=dt*0.08;
-    if(this.hitFlash>0)this.hitFlash-=dt*0.06;
-  }
+  update(dt){ this.y+=this.speed*dt*0.055; this.eyeT+=dt*0.08; if(this.hitFlash>0)this.hitFlash-=dt*0.06; }
   draw(ctx){
     ctx.save();ctx.translate(this.x,this.y);
     const c=this.hitFlash>0?'#fff':this.color;
     const blink=Math.sin(this.eyeT)>0.93?0.4:3;
-    // UFO shape
-    ctx.fillStyle=c;
-    ctx.beginPath();ctx.ellipse(0,0,26,12,0,0,Math.PI*2);ctx.fill();
-    // Dome
+    ctx.fillStyle=c;ctx.beginPath();ctx.ellipse(0,0,26,12,0,0,Math.PI*2);ctx.fill();
     ctx.fillStyle=this.hitFlash>0?'#fff':'rgba(150,220,255,0.6)';
     ctx.beginPath();ctx.ellipse(0,-8,14,10,0,Math.PI,0);ctx.fill();
-    // Eyes
     ctx.fillStyle='#fff';
     ctx.beginPath();ctx.ellipse(-9,0,5,5,0,0,Math.PI*2);ctx.fill();
     ctx.beginPath();ctx.ellipse(9,0,5,5,0,0,Math.PI*2);ctx.fill();
     ctx.fillStyle='#111';
     ctx.beginPath();ctx.ellipse(-9,0,2,blink,0,0,Math.PI*2);ctx.fill();
     ctx.beginPath();ctx.ellipse(9,0,2,blink,0,0,Math.PI*2);ctx.fill();
-    // Legs
     ctx.strokeStyle=c;ctx.lineWidth=2;
-    [-14,-5,5,14].forEach(lx=>{
-      ctx.beginPath();ctx.moveTo(lx,10);ctx.lineTo(lx+(lx<0?-4:4),18);ctx.stroke();
-    });
-    // Word label
+    [-14,-5,5,14].forEach(lx=>{ ctx.beginPath();ctx.moveTo(lx,10);ctx.lineTo(lx+(lx<0?-4:4),18);ctx.stroke(); });
     ctx.font='bold 13px monospace';
     const tw=ctx.measureText(this.word).width;
     ctx.fillStyle='rgba(10,10,30,0.88)';
     ctx.beginPath();ctx.roundRect(-tw/2-10,24,tw+20,22,5);ctx.fill();
-    ctx.strokeStyle='rgba(255,255,255,0.2)';
-    ctx.lineWidth=1.5;ctx.stroke();
+    ctx.strokeStyle='rgba(255,255,255,0.2)';ctx.lineWidth=1.5;ctx.stroke();
     ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='middle';
     ctx.fillText(this.word,0,35);
     ctx.restore();
   }
-  checkBullet(b){
-    const dist=Math.hypot(b.x-this.x,b.y-this.y);
-    return dist<32;
-  }
+  checkBullet(b){ return Math.hypot(b.x-this.x,b.y-this.y)<32; }
 }
 
-// ── PARTICLES ────────────────────────────────────────────────────
 class Particle{
   constructor(x,y,color){
     this.x=x;this.y=y;this.color=color;this.life=1;
     this.vx=(Math.random()-0.5)*12;this.vy=(Math.random()-0.5)*12-3;
     this.r=3+Math.random()*6;this.decay=0.015+Math.random()*0.02;
   }
-  update(dt){
-    this.x+=this.vx*dt*0.06;this.y+=this.vy*dt*0.06;
-    this.vy+=0.2*dt*0.06;this.life-=this.decay*dt*0.06*60;this.r*=0.988;
-  }
-  draw(ctx){
-    ctx.globalAlpha=Math.max(0,this.life);ctx.fillStyle=this.color;
-    ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);ctx.fill();
-    ctx.globalAlpha=1;
-  }
+  update(dt){ this.x+=this.vx*dt*0.06;this.y+=this.vy*dt*0.06; this.vy+=0.2*dt*0.06;this.life-=this.decay*dt*0.06*60;this.r*=0.988; }
+  draw(ctx){ ctx.globalAlpha=Math.max(0,this.life);ctx.fillStyle=this.color; ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);ctx.fill(); ctx.globalAlpha=1; }
 }
+
 function boom(x,y,color,big){
   const n=big?40:12;
   for(let i=0;i<n;i++){
@@ -614,55 +390,23 @@ function boom(x,y,color,big){
   }
 }
 
-// ── HUD ──────────────────────────────────────────────────────────
-function updAmmo(){
-  const b=document.getElementById('ammo-bar');b.innerHTML='';
-  for(let i=0;i<maxAmmo;i++){
-    const p=document.createElement('div');
-    p.className='ammo-pip'+(i<ammo?'':' empty');b.appendChild(p);
-  }
-}
-function updLives(){
-  const r=document.getElementById('lives-row');r.innerHTML='';
-  for(let i=0;i<3;i++){
-    const h=document.createElement('span');h.className='heart';
-    h.textContent=i<lives?'❤️':'🖤';r.appendChild(h);
-  }
-}
-function updHUD(){
-  document.getElementById('sv').textContent=score;
-  document.getElementById('cv').textContent='x'+(combo+1);
-  document.getElementById('wv').textContent=wave;
-  
-}
-function showBonus(txt,color){
-  const el=document.getElementById('bonus-flash');
-  el.textContent=txt;el.style.color=color||'#ffd166';
-  el.style.opacity='1';el.style.transform='translateX(-50%) scale(1.2)';
-  setTimeout(()=>{el.style.opacity='0';el.style.transform='translateX(-50%) scale(1)';},1200);
-}
-function waveBanner(txt){
-  const b=document.getElementById('wave-banner');b.textContent=txt;b.style.opacity='1';
-  setTimeout(()=>{b.style.opacity='0';},1400);
-}
-function addPowerupChip(txt){
-  const bar=document.getElementById('powerup-bar');
-  const chip=document.createElement('div');chip.className='powerup-chip';chip.textContent=txt;
-  bar.appendChild(chip);setTimeout(()=>chip.remove(),3000);
-}
+function updAmmo(){ const b=document.getElementById('ammo-bar');b.innerHTML=''; for(let i=0;i<maxAmmo;i++){ const p=document.createElement('div'); p.className='ammo-pip'+(i<ammo?'':' empty');b.appendChild(p); } }
+function updLives(){ const r=document.getElementById('lives-row');r.innerHTML=''; for(let i=0;i<3;i++){ const h=document.createElement('span');h.className='heart'; h.textContent=i<lives?'❤️':'🖤';r.appendChild(h); } }
+function updHUD(){ document.getElementById('sv').textContent=score; document.getElementById('cv').textContent='x'+(combo+1); document.getElementById('wv').textContent=wave; }
 
-// ── COMPANION ────────────────────────────────────────────────────
+function showBonus(txt,color){ const el=document.getElementById('bonus-flash'); el.textContent=txt;el.style.color=color||'#ffd166'; el.style.opacity='1';el.style.transform='translateX(-50%) scale(1.2)'; setTimeout(()=>{el.style.opacity='0';el.style.transform='translateX(-50%) scale(1)';},1200); }
+function waveBanner(txt){ const b=document.getElementById('wave-banner');b.textContent=txt;b.style.opacity='1'; setTimeout(()=>{b.style.opacity='0';},1400); }
+function addPowerupChip(txt){ const bar=document.getElementById('powerup-bar'); const chip=document.createElement('div');chip.className='powerup-chip';chip.textContent=txt; bar.appendChild(chip);setTimeout(()=>chip.remove(),3000); }
+
 function initCompanion(){
   const photo=document.getElementById('companion-photo');
   const img=new Image();img.src='companion-base.png';
   img.onload=()=>{photo.innerHTML='';photo.appendChild(img);img.style.cssText='width:100%;height:100%;object-fit:contain;border-radius:50%;';}
 }
 
-// ── SHAKE ────────────────────────────────────────────────────────
 let shakeTimer=0;
 function shakeShip(){shakeTimer=0;const sh=setInterval(()=>{ship.shakeX=Math.sin(shakeTimer)*10;shakeTimer+=1.3;if(shakeTimer>10){ship.shakeX=0;clearInterval(sh);}},28);}
 
-// ── WRONG ANSWER ─────────────────────────────────────────────────
 let wrongDoneCb=null;
 function showWrong(q,cb){
   wrongDoneCb=cb;
@@ -678,7 +422,6 @@ window.dismissWrong = function(){
   if(wrongDoneCb){wrongDoneCb();wrongDoneCb=null;}
 }
 
-// ── BONUS QUESTION ───────────────────────────────────────────────
 function showBonusQ(cb){
   const q=BONUS_QS[Math.floor(Math.random()*BONUS_QS.length)];
   document.getElementById('bo-qtext').textContent=q.q;
@@ -693,18 +436,15 @@ function showBonusQ(cb){
       document.querySelectorAll('.bo-btn').forEach(b=>b.classList.add('disabled'));
       if(opt===q.a){
         btn.classList.add('correct');
-        // Rapid fire bonus!
         rapidFire=true;rapidFireTimer=8000;maxAmmo=15;ammo=15;updAmmo();
         addPowerupChip('⚡ 連發模式！8秒');
         showBonus('⚡ RAPID FIRE! +🍀30','#00cfff');
-        
         setTimeout(()=>{document.getElementById('bonus-overlay').style.display='none';if(cb)cb();},1200);
       }else{
         btn.classList.add('wrong');
         document.querySelectorAll('.bo-btn').forEach(b=>{if(b.textContent===q.a)b.classList.add('correct');});
         setTimeout(()=>{
-          const boSub2=document.querySelector('.bo-sub');
-          boSub2.innerHTML='繼續加油！3秒後回到遊戲...';
+          document.querySelector('.bo-sub').innerHTML='繼續加油！3秒後回到遊戲...';
           setTimeout(()=>{document.getElementById('bonus-overlay').style.display='none';if(cb)cb();},2000);
         },1200);
       }
@@ -715,8 +455,8 @@ function showBonusQ(cb){
   document.getElementById('bonus-overlay').style.display='flex';
 }
 
-// ── QUESTIONS ────────────────────────────────────────────────────
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=0|Math.random()*(i+1);[a[i],a[j]]=[a[j],a[i]];}return a;}
+
 function loadQ(){
   if(qIdx>=qPool.length){qPool=shuffle([...QS]);qIdx=0;}
   curQ=qPool[qIdx++];
@@ -724,6 +464,7 @@ function loadQ(){
   document.getElementById('qtext').innerHTML=curQ.q;
   spawnWave();waitNext=false;
 }
+
 function spawnWave(){
   aliens=[];bullets=[];
   const words=shuffle([...curQ.w]);
@@ -737,102 +478,67 @@ function spawnWave(){
   ammo=maxAmmo;updAmmo();
 }
 
-// ── FIRING ────────────────────────────────────────────────────────
 function fireAt(tx,ty){
-  if(berserkMode){
-    // Berserk: unlimited ammo, ignore waitNext
-    bullets.push(new Bullet(ship.x,ship.y-28,tx,ty,true));
-    playSound('shoot');
-    return;
-  }
+  if(berserkMode){ bullets.push(new Bullet(ship.x,ship.y-28,tx,ty,true)); playSound('shoot'); return; }
   if(ammo<=0||waitNext)return;
   ammo--;updAmmo();
   const isRapid=rapidFire;
   bullets.push(new Bullet(ship.x,ship.y-28,tx,ty,isRapid));
-  if(isRapid&&ammo>0){
-    // Double tap when rapid
-    setTimeout(()=>{
-      if(ammo>0&&gameRunning){ammo--;updAmmo();bullets.push(new Bullet(ship.x-8,ship.y-22,tx,ty,true));}
-    },80);
-  }
+  if(isRapid&&ammo>0){ setTimeout(()=>{ if(ammo>0&&gameRunning){ammo--;updAmmo();bullets.push(new Bullet(ship.x-8,ship.y-22,tx,ty,true));} },80); }
   playSound('shoot');
 }
 
-// ── BERSERK MODE ─────────────────────────────────────────────
 function triggerBerserk(){
   if(berserkMode) return;
-  berserkMode = true;
-  berserkTimer = 20;
-  lastBerserkAt = score;
-  gameRunning = false;
+  berserkMode=true;
+  berserkTimer=20;
+  lastBerserkAt=score; // ✅ 記錄觸發時的分數，下次要多 200 才再觸發
+  gameRunning=false;
   if(raf){cancelAnimationFrame(raf);raf=null;}
-
-  // Show berserk intro overlay with countdown
-  const overlay = document.getElementById('berserk-overlay');
-  const countdown = document.getElementById('berserk-countdown');
-  overlay.style.display = 'flex';
-  let count = 3;
-  countdown.textContent = count;
+  const overlay=document.getElementById('berserk-overlay');
+  const countdown=document.getElementById('berserk-countdown');
+  overlay.style.display='flex';
+  let count=3; countdown.textContent=count;
   playSound('berserk');
-
-  const countInterval = setInterval(() => {
+  const countInterval=setInterval(()=>{
     count--;
-    if(count <= 0){
-      clearInterval(countInterval);
-      overlay.style.display = 'none';
-      startBerserkMode();
-    } else {
-      countdown.textContent = count;
-    }
-  }, 800);
+    if(count<=0){ clearInterval(countInterval); overlay.style.display='none'; startBerserkMode(); }
+    else { countdown.textContent=count; }
+  },800);
 }
 
 function startBerserkMode(){
-  waitNext = false;
-  aliens = [];
-  gameRunning = true;
-  lastTime = performance.now();
-  loop(lastTime);
-
-  // Show HUD indicator
-  document.getElementById('berserk-hud').style.display = 'block';
-  document.getElementById('berserk-time').textContent = berserkTimer;
-
-  // Spawn berserk aliens (no correct/wrong, just targets)
+  waitNext=false; aliens=[];
+  gameRunning=true; lastTime=performance.now(); loop(lastTime);
+  document.getElementById('berserk-hud').style.display='block';
+  document.getElementById('berserk-time').textContent=berserkTimer;
   spawnBerserkWave();
-
-  // Countdown timer
-  berserkInterval = setInterval(() => {
+  berserkInterval=setInterval(()=>{
     berserkTimer--;
-    document.getElementById('berserk-time').textContent = berserkTimer;
-    if(berserkTimer % 3 === 0) spawnBerserkWave(); // spawn more every 3s
-    if(berserkTimer <= 0){
-      endBerserkMode();
-    }
-  }, 1000);
+    document.getElementById('berserk-time').textContent=berserkTimer;
+    if(berserkTimer%3===0) spawnBerserkWave();
+    if(berserkTimer<=0){ endBerserkMode(); }
+  },1000);
 }
 
 function spawnBerserkWave(){
-  const count = 4 + Math.floor(wave/2);
-  for(let i=0; i<count; i++){
-    const x = 60 + Math.random()*(W-120);
-    const color = COLORS[Math.floor(Math.random()*COLORS.length)];
-    const a = new Alien(x, '💥', false, color, wave);
-    a.isBerserk = true;
-    a.y = -30 - Math.random()*100;
-    a.word = ['★','●','▲','◆','♦'][Math.floor(Math.random()*5)];
+  const count=4+Math.floor(wave/2);
+  for(let i=0;i<count;i++){
+    const x=60+Math.random()*(W-120);
+    const color=COLORS[Math.floor(Math.random()*COLORS.length)];
+    const a=new Alien(x,'💥',false,color,wave);
+    a.isBerserk=true; a.y=-30-Math.random()*100;
+    a.word=['★','●','▲','◆','♦'][Math.floor(Math.random()*5)];
     aliens.push(a);
   }
 }
 
 function endBerserkMode(){
   clearInterval(berserkInterval);
-  berserkMode = false;
-  berserkTimer = 0;
-  aliens = [];
-  document.getElementById('berserk-hud').style.display = 'none';
-  showBonus('🔥 暴打結束！繼續加油！', '#ffd166');
-  setTimeout(loadQ, 500);
+  berserkMode=false; berserkTimer=0; aliens=[];
+  document.getElementById('berserk-hud').style.display='none';
+  showBonus('🔥 暴打結束！繼續加油！','#ffd166');
+  setTimeout(loadQ,500);
 }
 
 function checkBulletHits(){
@@ -842,40 +548,36 @@ function checkBulletHits(){
       if(a.checkBullet(b)){
         b.life=0;a.hitFlash=1;
         if(a.isBerserk){
-          // Berserk mode - just kill and score
           a.dead=true;boom(a.x,a.y,a.color,true);
           score+=5;updHUD();
           aliens=aliens.filter(al=>al!==a);
-          playSound('hit');
-          return;
+          playSound('hit');return;
         }
         if(a.isCorrect){
           a.dead=true;boom(a.x,a.y,a.color,true);
           combo++;
           const gained=10*combo;score+=gained;
-          // 幸運草
           const cloverGained=Math.floor(gained/5)+1;clover+=cloverGained;
           playSound('hit');updHUD();
           if(combo>=2)showBonus('COMBO x'+combo+'! +🍀'+cloverGained,'#ffd166');
           else showBonus('+'+gained+' pts +🍀'+cloverGained,'#06d6a0');
           aliens=aliens.filter(al=>al!==a);
           waitNext=true;
-          // Check berserk trigger every 200 points
-          if(!berserkMode && score>=200 && Math.floor(score/200) > Math.floor((score-gained)/200)){
+
+          // ✅ BUG 2 修正：用 lastBerserkAt 追蹤，每超過 200 分觸發一次
+          const nextBerserkThreshold = lastBerserkAt + 200;
+          if(!berserkMode && score >= nextBerserkThreshold){
             setTimeout(triggerBerserk, 500);
             return;
           }
-          // Check bonus wave
+
           bonusWaveCounter++;
           const afterWave=()=>{
             wave++;updHUD();
             if(bonusWaveCounter>=5){
               bonusWaveCounter=0;
               waveBanner('BONUS ROUND! ⚡');
-              setTimeout(()=>showBonusQ(()=>{
-                gameRunning=true;lastTime=performance.now();loop(lastTime);
-                setTimeout(loadQ,300);
-              }),600);
+              setTimeout(()=>showBonusQ(()=>{ gameRunning=true;lastTime=performance.now();loop(lastTime); setTimeout(loadQ,300); }),600);
             }else{
               if(wave%4===0){score+=80;showBonus('WAVE '+wave+'! +80 PTS 🌟','#ffd166');}
               else waveBanner('WAVE '+wave+'!');
@@ -884,14 +586,10 @@ function checkBulletHits(){
           };
           setTimeout(afterWave,300);
         }else{
-          // Wrong alien shot
           boom(a.x,a.y,'#ff6b6b',false);a.hitFlash=1;
           lives--;combo=0;playSound('miss');shakeShip();updHUD();updLives();
           waitNext=true;
-          const afterWrong=()=>{
-            if(lives<=0){endGame();return;}
-            waitNext=false;aliens=aliens.filter(al=>al!==a);
-          };
+          const afterWrong=()=>{ if(lives<=0){endGame();return;} waitNext=false;aliens=aliens.filter(al=>al!==a); };
           setTimeout(()=>showWrong(curQ,afterWrong),400);
         }
       }
@@ -899,7 +597,6 @@ function checkBulletHits(){
   });
 }
 
-// ── AUTOFIRE ─────────────────────────────────────────────────────
 let lastAutoFire=0;
 function handleAutoFire(now){
   if(!spaceHeld||!gameRunning)return;
@@ -907,47 +604,27 @@ function handleAutoFire(now){
   const interval=rapidFire?120:280;
   if(now-lastAutoFire>interval){
     lastAutoFire=now;
-    // Find nearest alien
     let nearest=null,bestD=9999;
     aliens.forEach(a=>{if(!a.dead){const d=Math.hypot(ship.x-a.x,ship.y-a.y);if(d<bestD){bestD=d;nearest=a;}}});
     if(nearest)fireAt(nearest.x,nearest.y);
   }
 }
 
-// ── GAME LOOP ─────────────────────────────────────────────────────
 function loop(now){
   if(!gameRunning)return;
   const dt=Math.min(now-lastTime,50);lastTime=now;
-
-  // Update powerup timers
-  if(rapidFire){
-    rapidFireTimer-=dt;
-    if(rapidFireTimer<=0){
-      rapidFire=false;maxAmmo=8;
-      if(ammo>maxAmmo)ammo=maxAmmo;
-      updAmmo();addPowerupChip('連發結束');
-    }
-  }
-
+  if(rapidFire){ rapidFireTimer-=dt; if(rapidFireTimer<=0){ rapidFire=false;maxAmmo=8; if(ammo>maxAmmo)ammo=maxAmmo; updAmmo();addPowerupChip('連發結束'); } }
   handleAutoFire(now);
-
-  // Draw
   ctx.fillStyle='#06060f';ctx.fillRect(0,0,W,H);
   updateStars(dt);drawStars();
-
-  // Grid
   ctx.strokeStyle='rgba(255,255,255,0.02)';ctx.lineWidth=1;
   for(let x=0;x<W;x+=64){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
   for(let y=0;y<H;y+=64){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
-
-  // Danger zone
   const dangerY=H-110;
   ctx.strokeStyle='rgba(255,50,50,0.15)';ctx.lineWidth=1.5;ctx.setLineDash([8,8]);
   ctx.beginPath();ctx.moveTo(0,dangerY);ctx.lineTo(W,dangerY);ctx.stroke();ctx.setLineDash([]);
   ctx.fillStyle='rgba(255,60,60,0.1)';ctx.fillRect(0,dangerY,W,H-dangerY);
   ctx.fillStyle='rgba(255,60,60,0.3)';ctx.font='9px monospace';ctx.textAlign='left';ctx.fillText('DANGER ZONE',10,dangerY-4);
-
-  // Update & draw aliens
   aliens.forEach(a=>{
     if(a.dead)return;a.update(dt);a.draw(ctx);
     if(a.y>dangerY+14&&!waitNext){
@@ -959,47 +636,41 @@ function loop(now){
       setTimeout(()=>showWrong(curQ,afterWrong),400);
     }
   });
-
-  // Bullets
   bullets.forEach(b=>{b.update();b.draw(ctx);});
   bullets=bullets.filter(b=>b.life>0&&b.y>-20&&b.y<H+20&&b.x>-20&&b.x<W+20);
   checkBulletHits();
-
-  // Particles
   particles.forEach(p=>{p.update(dt);p.draw(ctx);});
   particles=particles.filter(p=>p.life>0);
-
   drawShip();
   raf=requestAnimationFrame(loop);
 }
 
-// ── END GAME ──────────────────────────────────────────────────────
 async function endGame(){
   gameRunning=false;if(raf){cancelAnimationFrame(raf);raf=null;}
-  
-  // Save high score to Firebase
+
+  // 同步幸運草回 Firebase
+  if(currentUserId && clover > 0){
+    try{
+      const userRef = doc(db,'users',currentUserId);
+      const snap = await getDoc(userRef);
+      if(snap.exists()){
+        const currentClover = snap.data().clover || 0;
+        const newClover = currentClover + clover;
+        await updateDoc(userRef, { clover: newClover });
+        sessionStorage.setItem('nunuClover', newClover);
+      }
+    }catch(e){ console.error(e); }
+  }
+
   if(currentUserId && score > 0){
     try{
-      await setDoc(doc(db,'leaderboard_space',currentUserId),{
-        nickname: currentNickname,
-        highScore: score,
-        wave: wave,
-        updatedAt: new Date()
-      },{merge:true});
-      // Only keep highest score
       const ref = doc(db,'leaderboard_space',currentUserId);
       const snap = await getDoc(ref);
-      if(snap.exists() && snap.data().highScore > score){
-        // existing is higher, don't overwrite
-      } else {
-        await setDoc(ref,{
-          nickname: currentNickname,
-          highScore: score,
-          wave: wave,
-          updatedAt: new Date()
-        });
+      const prevHigh = snap.exists() ? (snap.data().highScore || 0) : 0;
+      if(score > prevHigh){
+        await setDoc(ref,{ nickname:currentNickname, highScore:score, wave:wave, updatedAt:new Date() });
       }
-    }catch(e){console.error(e);}
+    }catch(e){ console.error(e); }
   }
 
   const ov=document.getElementById('overlay');
@@ -1007,14 +678,69 @@ async function endGame(){
     <h1>🏆 MISSION COMPLETE</h1>
     <div id="score-big">${score}</div>
     <p style="color:#ffd166;font-size:15px;margin-bottom:4px;">Wave: ${wave} &nbsp;|&nbsp; Combo: x${combo}</p>
+    <p style="color:#06d6a0;font-size:13px;margin-bottom:4px;">+🍀${clover} 幸運草已存入！</p>
     <p style="color:#aaa;font-size:13px;margin-bottom:16px;">最高分已記錄！</p>
-    <button class="gbtn" onclick="startGame()">再戰一局 🚀</button>
+    <button class="gbtn" onclick="payAndRestart()">再戰一局 🚀（花費 50🍀）</button>
     <button class="gbtn back" onclick="goBack()">← 回到地圖</button>
   `;
   ov.style.display='flex';
 }
 
-// ── MENU ──────────────────────────────────────────────────────────
+// ✅ BUG 1 修正：再戰一局要先扣幸運草
+window.payAndRestart = async function(){
+  const cost = 50;
+  const stored = parseInt(sessionStorage.getItem('nunuClover') || '0');
+  if(stored < cost){
+    alert(`幸運草不夠！需要 50🍀 才能再玩一次。\n目前：${stored}🍀\n去做題目賺更多吧！`);
+    return;
+  }
+  const newClover = stored - cost;
+  sessionStorage.setItem('nunuClover', newClover);
+  if(currentUserId){
+    try{
+      await updateDoc(doc(db,'users',currentUserId), { clover: newClover });
+    }catch(e){ console.error(e); }
+  }
+  startGame();
+};
+
+window.goBack = function(){ window.location.href='index.html'; }
+
+window.startGame = function(){
+  document.getElementById('overlay').style.display='none';
+  score=0;lives=3;combo=0;wave=1;clover=0;
+  rapidFire=false;rapidFireTimer=0;maxAmmo=8;
+  bonusWaveCounter=0; lastBerserkAt=0;
+  aliens=[];particles=[];bullets=[];
+  qPool=shuffle([...QS]);qIdx=0;waitNext=false;gameRunning=true;
+  updHUD();updLives();initCanvas();makeStars();loadQ();
+  lastTime=performance.now();loop(lastTime);
+}
+
+let AC=null;try{AC=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}
+function playSound(type){
+  if(!AC)return;try{
+    const o=AC.createOscillator(),g=AC.createGain();o.connect(g);g.connect(AC.destination);
+    if(type==='berserk'){
+      for(let i=0;i<3;i++){ setTimeout(()=>{ const o2=AC.createOscillator(),g2=AC.createGain();o2.connect(g2);g2.connect(AC.destination); o2.type='sawtooth';o2.frequency.setValueAtTime(200+i*100,AC.currentTime); o2.frequency.exponentialRampToValueAtTime(800+i*200,AC.currentTime+0.3); g2.gain.setValueAtTime(0.15,AC.currentTime);g2.gain.exponentialRampToValueAtTime(0.001,AC.currentTime+0.4); o2.start();o2.stop(AC.currentTime+0.4); },i*150); } return;
+    }
+    if(type==='shoot'){ o.type='square';o.frequency.setValueAtTime(rapidFire?600:440,AC.currentTime); o.frequency.exponentialRampToValueAtTime(rapidFire?1400:900,AC.currentTime+0.08); g.gain.setValueAtTime(0.08,AC.currentTime);g.gain.exponentialRampToValueAtTime(0.001,AC.currentTime+0.12); o.start();o.stop(AC.currentTime+0.12);
+    }else if(type==='hit'){ o.type='square';o.frequency.setValueAtTime(440,AC.currentTime); o.frequency.exponentialRampToValueAtTime(1200,AC.currentTime+0.15); g.gain.setValueAtTime(0.13,AC.currentTime);g.gain.exponentialRampToValueAtTime(0.001,AC.currentTime+0.25); o.start();o.stop(AC.currentTime+0.25);
+    }else{ o.type='sawtooth';o.frequency.setValueAtTime(280,AC.currentTime); o.frequency.exponentialRampToValueAtTime(90,AC.currentTime+0.22); g.gain.setValueAtTime(0.1,AC.currentTime);g.gain.exponentialRampToValueAtTime(0.001,AC.currentTime+0.28); o.start();o.stop(AC.currentTime+0.28); }
+  }catch(e){}
+}
+
+document.addEventListener('click',e=>{ if(!gameRunning)return; if(!berserkMode && waitNext)return; if(AC&&AC.state==='suspended')AC.resume(); const rect=canvas.getBoundingClientRect(); const scaleX=W/rect.width,scaleY=H/rect.height; const mx=(e.clientX-rect.left)*scaleX,my=(e.clientY-rect.top)*scaleY; if(mx<0||mx>W||my<0||my>H)return; fireAt(mx,my); });
+document.addEventListener('mousemove',e=>{ if(!gameRunning)return; const rect=canvas.getBoundingClientRect(); const scaleX=W/rect.width; const mx=(e.clientX-rect.left)*scaleX; ship.x=Math.max(30,Math.min(W-30,mx)); });
+document.addEventListener('keydown',e=>{ if(e.code==='Space'){e.preventDefault();spaceHeld=true;if(AC&&AC.state==='suspended')AC.resume();} });
+document.addEventListener('keyup',e=>{ if(e.code==='Space'){spaceHeld=false;} });
+document.addEventListener('touchmove',e=>{ if(!gameRunning)return;e.preventDefault(); const rect=canvas.getBoundingClientRect(); const scaleX=W/rect.width; const mx=(e.touches[0].clientX-rect.left)*scaleX; ship.x=Math.max(30,Math.min(W-30,mx)); },{passive:false});
+document.addEventListener('touchstart',e=>{ if(!gameRunning)return;e.preventDefault(); if(!berserkMode && waitNext)return; if(AC&&AC.state==='suspended')AC.resume(); const rect=canvas.getBoundingClientRect(); const scaleX=W/rect.width,scaleY=H/rect.height; const mx=(e.touches[0].clientX-rect.left)*scaleX; const my=(e.touches[0].clientY-rect.top)*scaleY; fireAt(mx,my); },{passive:false});
+
+if(!CanvasRenderingContext2D.prototype.roundRect){ CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){ r=Math.min(r,w/2,h/2);this.moveTo(x+r,y);this.lineTo(x+w-r,y); this.arcTo(x+w,y,x+w,y+r,r);this.lineTo(x+w,y+h-r); this.arcTo(x+w,y+h,x+w-r,y+h,r);this.lineTo(x+r,y+h); this.arcTo(x,y+h,x,y+h-r,r);this.lineTo(x,y+r);this.arcTo(x,y,x+r,y,r);this.closePath(); }; }
+
+window.addEventListener('DOMContentLoaded',()=>{ initCanvas();makeStars();updLives();updHUD();updAmmo(); initCompanion(); showMenu(); });
+
 window.showMenu = function(){
   const ov=document.getElementById('overlay');
   ov.innerHTML=`
@@ -1032,123 +758,5 @@ window.showMenu = function(){
   `;
   ov.style.display='flex';
 }
-
-window.goBack = function(){
-  window.location.href='index.html';
-}
-
-window.startGame = function(){
-  document.getElementById('overlay').style.display='none';
-  score=0;lives=3;combo=0;wave=1;clover=0;
-  rapidFire=false;rapidFireTimer=0;maxAmmo=8;
-  bonusWaveCounter=0;
-  aliens=[];particles=[];bullets=[];
-  qPool=shuffle([...QS]);qIdx=0;waitNext=false;gameRunning=true;
-  updHUD();updLives();initCanvas();makeStars();loadQ();
-  lastTime=performance.now();loop(lastTime);
-}
-
-// ── AUDIO ────────────────────────────────────────────────────────
-let AC=null;try{AC=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}
-function playSound(type){
-  if(!AC)return;try{
-    const o=AC.createOscillator(),g=AC.createGain();o.connect(g);g.connect(AC.destination);
-    if(type==='berserk'){
-      // Epic berserk sound
-      for(let i=0;i<3;i++){
-        setTimeout(()=>{
-          const o2=AC.createOscillator(),g2=AC.createGain();o2.connect(g2);g2.connect(AC.destination);
-          o2.type='sawtooth';o2.frequency.setValueAtTime(200+i*100,AC.currentTime);
-          o2.frequency.exponentialRampToValueAtTime(800+i*200,AC.currentTime+0.3);
-          g2.gain.setValueAtTime(0.15,AC.currentTime);g2.gain.exponentialRampToValueAtTime(0.001,AC.currentTime+0.4);
-          o2.start();o2.stop(AC.currentTime+0.4);
-        },i*150);
-      }
-      return;
-    }
-    if(type==='shoot'){
-      o.type='square';o.frequency.setValueAtTime(rapidFire?600:440,AC.currentTime);
-      o.frequency.exponentialRampToValueAtTime(rapidFire?1400:900,AC.currentTime+0.08);
-      g.gain.setValueAtTime(0.08,AC.currentTime);g.gain.exponentialRampToValueAtTime(0.001,AC.currentTime+0.12);
-      o.start();o.stop(AC.currentTime+0.12);
-    }else if(type==='hit'){
-      o.type='square';o.frequency.setValueAtTime(440,AC.currentTime);
-      o.frequency.exponentialRampToValueAtTime(1200,AC.currentTime+0.15);
-      g.gain.setValueAtTime(0.13,AC.currentTime);g.gain.exponentialRampToValueAtTime(0.001,AC.currentTime+0.25);
-      o.start();o.stop(AC.currentTime+0.25);
-    }else{
-      o.type='sawtooth';o.frequency.setValueAtTime(280,AC.currentTime);
-      o.frequency.exponentialRampToValueAtTime(90,AC.currentTime+0.22);
-      g.gain.setValueAtTime(0.1,AC.currentTime);g.gain.exponentialRampToValueAtTime(0.001,AC.currentTime+0.28);
-      o.start();o.stop(AC.currentTime+0.28);
-    }
-  }catch(e){}
-}
-
-// ── CONTROLS ─────────────────────────────────────────────────────
-document.addEventListener('click',e=>{
-  if(!gameRunning)return;
-  if(!berserkMode && waitNext)return;
-  if(AC&&AC.state==='suspended')AC.resume();
-  const rect=canvas.getBoundingClientRect();
-  const scaleX=W/rect.width,scaleY=H/rect.height;
-  const mx=(e.clientX-rect.left)*scaleX,my=(e.clientY-rect.top)*scaleY;
-  if(mx<0||mx>W||my<0||my>H)return;
-  fireAt(mx,my);
-});
-
-document.addEventListener('mousemove',e=>{
-  if(!gameRunning)return;
-  const rect=canvas.getBoundingClientRect();
-  const scaleX=W/rect.width;
-  const mx=(e.clientX-rect.left)*scaleX;
-  ship.x=Math.max(30,Math.min(W-30,mx));
-});
-
-document.addEventListener('keydown',e=>{
-  if(e.code==='Space'){e.preventDefault();spaceHeld=true;if(AC&&AC.state==='suspended')AC.resume();}
-});
-document.addEventListener('keyup',e=>{
-  if(e.code==='Space'){spaceHeld=false;}
-});
-
-// Touch support
-document.addEventListener('touchmove',e=>{
-  if(!gameRunning)return;e.preventDefault();
-  const rect=canvas.getBoundingClientRect();
-  const scaleX=W/rect.width;
-  const mx=(e.touches[0].clientX-rect.left)*scaleX;
-  ship.x=Math.max(30,Math.min(W-30,mx));
-},{passive:false});
-
-document.addEventListener('touchstart',e=>{
-  if(!gameRunning)return;e.preventDefault();
-  if(!berserkMode && waitNext)return;
-  if(AC&&AC.state==='suspended')AC.resume();
-  const rect=canvas.getBoundingClientRect();
-  const scaleX=W/rect.width,scaleY=H/rect.height;
-  const mx=(e.touches[0].clientX-rect.left)*scaleX;
-  const my=(e.touches[0].clientY-rect.top)*scaleY;
-  fireAt(mx,my);
-},{passive:false});
-
-// Polyfill
-if(!CanvasRenderingContext2D.prototype.roundRect){
-  CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){
-    r=Math.min(r,w/2,h/2);this.moveTo(x+r,y);this.lineTo(x+w-r,y);
-    this.arcTo(x+w,y,x+w,y+r,r);this.lineTo(x+w,y+h-r);
-    this.arcTo(x+w,y+h,x+w-r,y+h,r);this.lineTo(x+r,y+h);
-    this.arcTo(x,y+h,x,y+h-r,r);this.lineTo(x,y+r);this.arcTo(x,y,x+r,y,r);this.closePath();
-  };
-}
-
-// ── INIT ─────────────────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded',()=>{
-  initCanvas();makeStars();updLives();updHUD();updAmmo();
-  initCompanion();
-  showMenu();
-});
 </script>
-
-
 </body></html>
