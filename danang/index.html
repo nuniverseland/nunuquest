@@ -1,128 +1,87 @@
 <!DOCTYPE html>
-<!-- saved from url=(0051)file:///Users/vivianhsu/Downloads/danang_index.html -->
-<html lang="zh-TW"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>峴港保衛戰 🌴</title>
-  <link href="./峴港保衛戰 _files/css2" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --sand: #f4e3b2;
-      --sand-dark: #e0c97a;
-      --jungle: #2d6a4f;
-      --sunset: #f77f00;
-      --coconut: #8B5E3C;
-      --white: #fff;
-      --text-dark: #1a1a2e;
-    }
-
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
       font-family: 'Noto Sans TC', sans-serif;
-      background: #0077b6;
+      background: #1a1a2e;
       min-height: 100vh;
       overflow-x: hidden;
     }
 
-    /* ── HERO 圖片區 ── */
-    .hero {
+    /* 整個頁面是一張底圖 */
+    .page {
       position: relative;
       width: 100%;
-      overflow: hidden;
     }
 
-    /* 手機：直式圖 */
-    .hero-img {
+    /* 底圖完整顯示 */
+    .bg-img {
       width: 100%;
+      height: auto;
       display: block;
-      object-fit: cover;
     }
 
-    /* 電腦：改用橫式圖 */
-    @media (min-width: 600px) {
-      .hero { max-height: 500px; }
-      .hero-img { max-height: 500px; object-position: center top; }
-    }
-
-    /* 標題疊在圖片上 */
-    .hero-overlay {
+    /* 所有內容疊在底圖上 */
+    .overlay-content {
       position: absolute;
-      bottom: 0; left: 0; right: 0;
-      background: linear-gradient(transparent, rgba(0,0,0,0.6));
-      padding: 40px 20px 20px;
-      text-align: center;
+      top: 0; left: 0; right: 0; bottom: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      /* 之後你給按鈕圖，我們再定位 */
     }
-    .hero-overlay h1 {
+
+    /* 暫時的標題（之後換成你的圖片按鈕） */
+    .temp-title {
+      margin-top: 20px;
       font-family: 'Baloo 2', cursive;
       font-size: clamp(1.6rem, 5vw, 2.8rem);
       font-weight: 800;
       color: white;
-      text-shadow: 0 2px 12px rgba(0,0,0,0.6);
-    }
-    .hero-overlay p {
-      font-size: clamp(0.85rem, 2.5vw, 1rem);
-      color: var(--sand);
-      margin-top: 4px;
-      text-shadow: 0 2px 6px rgba(0,0,0,0.5);
-    }
-
-    /* ── 沙灘區 ── */
-    .beach {
-      background: linear-gradient(180deg, #f4e3b2 0%, #e8c96e 100%);
-      padding: 20px 16px 30px;
-    }
-
-    /* 故事按鈕 */
-    .story-btn {
-      display: block;
-      width: 100%;
-      max-width: 400px;
-      margin: 0 auto 24px;
-      padding: 14px 20px;
-      background: linear-gradient(145deg, #a0714f, #8b5e3c);
-      border: 3px solid #5c3d1e;
-      border-radius: 12px;
-      box-shadow: 0 6px 0 #4a2e10, 0 8px 16px rgba(0,0,0,0.3);
-      color: var(--sand);
-      font-family: 'Noto Sans TC', sans-serif;
-      font-size: 1.1rem;
-      font-weight: 700;
-      cursor: pointer;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.8);
       text-align: center;
-      text-decoration: none;
-      transition: transform 0.1s, box-shadow 0.1s;
-      letter-spacing: 1px;
     }
-    .story-btn:active {
-      transform: translateY(4px);
-      box-shadow: 0 2px 0 #4a2e10;
+    .temp-subtitle {
+      font-size: 1rem;
+      color: #f4e3b2;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.8);
+      margin-top: 4px;
     }
 
-    /* 椰子進度 */
+    /* 椰子進度（暫時，之後換圖） */
     .coconut-bar {
-      max-width: 400px;
-      margin: 0 auto 24px;
-      background: rgba(0,0,0,0.12);
+      margin-top: 16px;
+      background: rgba(0,0,0,0.5);
       border-radius: 16px;
-      padding: 14px 18px;
-      border: 2px solid rgba(255,255,255,0.4);
+      padding: 12px 18px;
+      border: 2px solid rgba(255,255,255,0.3);
+      backdrop-filter: blur(4px);
+      width: 80%;
+      max-width: 320px;
     }
     .coconut-bar-title {
-      font-size: 0.85rem;
-      color: var(--coconut);
+      font-size: 0.8rem;
+      color: #f4e3b2;
       font-weight: 700;
       margin-bottom: 8px;
+      text-align: center;
     }
     .coconut-icons {
       display: flex;
       gap: 8px;
       justify-content: center;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
     .coconut-icon {
-      font-size: 1.8rem;
-      filter: grayscale(1) opacity(0.3);
+      font-size: 1.6rem;
+      filter: grayscale(1) opacity(0.4);
       transition: all 0.4s;
     }
     .coconut-icon.earned {
@@ -135,89 +94,42 @@
       100% { transform: scale(1); }
     }
     .coconut-progress-text {
-      font-size: 0.8rem;
-      color: var(--coconut);
+      font-size: 0.75rem;
+      color: #f4e3b2;
       text-align: center;
     }
 
-    /* 關卡標題 */
-    .section-title {
-      font-family: 'Baloo 2', cursive;
-      font-size: 1.2rem;
-      font-weight: 800;
-      color: var(--jungle);
-      text-align: center;
-      margin-bottom: 16px;
-      letter-spacing: 1px;
-    }
-
-    /* 三個關卡 */
-    .battle-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 12px;
-      max-width: 400px;
-      margin: 0 auto 24px;
-    }
-
-    .battle-card {
-      border-radius: 16px;
-      padding: 14px 8px;
-      text-align: center;
-      border: 3px solid transparent;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      cursor: pointer;
-      transition: transform 0.2s;
-      text-decoration: none;
+    /* 暫時按鈕區（之後換成你的圖片） */
+    .temp-buttons {
+      margin-top: 20px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 6px;
-    }
-    .battle-card:active { transform: scale(0.95); }
-    .battle-card.stone { border-color: #a0714f; background: linear-gradient(145deg, #fff8f0, #ffecd6); }
-    .battle-card.loud  { border-color: #f77f00; background: linear-gradient(145deg, #fff8f0, #fff0d6); }
-    .battle-card.sneaky { border-color: #2d6a4f; background: linear-gradient(145deg, #f0fff4, #d6ffe6); }
-
-    .battle-card .monkey-img { font-size: 2.5rem; line-height: 1; }
-    .battle-card .monkey-name { font-size: 0.75rem; font-weight: 900; color: var(--text-dark); line-height: 1.2; }
-    .battle-card .reward { font-size: 0.7rem; color: #888; }
-    .battle-card .difficulty { display: flex; gap: 2px; }
-    .dot { width: 6px; height: 6px; border-radius: 50%; background: #ddd; }
-    .dot.active { background: var(--sunset); }
-
-    /* Banu 按鈕 */
-    .banu-section { max-width: 400px; margin: 0 auto; }
-
-    .banu-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
       gap: 12px;
+      width: 80%;
+      max-width: 320px;
+    }
+
+    .temp-btn {
       width: 100%;
-      padding: 18px 20px;
-      border-radius: 20px;
-      border: 3px solid #1a1a2e;
-      background: linear-gradient(145deg, #1a1a2e, #2d2d4e);
-      box-shadow: 0 6px 0 #0a0a14, 0 8px 20px rgba(0,0,0,0.4);
-      color: white;
+      padding: 14px;
+      border-radius: 12px;
+      border: none;
       font-family: 'Noto Sans TC', sans-serif;
       font-size: 1rem;
-      font-weight: 900;
+      font-weight: 700;
       cursor: pointer;
       text-decoration: none;
-      transition: transform 0.1s, box-shadow 0.1s;
-      position: relative;
+      text-align: center;
+      display: block;
+      background: rgba(0,0,0,0.6);
+      color: white;
+      border: 2px solid rgba(255,255,255,0.3);
+      backdrop-filter: blur(4px);
+      transition: transform 0.1s;
     }
-    .banu-btn.locked { filter: grayscale(0.7); cursor: not-allowed; }
-    .banu-btn:not(.locked):active { transform: translateY(4px); box-shadow: 0 2px 0 #0a0a14; }
-    .banu-btn .banu-icon { font-size: 2rem; }
-    .banu-btn .banu-title { font-size: 1.1rem; letter-spacing: 1px; }
-    .banu-btn .banu-subtitle { font-size: 0.75rem; color: #aaa; margin-top: 2px; }
-    .banu-btn .lock-badge { position: absolute; top: 10px; right: 14px; font-size: 1.2rem; }
-    .banu-btn .coconut-needed { position: absolute; bottom: 10px; right: 14px; font-size: 0.7rem; color: var(--sand-dark); background: rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 20px; }
-
-    .bottom-space { height: 40px; }
+    .temp-btn:active { transform: scale(0.97); }
+    .temp-btn.locked { opacity: 0.5; cursor: not-allowed; }
 
     @keyframes shake {
       0%,100% { transform: translateX(0); }
@@ -225,38 +137,51 @@
       75% { transform: translateX(8px); }
     }
 
-    @media (max-width: 380px) {
-      .battle-grid { gap: 8px; }
-      .battle-card { padding: 10px 4px; }
-      .battle-card .monkey-img { font-size: 2rem; }
-      .battle-card .monkey-name { font-size: 0.65rem; }
+    /* 三個關卡橫排 */
+    .battle-row {
+      display: flex;
+      gap: 10px;
+      width: 80%;
+      max-width: 320px;
+      margin-top: 12px;
     }
+    .battle-mini {
+      flex: 1;
+      padding: 10px 4px;
+      border-radius: 12px;
+      background: rgba(0,0,0,0.6);
+      border: 2px solid rgba(255,255,255,0.3);
+      backdrop-filter: blur(4px);
+      text-align: center;
+      text-decoration: none;
+      color: white;
+      font-size: 0.7rem;
+      font-weight: 700;
+      transition: transform 0.1s;
+    }
+    .battle-mini:active { transform: scale(0.95); }
+    .battle-mini .mi { font-size: 1.6rem; display: block; }
   </style>
 </head>
 <body>
 
-  <!-- HERO 圖片 -->
-  <div class="hero">
-    <!-- 手機用直式，電腦用橫式 -->
-    <picture>
-      <source media="(min-width: 600px)" srcset="https://nuniverseland.github.io/nunuquest/assets/danang/header_desktop.png">
-      <img class="hero-img" src="./峴港保衛戰 _files/header_mobile.png" alt="峴港保衛戰">
-    </picture>
-    <div class="hero-overlay">
-      <h1>🐒 峴港保衛戰</h1>
-      <p>幫小白對抗壞猴小隊！</p>
-    </div>
-  </div>
+<div class="page">
 
-  <!-- 沙灘區 -->
-  <div class="beach">
+  <!-- 底圖完整顯示 -->
+  <picture>
+    <source media="(min-width: 600px)" srcset="https://nuniverseland.github.io/nunuquest/assets/danang/header_desktop.png">
+    <img class="bg-img" src="https://nuniverseland.github.io/nunuquest/assets/danang/header_mobile.png" alt="峴港保衛戰">
+  </picture>
 
-    <!-- 故事按鈕 -->
-    <a href="file:///Users/vivianhsu/Downloads/story.html" class="story-btn">📖 查看故事篇章</a>
+  <!-- 疊在底圖上的內容 -->
+  <div class="overlay-content">
+
+    <div class="temp-title">🐒 峴港保衛戰</div>
+    <div class="temp-subtitle">幫小白對抗壞猴小隊！</div>
 
     <!-- 椰子進度 -->
     <div class="coconut-bar">
-      <div class="coconut-bar-title">🥥 椰子收集進度（集滿5顆挑戰Banu！）</div>
+      <div class="coconut-bar-title">🥥 椰子進度（集5顆解鎖Banu）</div>
       <div class="coconut-icons">
         <span class="coconut-icon" id="c1">🥥</span>
         <span class="coconut-icon" id="c2">🥥</span>
@@ -267,95 +192,71 @@
       <div class="coconut-progress-text" id="coconutText">0 / 5 顆</div>
     </div>
 
-    <!-- 關卡 -->
-    <div class="section-title">⚔️ 壞猴小隊</div>
+    <!-- 故事按鈕 -->
+    <div class="temp-buttons">
+      <a href="story.html" class="temp-btn">📖 查看故事篇章</a>
+    </div>
 
-    <div class="battle-grid">
-      <a href="file:///Users/vivianhsu/Downloads/battle_stone.html" class="battle-card stone">
-        <div class="monkey-img">🐒</div>
-        <div class="monkey-name">石頭猴</div>
-        <div class="reward">🥥×1</div>
-        <div class="difficulty">
-          <span class="dot active"></span>
-          <span class="dot"></span>
-          <span class="dot"></span>
-        </div>
+    <!-- 三個關卡 -->
+    <div class="battle-row">
+      <a href="battle_stone.html" class="battle-mini">
+        <span class="mi">🐒</span>
+        石頭猴<br>🥥×1
       </a>
-      <a href="file:///Users/vivianhsu/Downloads/battle_loud.html" class="battle-card loud">
-        <div class="monkey-img">🐒</div>
-        <div class="monkey-name">嘴砲猴</div>
-        <div class="reward">🥥×2</div>
-        <div class="difficulty">
-          <span class="dot active"></span>
-          <span class="dot active"></span>
-          <span class="dot"></span>
-        </div>
+      <a href="battle_loud.html" class="battle-mini">
+        <span class="mi">🐒</span>
+        嘴砲猴<br>🥥×2
       </a>
-      <a href="file:///Users/vivianhsu/Downloads/battle_sneaky.html" class="battle-card sneaky">
-        <div class="monkey-img">🐒</div>
-        <div class="monkey-name">壞心眼猴</div>
-        <div class="reward">🥥×2</div>
-        <div class="difficulty">
-          <span class="dot active"></span>
-          <span class="dot active"></span>
-          <span class="dot"></span>
-        </div>
+      <a href="battle_sneaky.html" class="battle-mini">
+        <span class="mi">🐒</span>
+        壞心眼猴<br>🥥×2
       </a>
     </div>
 
     <!-- Banu -->
-    <div class="banu-section">
-      <a href="file:///Users/vivianhsu/Downloads/battle_banu.html" class="banu-btn locked" id="banuBtn">
-        <span class="banu-icon">👑</span>
-        <div class="banu-text">
-          <div class="banu-title">壞猴老大 BANU</div>
-          <div class="banu-subtitle">最終決戰・山洞深處</div>
-        </div>
-        <span class="lock-badge" id="banuLock">🔒</span>
-        <span class="coconut-needed" id="banuNeeded">還需要 5 顆椰子</span>
+    <div class="temp-buttons">
+      <a href="battle_banu.html" class="temp-btn locked" id="banuBtn">
+        👑 壞猴老大 BANU 🔒<br>
+        <span id="banuNeeded" style="font-size:0.75rem;opacity:0.8;">還需要 5 顆椰子</span>
       </a>
     </div>
 
-    <div class="bottom-space"></div>
   </div>
+</div>
 
-  <script>
-    // 測試用，之後換成 Firebase 資料
-    const coconutsEarned = 0;
+<script>
+  const coconutsEarned = 0;
 
-    function updateCoconutDisplay(count) {
-      for (let i = 1; i <= 5; i++) {
-        const icon = document.getElementById('c' + i);
-        if (i <= count) icon.classList.add('earned');
-        else icon.classList.remove('earned');
-      }
-      document.getElementById('coconutText').textContent = count + ' / 5 顆';
-
-      const banuBtn = document.getElementById('banuBtn');
-      const banuLock = document.getElementById('banuLock');
-      const banuNeeded = document.getElementById('banuNeeded');
-
-      if (count >= 5) {
-        banuBtn.classList.remove('locked');
-        banuLock.style.display = 'none';
-        banuNeeded.style.display = 'none';
-      } else {
-        banuBtn.classList.add('locked');
-        banuNeeded.textContent = '還需要 ' + (5 - count) + ' 顆椰子';
-      }
+  function updateCoconutDisplay(count) {
+    for (let i = 1; i <= 5; i++) {
+      const icon = document.getElementById('c' + i);
+      if (i <= count) icon.classList.add('earned');
+      else icon.classList.remove('earned');
     }
+    document.getElementById('coconutText').textContent = count + ' / 5 顆';
 
-    document.getElementById('banuBtn').addEventListener('click', function(e) {
-      if (this.classList.contains('locked')) {
-        e.preventDefault();
-        this.style.animation = 'shake 0.3s';
-        setTimeout(() => this.style.animation = '', 300);
-      }
-    });
+    const banuBtn = document.getElementById('banuBtn');
+    const banuNeeded = document.getElementById('banuNeeded');
 
-    updateCoconutDisplay(coconutsEarned);
-  </script>
+    if (count >= 5) {
+      banuBtn.classList.remove('locked');
+      banuNeeded.textContent = '挑戰老大！';
+    } else {
+      banuBtn.classList.add('locked');
+      banuNeeded.textContent = '還需要 ' + (5 - count) + ' 顆椰子';
+    }
+  }
 
+  document.getElementById('banuBtn').addEventListener('click', function(e) {
+    if (this.classList.contains('locked')) {
+      e.preventDefault();
+      this.style.animation = 'shake 0.3s';
+      setTimeout(() => this.style.animation = '', 300);
+    }
+  });
 
+  updateCoconutDisplay(coconutsEarned);
+</script>
 
-</body></html>
+</body>
+</html>
