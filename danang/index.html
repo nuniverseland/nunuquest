@@ -161,6 +161,67 @@
     }
     .battle-mini:active { transform: scale(0.95); }
     .battle-mini .mi { font-size: 1.6rem; display: block; }
+
+    /* 圖片按鈕 */
+    .img-buttons {
+      width: 80%;
+      max-width: 320px;
+      margin-top: 16px;
+      text-align: center;
+    }
+    .btn-img {
+      width: 100%;
+      max-width: 280px;
+      cursor: pointer;
+      transition: transform 0.1s;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+    }
+    .btn-img:active { transform: scale(0.97); }
+
+    /* 猴子圖片按鈕 */
+    .monkey-btn-img {
+      width: 100%;
+      height: 90px;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.6));
+      transition: transform 0.2s;
+    }
+    .battle-mini:active .monkey-btn-img { transform: scale(0.95); }
+    .monkey-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: white;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+    .reward-label { font-size: 0.65rem; opacity: 0.9; }
+
+    /* Banu 圖片按鈕 */
+    .banu-img-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-decoration: none;
+      transition: transform 0.1s;
+    }
+    .banu-img-btn.locked { opacity: 0.6; cursor: not-allowed; }
+    .banu-img-btn:not(.locked):active { transform: scale(0.97); }
+    .banu-btn-img {
+      width: 100%;
+      max-width: 220px;
+      filter: drop-shadow(0 4px 16px rgba(255,100,0,0.4));
+    }
+    .banu-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #f4e3b2;
+      text-shadow: 0 1px 6px rgba(0,0,0,0.9);
+      background: rgba(0,0,0,0.5);
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-top: 6px;
+    }
   </style>
 </head>
 <body>
@@ -193,31 +254,33 @@
     </div>
 
     <!-- 故事按鈕 -->
-    <div class="temp-buttons">
-      <a href="story.html" class="temp-btn">📖 查看故事篇章</a>
+    <div class="img-buttons">
+      <a href="story.html">
+        <img class="btn-img" src="https://nuniverseland.github.io/nunuquest/assets/danang/btn_story.png" alt="查看故事篇章">
+      </a>
     </div>
 
     <!-- 三個關卡 -->
     <div class="battle-row">
       <a href="battle_stone.html" class="battle-mini">
-        <span class="mi">🐒</span>
-        石頭猴<br>🥥×1
+        <img class="monkey-btn-img" src="https://nuniverseland.github.io/nunuquest/assets/danang/monkey_stone.png" alt="石頭猴">
+        <div class="monkey-label">石頭猴<br><span class="reward-label">🥥×1</span></div>
       </a>
       <a href="battle_loud.html" class="battle-mini">
-        <span class="mi">🐒</span>
-        嘴砲猴<br>🥥×2
+        <img class="monkey-btn-img" src="https://nuniverseland.github.io/nunuquest/assets/danang/monkey_loud.png" alt="嘴砲猴">
+        <div class="monkey-label">嘴砲猴<br><span class="reward-label">🥥×2</span></div>
       </a>
       <a href="battle_sneaky.html" class="battle-mini">
-        <span class="mi">🐒</span>
-        壞心眼猴<br>🥥×2
+        <img class="monkey-btn-img" src="https://nuniverseland.github.io/nunuquest/assets/danang/monkey_sneaky.png" alt="壞心眼猴">
+        <div class="monkey-label">壞心眼猴<br><span class="reward-label">🥥×2</span></div>
       </a>
     </div>
 
     <!-- Banu -->
-    <div class="temp-buttons">
-      <a href="battle_banu.html" class="temp-btn locked" id="banuBtn">
-        👑 壞猴老大 BANU 🔒<br>
-        <span id="banuNeeded" style="font-size:0.75rem;opacity:0.8;">還需要 5 顆椰子</span>
+    <div class="img-buttons">
+      <a href="battle_banu.html" id="banuBtn" class="banu-img-btn locked">
+        <img class="banu-btn-img" src="https://nuniverseland.github.io/nunuquest/assets/danang/banu.png" alt="Banu老大">
+        <div class="banu-label" id="banuNeeded">🔒 還需要 5 顆椰子</div>
       </a>
     </div>
 
