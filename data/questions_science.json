@@ -1,0 +1,19 @@
+[
+  {"subject":"Science","topic":"Rocks","question":"We get different types of rocks from ___.","answer":"nature","wordBank":["nature","machines","tools","patterns"]},
+  {"subject":"Science","topic":"Rocks","question":"Rocks have different sizes, shapes, colours, patterns, and ___.","answer":"textures","wordBank":["textures","tools","mines","riverbeds"]},
+  {"subject":"Science","topic":"Rocks","question":"We can use ___ for extracting huge rocks.","answer":"machines","wordBank":["machines","tools","quarries","mines"]},
+  {"subject":"Science","topic":"Rocks","question":"We can use ___ for extracting smaller rocks.","answer":"tools","wordBank":["tools","machines","riverbeds","patterns"]},
+  {"subject":"Science","topic":"Rocks","question":"___ are areas on the surface of the Earth where rocks are extracted.","answer":"quarries","wordBank":["quarries","mines","riverbeds","machines"]},
+  {"subject":"Science","topic":"Rocks","question":"___ are the ground over which rivers flow.","answer":"riverbeds","wordBank":["riverbeds","quarries","mines","tools"]},
+  {"subject":"Science","topic":"Rocks","question":"___ are deep holes in the Earth.","answer":"mines","wordBank":["mines","quarries","riverbeds","nature"]},
+  {"subject":"Science","topic":"Electricity","question":"Street lamps need electricity to give off heat and ___.","answer":"light","wordBank":["light","heat","move","circuit"]},
+  {"subject":"Science","topic":"Electricity","question":"Electric irons and toasters need electricity to produce ___.","answer":"heat","wordBank":["heat","light","move","cell"]},
+  {"subject":"Science","topic":"Electricity","question":"Electric trains need electricity to ___.","answer":"move","wordBank":["move","heat","light","switch"]},
+  {"subject":"Science","topic":"Electricity","question":"Electricity is useful but it can be ___.","answer":"dangerous","wordBank":["dangerous","safe","damaged","useful"]},
+  {"subject":"Science","topic":"Electricity","question":"We must use electricity in a ___ way.","answer":"safe","wordBank":["safe","dangerous","damaged","move"]},
+  {"subject":"Science","topic":"Electricity","question":"Do not use appliances with ___ wires.","answer":"damaged","wordBank":["damaged","safe","switch","plugs"]},
+  {"subject":"Science","topic":"Electricity","question":"Do not use many ___ in one power outlet.","answer":"plugs","wordBank":["plugs","switch","wire","lamp"]},
+  {"subject":"Science","topic":"Electricity","question":"Do not touch a ___ with wet hands.","answer":"switch","wordBank":["switch","plugs","wire","cell"]},
+  {"subject":"Science","topic":"Electricity","question":"A ___ is a path where electricity can flow.","answer":"circuit","wordBank":["circuit","cell","lamp","wire"]},
+  {"subject":"Science","topic":"Electricity","question":"A simple circuit is made up of a cell, a wire, a lamp, and a ___.","answer":"cell","wordBank":["cell","circuit","switch","plug"]}
+]

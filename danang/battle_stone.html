@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>石頭猴挑戰！</title>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+      background: #1a1a2e;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── 戰鬥場景 ── */
+    .battle-scene {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16/9;
+      max-height: 55vh;
+      overflow: hidden;
+    }
+    .battle-bg {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* 血條區 */
+    .hp-bars {
+      position: absolute;
+      top: 6%; left: 0; right: 0;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 4%;
+    }
+    .hp-block {
+      background: rgba(0,0,0,0.65);
+      border-radius: 12px;
+      padding: 8px 14px;
+      min-width: 140px;
+      backdrop-filter: blur(4px);
+      border: 1.5px solid rgba(255,255,255,0.2);
+    }
+    .hp-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #f4e3b2;
+      margin-bottom: 4px;
+    }
+    .hp-bar-wrap {
+      background: rgba(255,255,255,0.15);
+      border-radius: 20px;
+      height: 10px;
+      overflow: hidden;
+    }
+    .hp-bar-fill {
+      height: 100%;
+      border-radius: 20px;
+      transition: width 0.4s ease;
+    }
+    .hp-bar-fill.monkey { background: linear-gradient(90deg, #ff4444, #ff8800); }
+    .hp-bar-fill.nunu   { background: linear-gradient(90deg, #44aaff, #00eeff); }
+    .hp-hearts {
+      display: flex;
+      gap: 3px;
+      margin-top: 4px;
+      flex-wrap: wrap;
+    }
+    .heart { font-size: 0.75rem; transition: all 0.3s; }
+    .heart.lost { filter: grayscale(1) opacity(0.3); }
+
+    /* 連擊提示 */
+    .combo-badge {
+      position: absolute;
+      top: 6%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #ff8800, #ffcc00);
+      border-radius: 20px;
+      padding: 6px 16px;
+      font-size: 0.85rem;
+      font-weight: 900;
+      color: white;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+      display: none;
+      animation: combo-pop 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+    }
+    @keyframes combo-pop {
+      0% { transform: translateX(-50%) scale(0); }
+      60% { transform: translateX(-50%) scale(1.2); }
+      100% { transform: translateX(-50%) scale(1); }
+    }
+
+    /* 猴子 */
+    .monkey-container {
+      position: absolute;
+      right: 10%;
+      bottom: 5%;
+      width: 28%;
+      max-width: 220px;
+      text-align: center;
+    }
+    .monkey-img {
+      width: 100%;
+      filter: drop-shadow(0 4px 16px rgba(0,0,0,0.6));
+      transition: all 0.3s;
+    }
+    .monkey-img.hit {
+      animation: monkey-hit 0.4s ease;
+      filter: drop-shadow(0 0 20px rgba(255,100,0,0.8));
+    }
+    @keyframes monkey-hit {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(-15px) rotate(-5deg); }
+      75% { transform: translateX(10px) rotate(3deg); }
+      100% { transform: translateX(0) rotate(0); }
+    }
+
+    /* 努努 */
+    .nunu-container {
+      position: absolute;
+      left: 8%;
+      bottom: 5%;
+      width: 20%;
+      max-width: 160px;
+    }
+    .nunu-img {
+      width: 100%;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.6));
+      transition: all 0.3s;
+    }
+    .nunu-img.hit {
+      animation: nunu-hit 0.4s ease;
+      filter: drop-shadow(0 0 20px rgba(100,150,255,0.8));
+    }
+    @keyframes nunu-hit {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(15px) rotate(5deg); }
+      75% { transform: translateX(-10px) rotate(-3deg); }
+      100% { transform: translateX(0) rotate(0); }
+    }
+
+    /* 飛行椰子動畫 */
+    .coconut-fly {
+      position: absolute;
+      width: 60px;
+      pointer-events: none;
+      display: none;
+    }
+    @keyframes fly-to-monkey {
+      0%   { left: 20%; bottom: 30%; opacity: 1; transform: scale(0.5) rotate(0deg); }
+      100% { left: 72%; bottom: 25%; opacity: 1; transform: scale(1) rotate(360deg); }
+    }
+    @keyframes fly-to-nunu {
+      0%   { left: 72%; bottom: 25%; opacity: 1; transform: scale(1) rotate(0deg); }
+      100% { left: 20%; bottom: 30%; opacity: 1; transform: scale(0.5) rotate(-360deg); }
+    }
+    .coconut-fly.to-monkey { animation: fly-to-monkey 0.5s ease-in forwards; }
+    .coconut-fly.to-nunu   { animation: fly-to-nunu 0.5s ease-in forwards; }
+
+    /* Moki 保護畫面 */
+    .moki-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 10;
+    }
+    .moki-overlay.show { display: flex; }
+    .moki-overlay img { width: 60%; max-width: 300px; }
+    .moki-text {
+      color: #f4e3b2;
+      font-size: 1rem;
+      font-weight: 700;
+      text-align: center;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+      background: rgba(0,0,0,0.5);
+      padding: 8px 20px;
+      border-radius: 20px;
+    }
+    .moki-btn {
+      background: linear-gradient(135deg, #52b788, #2d6a4f);
+      border: none;
+      border-radius: 20px;
+      padding: 10px 24px;
+      color: white;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* ── 題目區 ── */
+    .question-area {
+      background: linear-gradient(180deg, #1a1a2e, #2d2d4e);
+      padding: 16px;
+      min-height: 45vh;
+    }
+
+    /* 題目文字 */
+    .question-box {
+      background: rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 14px 18px;
+      margin-bottom: 14px;
+      border: 1.5px solid rgba(255,255,255,0.15);
+    }
+    .question-number {
+      font-size: 0.7rem;
+      color: #aaa;
+      margin-bottom: 4px;
+    }
+    .question-text {
+      font-size: 1rem;
+      font-weight: 700;
+      color: white;
+      line-height: 1.5;
+    }
+    .retry-hint {
+      font-size: 0.75rem;
+      color: #ff8888;
+      margin-top: 6px;
+      display: none;
+    }
+    .retry-hint.show { display: block; }
+
+    /* 選項 */
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .option-btn {
+      background: rgba(255,255,255,0.1);
+      border: 2px solid rgba(255,255,255,0.2);
+      border-radius: 12px;
+      padding: 12px 10px;
+      color: white;
+      font-family: 'Noto Sans TC', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+    .option-btn:hover { background: rgba(255,255,255,0.2); transform: scale(1.02); }
+    .option-btn.correct { background: rgba(80,200,80,0.4); border-color: #52b788; }
+    .option-btn.wrong   { background: rgba(200,80,80,0.4); border-color: #ff4444; }
+    .option-btn:disabled { cursor: not-allowed; opacity: 0.7; }
+
+    /* 答案顯示 */
+    .answer-reveal {
+      background: rgba(255,200,0,0.15);
+      border: 1.5px solid rgba(255,200,0,0.4);
+      border-radius: 12px;
+      padding: 10px 14px;
+      color: #ffcc00;
+      font-size: 0.85rem;
+      font-weight: 700;
+      display: none;
+      margin-bottom: 10px;
+    }
+    .answer-reveal.show { display: block; }
+
+    /* 結果訊息 */
+    .result-msg {
+      text-align: center;
+      font-size: 1.1rem;
+      font-weight: 900;
+      padding: 8px;
+      display: none;
+    }
+    .result-msg.show { display: block; }
+    .result-msg.correct { color: #52b788; }
+    .result-msg.wrong   { color: #ff6666; }
+
+    /* 結局畫面 */
+    .end-screen {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.85);
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 16px;
+      z-index: 100;
+    }
+    .end-screen.show { display: flex; }
+    .end-screen img { width: 50%; max-width: 250px; }
+    .end-title {
+      font-family: 'Baloo 2', cursive;
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: white;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.8);
+    }
+    .end-subtitle { font-size: 1rem; color: #f4e3b2; }
+    .end-btn {
+      padding: 14px 28px;
+      border-radius: 20px;
+      border: none;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Noto Sans TC', sans-serif;
+    }
+    .end-btn.primary { background: linear-gradient(135deg, #52b788, #2d6a4f); color: white; }
+    .end-btn.secondary { background: rgba(255,255,255,0.15); color: white; }
+  </style>
+</head>
+<body>
+
+<!-- 戰鬥場景 -->
+<div class="battle-scene">
+  <img class="battle-bg" src="https://nuniverseland.github.io/nunuquest/assets/danang/battle_bg.png" alt="戰場">
+
+  <!-- 血條 -->
+  <div class="hp-bars">
+    <div class="hp-block">
+      <div class="hp-label">🐒 石頭猴</div>
+      <div class="hp-bar-wrap">
+        <div class="hp-bar-fill monkey" id="monkeyHpBar" style="width:100%"></div>
+      </div>
+      <div id="monkeyHpText" style="font-size:0.7rem;color:#f4e3b2;margin-top:3px;">15 / 15</div>
+    </div>
+    <div class="hp-block" style="text-align:right;">
+      <div class="hp-label">努努 ❤️</div>
+      <div class="hp-hearts" id="nunuHearts" style="justify-content:flex-end;"></div>
+    </div>
+  </div>
+
+  <!-- 連擊徽章 -->
+  <div class="combo-badge" id="comboBadge">🥥 連擊！×2傷害！</div>
+
+  <!-- 猴子 -->
+  <div class="monkey-container">
+    <img class="monkey-img" id="monkeyImg"
+      src="https://nuniverseland.github.io/nunuquest/assets/danang/monkey_stone_idle.png" alt="石頭猴">
+  </div>
+
+  <!-- 努努 -->
+  <div class="nunu-container">
+    <img class="nunu-img" id="nunuImg"
+      src="https://nuniverseland.github.io/nunuquest/assets/danang/nunu_battle.png" alt="努努">
+  </div>
+
+  <!-- 飛行椰子 -->
+  <img class="coconut-fly" id="coconutFly"
+    src="https://nuniverseland.github.io/nunuquest/assets/danang/coconut_flying.png" alt="椰子">
+
+  <!-- Moki 保護 -->
+  <div class="moki-overlay" id="mokiOverlay">
+    <img src="https://nuniverseland.github.io/nunuquest/assets/danang/moki_protect.png" alt="Moki保護">
+    <div class="moki-text">Moki 幫你擋住了！<br>快把正確答案記起來！</div>
+    <button class="moki-btn" onclick="closeMoki()">繼續戰鬥！</button>
+  </div>
+</div>
+
+<!-- 題目區 -->
+<div class="question-area">
+  <div class="question-box">
+    <div class="question-number" id="questionNumber">第 1 題 / 15</div>
+    <div class="question-text" id="questionText">載入中...</div>
+    <div class="retry-hint" id="retryHint">❌ 答錯了！再想想看...</div>
+  </div>
+
+  <div class="options-grid" id="optionsGrid"></div>
+  <div class="answer-reveal" id="answerReveal"></div>
+  <div class="result-msg" id="resultMsg"></div>
+</div>
+
+<!-- 勝利畫面 -->
+<div class="end-screen" id="winScreen">
+  <img src="https://nuniverseland.github.io/nunuquest/assets/danang/monkey_stone_dead.png" alt="猴子倒下">
+  <div class="end-title">🎉 打倒石頭猴！</div>
+  <div class="end-subtitle" id="winReward">獲得 🥥 ×1</div>
+  <button class="end-btn primary" onclick="goHome()">回到峴港地圖</button>
+  <button class="end-btn secondary" onclick="retryBattle()">再挑戰一次</button>
+</div>
+
+<!-- 失敗畫面 -->
+<div class="end-screen" id="loseScreen">
+  <img src="https://nuniverseland.github.io/nunuquest/assets/danang/nunu_battle.png" alt="努努" style="opacity:0.6;">
+  <div class="end-title">💀 挑戰失敗...</div>
+  <div class="end-subtitle">再試一次，你可以的！</div>
+  <button class="end-btn primary" onclick="retryBattle()">立刻重試！</button>
+  <button class="end-btn secondary" onclick="goHome()">回到地圖</button>
+</div>
+
+<script>
+// ── 遊戲設定 ──
+const MONKEY_MAX_HP = 15;
+const NUNU_MAX_HP = 15;
+const COCONUT_REWARD = 1;
+const COMBO_THRESHOLD = 3;
+
+// ── 遊戲狀態 ──
+let monkeyHp = MONKEY_MAX_HP;
+let nunuHp = NUNU_MAX_HP;
+let combo = 0;
+let consecutiveWrong = 0;
+let mokiUsed = false;
+let currentQ = null;
+let isRetry = false;
+let questionIndex = 0;
+let questionPool = [];
+
+// ── 圖片路徑 ──
+const BASE = 'https://nuniverseland.github.io/nunuquest/assets/danang/';
+const IMG = {
+  idle:   BASE + 'monkey_stone_idle.png',
+  hit:    BASE + 'monkey_stone_hit.png',
+  dead:   BASE + 'monkey_stone_dead.png',
+  attack: BASE + 'monkey_stone_attack.png',
+};
+
+// ── 初始化 ──
+async function init() {
+  renderHearts();
+  await loadQuestions();
+  nextQuestion();
+}
+
+async function loadQuestions() {
+  // 混合三科題庫
+  const files = ['questions_science', 'questions_spelling', 'questions_grammar'];
+  let all = [];
+  for (const f of files) {
+    try {
+      const res = await fetch(`https://nuniverseland.github.io/nunuquest/data/${f}.json`);
+      const data = await res.json();
+      all = all.concat(data);
+    } catch(e) { console.log('載入失敗:', f); }
+  }
+  // 洗牌
+  questionPool = shuffle(all);
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function nextQuestion() {
+  if (questionIndex >= MONKEY_MAX_HP) return;
+  if (questionPool.length === 0) return;
+
+  // 循環題庫
+  if (questionIndex >= questionPool.length) questionIndex = 0;
+  currentQ = questionPool[questionIndex];
+  isRetry = false;
+  consecutiveWrong = 0;
+
+  renderQuestion();
+}
+
+function renderQuestion() {
+  document.getElementById('questionNumber').textContent =
+    `第 ${questionIndex + 1} 題 / ${MONKEY_MAX_HP}`;
+  document.getElementById('questionText').textContent = currentQ.question;
+  document.getElementById('retryHint').classList.remove('show');
+  document.getElementById('answerReveal').classList.remove('show');
+  document.getElementById('resultMsg').classList.remove('show');
+
+  // 產生選項（答案 + wordBank裡的干擾選項）
+  let options = [...currentQ.wordBank];
+  if (!options.includes(currentQ.answer)) options.push(currentQ.answer);
+  options = shuffle(options).slice(0, 4);
+  if (!options.includes(currentQ.answer)) options[0] = currentQ.answer;
+  options = shuffle(options);
+
+  const grid = document.getElementById('optionsGrid');
+  grid.innerHTML = '';
+  options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.textContent = opt;
+    btn.onclick = () => selectAnswer(opt, btn);
+    grid.appendChild(btn);
+  });
+}
+
+function selectAnswer(answer, btn) {
+  // 停用所有選項
+  document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
+
+  if (answer === currentQ.answer) {
+    // 答對！
+    btn.classList.add('correct');
+    combo++;
+    consecutiveWrong = 0;
+
+    const isCombo = combo > 0 && combo % COMBO_THRESHOLD === 0;
+    const dmg = isCombo ? 2 : 1;
+
+    if (isCombo) showCombo();
+    animateCoconut('to-monkey', () => {
+      damageMonkey(dmg);
+      showResult(true, isCombo);
+      setMonkeyImg('hit');
+      setTimeout(() => {
+        setMonkeyImg('idle');
+        questionIndex++;
+        if (monkeyHp <= 0) {
+          setTimeout(showWin, 800);
+        } else {
+          setTimeout(nextQuestion, 1000);
+        }
+      }, 800);
+    });
+
+  } else {
+    // 答錯！
+    btn.classList.add('wrong');
+    combo = 0;
+
+    if (!isRetry) {
+      // 第一次答錯：扣血，再試一次
+      isRetry = true;
+      consecutiveWrong++;
+      damageNunu(1);
+      setMonkeyImg('attack');
+      animateCoconut('to-nunu', () => {
+        setMonkeyImg('idle');
+        document.getElementById('retryHint').classList.add('show');
+        showResult(false, false);
+
+        // 連錯3題 Moki 保護
+        if (consecutiveWrong >= 3 && !mokiUsed) {
+          mokiUsed = true;
+          nunuHp = Math.min(nunuHp + 1, NUNU_MAX_HP); // 回一滴血
+          renderHearts();
+          setTimeout(() => {
+            document.getElementById('mokiOverlay').classList.add('show');
+          }, 600);
+        } else if (nunuHp <= 0) {
+          setTimeout(showLose, 800);
+        } else {
+          // 重新啟用選項再試一次
+          setTimeout(() => {
+            document.querySelectorAll('.option-btn').forEach(b => {
+              b.disabled = false;
+              b.classList.remove('correct', 'wrong');
+            });
+          }, 800);
+        }
+      });
+
+    } else {
+      // 第二次答錯：顯示答案，繼續下一題
+      document.getElementById('answerReveal').textContent =
+        `✨ 正確答案是：${currentQ.answer}`;
+      document.getElementById('answerReveal').classList.add('show');
+
+      setTimeout(() => {
+        questionIndex++;
+        if (nunuHp <= 0) {
+          showLose();
+        } else {
+          nextQuestion();
+        }
+      }, 1500);
+    }
+  }
+}
+
+function damageMonkey(dmg) {
+  monkeyHp = Math.max(0, monkeyHp - dmg);
+  const pct = (monkeyHp / MONKEY_MAX_HP * 100) + '%';
+  document.getElementById('monkeyHpBar').style.width = pct;
+  document.getElementById('monkeyHpText').textContent = `${monkeyHp} / ${MONKEY_MAX_HP}`;
+}
+
+function damageNunu(dmg) {
+  nunuHp = Math.max(0, nunuHp - dmg);
+  renderHearts();
+}
+
+function renderHearts() {
+  const container = document.getElementById('nunuHearts');
+  container.innerHTML = '';
+  for (let i = 0; i < NUNU_MAX_HP; i++) {
+    const h = document.createElement('span');
+    h.className = 'heart' + (i >= nunuHp ? ' lost' : '');
+    h.textContent = i < nunuHp ? '❤️' : '🖤';
+    container.appendChild(h);
+  }
+}
+
+function setMonkeyImg(state) {
+  const img = document.getElementById('monkeyImg');
+  img.src = IMG[state] || IMG.idle;
+  if (state === 'hit') {
+    img.classList.add('hit');
+    setTimeout(() => img.classList.remove('hit'), 400);
+  }
+}
+
+function animateCoconut(direction, callback) {
+  const el = document.getElementById('coconutFly');
+  el.style.display = 'block';
+  el.className = 'coconut-fly ' + direction;
+  setTimeout(() => {
+    el.style.display = 'none';
+    el.className = 'coconut-fly';
+    if (callback) callback();
+  }, 520);
+}
+
+function showCombo() {
+  const badge = document.getElementById('comboBadge');
+  badge.style.display = 'block';
+  badge.style.animation = 'none';
+  badge.offsetHeight; // reflow
+  badge.style.animation = 'combo-pop 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97)';
+  setTimeout(() => badge.style.display = 'none', 1500);
+}
+
+function showResult(correct, combo) {
+  const msg = document.getElementById('resultMsg');
+  msg.className = 'result-msg show ' + (correct ? 'correct' : 'wrong');
+  if (correct && combo) msg.textContent = '🥥💥 暴擊！-2血！';
+  else if (correct) msg.textContent = '🎯 答對了！';
+  else msg.textContent = '💥 被猴子打到了！';
+}
+
+function closeMoki() {
+  document.getElementById('mokiOverlay').classList.remove('show');
+  consecutiveWrong = 0;
+  document.querySelectorAll('.option-btn').forEach(b => {
+    b.disabled = false;
+    b.classList.remove('correct', 'wrong');
+  });
+  document.getElementById('retryHint').classList.remove('show');
+}
+
+function showWin() {
+  setMonkeyImg('dead');
+  setTimeout(() => {
+    document.getElementById('winScreen').classList.add('show');
+    // 之後串接 Firebase 存椰子
+  }, 600);
+}
+
+function showLose() {
+  document.getElementById('loseScreen').classList.add('show');
+}
+
+function retryBattle() {
+  location.reload();
+}
+
+function goHome() {
+  window.location.href = 'index.html';
+}
+
+// 啟動！
+init();
+</script>
+</body>
+</html>
