@@ -401,7 +401,7 @@ const COMBO_THRESHOLD = 3;
 let monkeyHp = MONKEY_MAX_HP;
 let nunuHp = NUNU_MAX_HP;
 let combo = 0;
-let consecutiveWrong = 0;
+let wrongCount = 0;      // 累計答錯題數（每題第一次錯才算）
 let mokiUsed = false;
 let currentQ = null;
 let isRetry = false;
@@ -415,6 +415,11 @@ const IMG = {
   hit:    BASE + 'monkey_stone_hit.png',
   dead:   BASE + 'monkey_stone_dead.png',
   attack: BASE + 'monkey_stone_attack.png',
+};
+const NUNU_IMG = {
+  battle: BASE + 'nunu_battle.png',
+  attack: BASE + 'nunu_attack.png',
+  hit:    BASE + 'nunu_hit.png',
 };
 
 // ── 初始化 ──
@@ -513,8 +518,11 @@ function selectAnswer(answer, btn) {
     const isCombo = combo > 0 && combo % COMBO_THRESHOLD === 0;
     const dmg = isCombo ? 2 : 1;
 
-    if (isCombo) showCombo();
+    if (isCombo) { showCombo(); playSound('combo'); }
+    else { playSound('correct'); }
+    setNunuImg('attack');
     animateCoconut('to-monkey', () => {
+      playSound('monkey_hit');
       damageMonkey(dmg);
       showResult(true, isCombo);
       setMonkeyImg('hit');
@@ -537,18 +545,21 @@ function selectAnswer(answer, btn) {
     if (!isRetry) {
       // 第一次答錯：扣血，再試一次
       isRetry = true;
-      consecutiveWrong++;
+      wrongCount++;
       damageNunu(1);
+      playSound('wrong');
       setMonkeyImg('attack');
       animateCoconut('to-nunu', () => {
+        playSound('nunu_hit');
+        setNunuImg('hit');
         setMonkeyImg('idle');
         document.getElementById('retryHint').classList.add('show');
         showResult(false, false);
 
         // 連錯3題 Moki 保護
-        if (consecutiveWrong >= 3 && !mokiUsed) {
+        if (wrongCount >= 3 && !mokiUsed) {
           mokiUsed = true;
-          nunuHp = Math.min(nunuHp + 1, NUNU_MAX_HP); // 回一滴血
+          nunuHp = Math.min(nunuHp + 1, NUNU_MAX_HP);
           renderHearts();
           setTimeout(() => {
             document.getElementById('mokiOverlay').classList.add('show');
@@ -556,7 +567,6 @@ function selectAnswer(answer, btn) {
         } else if (nunuHp <= 0) {
           setTimeout(showLose, 800);
         } else {
-          // 重新啟用選項再試一次
           setTimeout(() => {
             document.querySelectorAll('.option-btn').forEach(b => {
               b.disabled = false;
@@ -615,6 +625,110 @@ function setMonkeyImg(state) {
   }
 }
 
+function setNunuImg(state) {
+  const img = document.getElementById('nunuImg');
+  img.src = NUNU_IMG[state] || NUNU_IMG.battle;
+  setTimeout(() => {
+    img.src = NUNU_IMG.battle;
+  }, 600);
+}
+
+// ── 音效系統（Web Audio API）──
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function playSound(type) {
+  const ctx = audioCtx;
+  const o = ctx.createOscillator();
+  const g = ctx.createGain();
+  o.connect(g);
+  g.connect(ctx.destination);
+
+  const now = ctx.currentTime;
+
+  if (type === 'correct') {
+    o.type = 'sine';
+    o.frequency.setValueAtTime(523, now);
+    o.frequency.setValueAtTime(659, now + 0.1);
+    o.frequency.setValueAtTime(784, now + 0.2);
+    g.gain.setValueAtTime(0.3, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+    o.start(now);
+    o.stop(now + 0.4);
+
+  } else if (type === 'wrong') {
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(200, now);
+    o.frequency.exponentialRampToValueAtTime(100, now + 0.3);
+    g.gain.setValueAtTime(0.2, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+    o.start(now);
+    o.stop(now + 0.3);
+
+  } else if (type === 'combo') {
+    o.type = 'square';
+    o.frequency.setValueAtTime(440, now);
+    o.frequency.setValueAtTime(550, now + 0.08);
+    o.frequency.setValueAtTime(660, now + 0.16);
+    o.frequency.setValueAtTime(880, now + 0.24);
+    g.gain.setValueAtTime(0.25, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+    o.start(now);
+    o.stop(now + 0.5);
+
+  } else if (type === 'throw') {
+    o.type = 'sine';
+    o.frequency.setValueAtTime(300, now);
+    o.frequency.exponentialRampToValueAtTime(600, now + 0.15);
+    g.gain.setValueAtTime(0.2, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+    o.start(now);
+    o.stop(now + 0.2);
+
+  } else if (type === 'monkey_hit') {
+    o.type = 'triangle';
+    o.frequency.setValueAtTime(150, now);
+    o.frequency.exponentialRampToValueAtTime(80, now + 0.2);
+    g.gain.setValueAtTime(0.3, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+    o.start(now);
+    o.stop(now + 0.25);
+
+  } else if (type === 'nunu_hit') {
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(250, now);
+    o.frequency.exponentialRampToValueAtTime(150, now + 0.25);
+    g.gain.setValueAtTime(0.2, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+    o.start(now);
+    o.stop(now + 0.3);
+
+  } else if (type === 'win') {
+    const notes = [523, 659, 784, 1047];
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, now + i * 0.12);
+      gain.gain.setValueAtTime(0.25, now + i * 0.12);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.12 + 0.3);
+      osc.start(now + i * 0.12);
+      osc.stop(now + i * 0.12 + 0.3);
+    });
+    return;
+
+  } else if (type === 'lose') {
+    o.type = 'sine';
+    o.frequency.setValueAtTime(400, now);
+    o.frequency.exponentialRampToValueAtTime(150, now + 0.6);
+    g.gain.setValueAtTime(0.25, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
+    o.start(now);
+    o.stop(now + 0.7);
+  }
+}
+
 function animateCoconut(direction, callback) {
   const el = document.getElementById('coconutFly');
   el.style.display = 'block';
@@ -655,13 +769,14 @@ function closeMoki() {
 
 function showWin() {
   setMonkeyImg('dead');
+  playSound('win');
   setTimeout(() => {
     document.getElementById('winScreen').classList.add('show');
-    // 之後串接 Firebase 存椰子
   }, 600);
 }
 
 function showLose() {
+  playSound('lose');
   document.getElementById('loseScreen').classList.add('show');
 }
 
