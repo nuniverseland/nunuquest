@@ -7,81 +7,84 @@
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-
     body {
       font-family: 'Noto Sans TC', sans-serif;
       background: #1a1a2e;
-      min-height: 100vh;
       overflow-x: hidden;
     }
 
-    /* 整個頁面是一張底圖 */
+    /* 整個頁面相對定位 */
     .page {
       position: relative;
       width: 100%;
     }
 
-    /* 底圖完整顯示 */
+    /* 底圖 */
     .bg-img {
       width: 100%;
       height: auto;
       display: block;
     }
 
-    /* 所有內容疊在底圖上 */
-    .overlay-content {
+    /* 所有疊層 */
+    .overlay {
       position: absolute;
       top: 0; left: 0; right: 0; bottom: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      /* 之後你給按鈕圖，我們再定位 */
     }
 
-    /* 暫時的標題（之後換成你的圖片按鈕） */
-    .temp-title {
-      margin-top: 20px;
+    /* 標題 */
+    .title {
+      position: absolute;
+      top: 3%;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      width: 90%;
+    }
+    .title h1 {
       font-family: 'Baloo 2', cursive;
-      font-size: clamp(1.6rem, 5vw, 2.8rem);
+      font-size: clamp(1.4rem, 5vw, 2.5rem);
       font-weight: 800;
       color: white;
-      text-shadow: 0 2px 12px rgba(0,0,0,0.8);
-      text-align: center;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.9), 0 0 30px rgba(0,0,0,0.6);
     }
-    .temp-subtitle {
-      font-size: 1rem;
+    .title p {
+      font-size: clamp(0.75rem, 2.5vw, 1rem);
       color: #f4e3b2;
-      text-shadow: 0 2px 6px rgba(0,0,0,0.8);
-      margin-top: 4px;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.9);
+      margin-top: 2px;
     }
 
-    /* 椰子進度（暫時，之後換圖） */
+    /* 椰子進度條 */
     .coconut-bar {
-      margin-top: 16px;
-      background: rgba(0,0,0,0.5);
+      position: absolute;
+      top: 13%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.55);
       border-radius: 16px;
-      padding: 12px 18px;
-      border: 2px solid rgba(255,255,255,0.3);
-      backdrop-filter: blur(4px);
-      width: 80%;
-      max-width: 320px;
+      padding: 10px 16px;
+      border: 1.5px solid rgba(255,255,255,0.25);
+      backdrop-filter: blur(6px);
+      width: 75%;
+      max-width: 300px;
+      text-align: center;
     }
     .coconut-bar-title {
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       color: #f4e3b2;
       font-weight: 700;
-      margin-bottom: 8px;
-      text-align: center;
+      margin-bottom: 6px;
     }
     .coconut-icons {
       display: flex;
-      gap: 8px;
+      gap: 6px;
       justify-content: center;
       margin-bottom: 4px;
     }
     .coconut-icon {
-      font-size: 1.6rem;
-      filter: grayscale(1) opacity(0.4);
+      font-size: 1.4rem;
+      filter: grayscale(1) opacity(0.3);
       transition: all 0.4s;
     }
     .coconut-icon.earned {
@@ -94,155 +97,137 @@
       100% { transform: scale(1); }
     }
     .coconut-progress-text {
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       color: #f4e3b2;
-      text-align: center;
     }
 
-    /* 暫時按鈕區（之後換成你的圖片） */
-    .temp-buttons {
-      margin-top: 20px;
+    /* 故事按鈕 - 置中偏上 */
+    .story-btn {
+      position: absolute;
+      top: 32%;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .story-btn img {
+      width: clamp(120px, 35vw, 200px);
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.6));
+      transition: transform 0.15s;
+      cursor: pointer;
+    }
+    .story-btn img:active { transform: scale(0.95); }
+
+    /* 石頭猴 - 左下 */
+    .monkey-stone {
+      position: absolute;
+      bottom: 22%;
+      left: 2%;
+    }
+
+    /* 嘴砲猴 - 中間偏下 */
+    .monkey-loud {
+      position: absolute;
+      bottom: 18%;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    /* 壞心眼猴 - 右下 */
+    .monkey-sneaky {
+      position: absolute;
+      bottom: 22%;
+      right: 2%;
+    }
+
+    /* 猴子共用樣式 */
+    .monkey-btn {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 12px;
-      width: 80%;
-      max-width: 320px;
+      text-decoration: none;
+      transition: transform 0.15s;
+    }
+    .monkey-btn:active { transform: scale(0.92); }
+    .monkey-btn img {
+      width: clamp(70px, 22vw, 130px);
+      filter: drop-shadow(0 4px 10px rgba(0,0,0,0.7));
+    }
+    .monkey-tag {
+      margin-top: 4px;
+      background: rgba(0,0,0,0.65);
+      border-radius: 20px;
+      padding: 3px 10px;
+      font-size: clamp(0.6rem, 1.8vw, 0.75rem);
+      font-weight: 700;
+      color: white;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+      white-space: nowrap;
     }
 
-    .temp-btn {
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: none;
-      font-family: 'Noto Sans TC', sans-serif;
-      font-size: 1rem;
-      font-weight: 700;
-      cursor: pointer;
-      text-decoration: none;
-      text-align: center;
-      display: block;
-      background: rgba(0,0,0,0.6);
-      color: white;
-      border: 2px solid rgba(255,255,255,0.3);
-      backdrop-filter: blur(4px);
-      transition: transform 0.1s;
+    /* Banu - 底部中間 */
+    .banu-section {
+      position: absolute;
+      bottom: 0%;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
-    .temp-btn:active { transform: scale(0.97); }
-    .temp-btn.locked { opacity: 0.5; cursor: not-allowed; }
+    .banu-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-decoration: none;
+      transition: transform 0.15s;
+    }
+    .banu-btn.locked { opacity: 0.65; cursor: not-allowed; }
+    .banu-btn:not(.locked):active { transform: scale(0.95); }
+    .banu-btn img {
+      width: clamp(100px, 30vw, 180px);
+      filter: drop-shadow(0 4px 20px rgba(255,80,0,0.5));
+    }
+    .banu-tag {
+      margin-top: 4px;
+      background: rgba(0,0,0,0.7);
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-size: clamp(0.6rem, 1.8vw, 0.75rem);
+      font-weight: 700;
+      color: #f4e3b2;
+      white-space: nowrap;
+      margin-bottom: 6px;
+    }
 
     @keyframes shake {
-      0%,100% { transform: translateX(0); }
-      25% { transform: translateX(-8px); }
-      75% { transform: translateX(8px); }
+      0%,100% { transform: translateX(-50%) translateY(0); }
+      25% { transform: translateX(calc(-50% - 8px)) translateY(0); }
+      75% { transform: translateX(calc(-50% + 8px)) translateY(0); }
     }
-
-    /* 三個關卡橫排 */
-    .battle-row {
-      display: flex;
-      gap: 10px;
-      width: 80%;
-      max-width: 320px;
-      margin-top: 12px;
-    }
-    .battle-mini {
-      flex: 1;
-      padding: 10px 4px;
-      border-radius: 12px;
-      background: rgba(0,0,0,0.6);
-      border: 2px solid rgba(255,255,255,0.3);
-      backdrop-filter: blur(4px);
-      text-align: center;
-      text-decoration: none;
-      color: white;
-      font-size: 0.7rem;
-      font-weight: 700;
-      transition: transform 0.1s;
-    }
-    .battle-mini:active { transform: scale(0.95); }
-    .battle-mini .mi { font-size: 1.6rem; display: block; }
-
-    /* 圖片按鈕 */
-    .img-buttons {
-      width: 80%;
-      max-width: 320px;
-      margin-top: 16px;
-      text-align: center;
-    }
-    .btn-img {
-      width: 100%;
-      max-width: 280px;
-      cursor: pointer;
-      transition: transform 0.1s;
-      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
-    }
-    .btn-img:active { transform: scale(0.97); }
-
-    /* 猴子圖片按鈕 */
-    .monkey-btn-img {
-      width: 100%;
-      height: 90px;
-      object-fit: contain;
-      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.6));
-      transition: transform 0.2s;
-    }
-    .battle-mini:active .monkey-btn-img { transform: scale(0.95); }
-    .monkey-label {
-      font-size: 0.7rem;
-      font-weight: 700;
-      color: white;
-      text-shadow: 0 1px 4px rgba(0,0,0,0.8);
-      margin-top: 4px;
-      line-height: 1.4;
-    }
-    .reward-label { font-size: 0.65rem; opacity: 0.9; }
-
-    /* Banu 圖片按鈕 */
-    .banu-img-btn {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-decoration: none;
-      transition: transform 0.1s;
-    }
-    .banu-img-btn.locked { opacity: 0.6; cursor: not-allowed; }
-    .banu-img-btn:not(.locked):active { transform: scale(0.97); }
-    .banu-btn-img {
-      width: 100%;
-      max-width: 220px;
-      filter: drop-shadow(0 4px 16px rgba(255,100,0,0.4));
-    }
-    .banu-label {
-      font-size: 0.8rem;
-      font-weight: 700;
-      color: #f4e3b2;
-      text-shadow: 0 1px 6px rgba(0,0,0,0.9);
-      background: rgba(0,0,0,0.5);
-      padding: 4px 12px;
-      border-radius: 20px;
-      margin-top: 6px;
+    .banu-section.shake-anim {
+      animation: shake 0.3s;
     }
   </style>
 </head>
 <body>
-
 <div class="page">
 
-  <!-- 底圖完整顯示 -->
+  <!-- 底圖 -->
   <picture>
     <source media="(min-width: 600px)" srcset="https://nuniverseland.github.io/nunuquest/assets/danang/header_desktop.png">
     <img class="bg-img" src="https://nuniverseland.github.io/nunuquest/assets/danang/header_mobile.png" alt="峴港保衛戰">
   </picture>
 
-  <!-- 疊在底圖上的內容 -->
-  <div class="overlay-content">
+  <div class="overlay">
 
-    <div class="temp-title">🐒 峴港保衛戰</div>
-    <div class="temp-subtitle">幫小白對抗壞猴小隊！</div>
+    <!-- 標題 -->
+    <div class="title">
+      <h1>🐒 峴港保衛戰</h1>
+      <p>幫小白對抗壞猴小隊！</p>
+    </div>
 
     <!-- 椰子進度 -->
     <div class="coconut-bar">
-      <div class="coconut-bar-title">🥥 椰子進度（集5顆解鎖Banu）</div>
+      <div class="coconut-bar-title">🥥 集滿5顆挑戰Banu！</div>
       <div class="coconut-icons">
         <span class="coconut-icon" id="c1">🥥</span>
         <span class="coconut-icon" id="c2">🥥</span>
@@ -254,33 +239,41 @@
     </div>
 
     <!-- 故事按鈕 -->
-    <div class="img-buttons">
+    <div class="story-btn">
       <a href="story.html">
-        <img class="btn-img" src="https://nuniverseland.github.io/nunuquest/assets/danang/btn_story.png" alt="查看故事篇章">
+        <img src="https://nuniverseland.github.io/nunuquest/assets/danang/btn_story.png" alt="故事篇章">
       </a>
     </div>
 
-    <!-- 三個關卡 -->
-    <div class="battle-row">
-      <a href="battle_stone.html" class="battle-mini">
-        <img class="monkey-btn-img" src="https://nuniverseland.github.io/nunuquest/assets/danang/monkey_stone.png" alt="石頭猴">
-        <div class="monkey-label">石頭猴<br><span class="reward-label">🥥×1</span></div>
+    <!-- 石頭猴 -->
+    <div class="monkey-stone">
+      <a href="battle_stone.html" class="monkey-btn">
+        <img src="https://nuniverseland.github.io/nunuquest/assets/danang/monkey_stone.png" alt="石頭猴">
+        <div class="monkey-tag">石頭猴 🥥×1</div>
       </a>
-      <a href="battle_loud.html" class="battle-mini">
-        <img class="monkey-btn-img" src="https://nuniverseland.github.io/nunuquest/assets/danang/monkey_loud.png" alt="嘴砲猴">
-        <div class="monkey-label">嘴砲猴<br><span class="reward-label">🥥×2</span></div>
+    </div>
+
+    <!-- 嘴砲猴 -->
+    <div class="monkey-loud">
+      <a href="battle_loud.html" class="monkey-btn">
+        <img src="https://nuniverseland.github.io/nunuquest/assets/danang/monkey_loud.png" alt="嘴砲猴">
+        <div class="monkey-tag">嘴砲猴 🥥×2</div>
       </a>
-      <a href="battle_sneaky.html" class="battle-mini">
-        <img class="monkey-btn-img" src="https://nuniverseland.github.io/nunuquest/assets/danang/monkey_sneaky.png" alt="壞心眼猴">
-        <div class="monkey-label">壞心眼猴<br><span class="reward-label">🥥×2</span></div>
+    </div>
+
+    <!-- 壞心眼猴 -->
+    <div class="monkey-sneaky">
+      <a href="battle_sneaky.html" class="monkey-btn">
+        <img src="https://nuniverseland.github.io/nunuquest/assets/danang/monkey_sneaky.png" alt="壞心眼猴">
+        <div class="monkey-tag">壞心眼猴 🥥×2</div>
       </a>
     </div>
 
     <!-- Banu -->
-    <div class="img-buttons">
-      <a href="battle_banu.html" id="banuBtn" class="banu-img-btn locked">
-        <img class="banu-btn-img" src="https://nuniverseland.github.io/nunuquest/assets/danang/banu.png" alt="Banu老大">
-        <div class="banu-label" id="banuNeeded">🔒 還需要 5 顆椰子</div>
+    <div class="banu-section" id="banuSection">
+      <a href="battle_banu.html" class="banu-btn locked" id="banuBtn">
+        <img src="https://nuniverseland.github.io/nunuquest/assets/danang/banu.png" alt="Banu老大">
+        <div class="banu-tag" id="banuNeeded">🔒 還需要 5 顆椰子</div>
       </a>
     </div>
 
@@ -303,23 +296,23 @@
 
     if (count >= 5) {
       banuBtn.classList.remove('locked');
-      banuNeeded.textContent = '挑戰老大！';
+      banuNeeded.textContent = '👑 挑戰老大！';
     } else {
       banuBtn.classList.add('locked');
-      banuNeeded.textContent = '還需要 ' + (5 - count) + ' 顆椰子';
+      banuNeeded.textContent = '🔒 還需要 ' + (5 - count) + ' 顆椰子';
     }
   }
 
   document.getElementById('banuBtn').addEventListener('click', function(e) {
     if (this.classList.contains('locked')) {
       e.preventDefault();
-      this.style.animation = 'shake 0.3s';
-      setTimeout(() => this.style.animation = '', 300);
+      const section = document.getElementById('banuSection');
+      section.classList.add('shake-anim');
+      setTimeout(() => section.classList.remove('shake-anim'), 300);
     }
   });
 
   updateCoconutDisplay(coconutsEarned);
 </script>
-
 </body>
 </html>
