@@ -354,10 +354,10 @@
 
     /* 狀態列 */
     .status-bar {
-      position: fixed;
+      position: absolute;
       top: 0; left: 0; right: 0;
       z-index: 1000;
-      background: rgba(0,0,0,0.75);
+      background: rgba(0,0,0,0.6);
       backdrop-filter: blur(8px);
       border-bottom: 1px solid rgba(255,255,255,0.15);
       padding: 8px 16px;
@@ -391,16 +391,16 @@
 </head>
 <body>
 
-<!-- 狀態列 -->
-<div class="status-bar">
-  <a href="../index.html" class="status-back">← 回地圖</a>
-  <div class="status-user" id="statusUser">🐒 冒險者</div>
-  <div class="status-coconut" id="statusCoconut">🥥 0 顆</div>
-</div>
-
 <!-- ── 電腦版 ── -->
 <div class="scene">
   <img class="bg" src="https://nuniverseland.github.io/nunuquest/assets/danang/header_desktop.png" alt="峴港">
+
+  <!-- 狀態列 -->
+  <div class="status-bar">
+    <a href="../index.html" class="status-back">← 回地圖</a>
+    <div class="status-user" id="statusUser">🐒 冒險者</div>
+    <div class="status-coconut" id="statusCoconut">🥥 0 顆</div>
+  </div>
 
   <!-- 標題 -->
   <div class="pc-title">
