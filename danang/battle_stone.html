@@ -63,14 +63,6 @@
     }
     .hp-bar-fill.monkey { background: linear-gradient(90deg, #ff4444, #ff8800); }
     .hp-bar-fill.nunu   { background: linear-gradient(90deg, #44aaff, #00eeff); }
-    .hp-hearts {
-      display: flex;
-      gap: 3px;
-      margin-top: 4px;
-      flex-wrap: wrap;
-    }
-    .heart { font-size: 0.75rem; transition: all 0.3s; }
-    .heart.lost { filter: grayscale(1) opacity(0.3); }
 
     /* 連擊提示 */
     .combo-badge {
@@ -333,7 +325,10 @@
     </div>
     <div class="hp-block" style="text-align:right;">
       <div class="hp-label">努努 ❤️</div>
-      <div class="hp-hearts" id="nunuHearts" style="justify-content:flex-end;"></div>
+      <div class="hp-bar-wrap">
+        <div class="hp-bar-fill nunu" id="nunuHpBar" style="width:100%"></div>
+      </div>
+      <div id="nunuHpText" style="font-size:0.7rem;color:#f4e3b2;margin-top:3px;">15 / 15</div>
     </div>
   </div>
 
@@ -430,17 +425,30 @@ async function init() {
 }
 
 async function loadQuestions() {
-  // 混合三科題庫
+  const BASE_URL = 'https://nuniverseland.github.io/nunuquest/data/';
   const files = ['questions_science', 'questions_spelling', 'questions_grammar'];
   let all = [];
   for (const f of files) {
     try {
-      const res = await fetch(`https://nuniverseland.github.io/nunuquest/data/${f}.json`);
-      const data = await res.json();
-      all = all.concat(data);
-    } catch(e) { console.log('載入失敗:', f); }
+      const res = await fetch(BASE_URL + f + '.json', { cache: 'no-cache' });
+      if (res.ok) {
+        const data = await res.json();
+        all = all.concat(data);
+      }
+    } catch(e) {
+      console.log('載入失敗:', f, e);
+    }
   }
-  // 洗牌
+  if (all.length === 0) {
+    // 備用：如果fetch失敗，用內建測試題
+    all = [
+      {"question":"We set up a ___ in the woods.","answer":"camp","wordBank":["camp","pond","sing","hunt","end"]},
+      {"question":"The boat ___ to the bottom of the lake.","answer":"sank","wordBank":["bring","sank","next","stand","long"]},
+      {"question":"Please ___ some water.","answer":"drink","wordBank":["drink","stand","pond","end","stamp"]},
+      {"question":"Caryn ___ a ballet recital tonight.","answer":"has","wordBank":["have","has","had"]},
+      {"question":"We ___ a lot of jumping jacks.","answer":"do","wordBank":["do","does","did"]},
+    ];
+  }
   questionPool = shuffle(all);
 }
 
@@ -585,18 +593,17 @@ function damageMonkey(dmg) {
 
 function damageNunu(dmg) {
   nunuHp = Math.max(0, nunuHp - dmg);
-  renderHearts();
+  updateNunuHpBar();
+}
+
+function updateNunuHpBar() {
+  const pct = (nunuHp / NUNU_MAX_HP * 100) + '%';
+  document.getElementById('nunuHpBar').style.width = pct;
+  document.getElementById('nunuHpText').textContent = `${nunuHp} / ${NUNU_MAX_HP}`;
 }
 
 function renderHearts() {
-  const container = document.getElementById('nunuHearts');
-  container.innerHTML = '';
-  for (let i = 0; i < NUNU_MAX_HP; i++) {
-    const h = document.createElement('span');
-    h.className = 'heart' + (i >= nunuHp ? ' lost' : '');
-    h.textContent = i < nunuHp ? '❤️' : '🖤';
-    container.appendChild(h);
-  }
+  updateNunuHpBar();
 }
 
 function setMonkeyImg(state) {
