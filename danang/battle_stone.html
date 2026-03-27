@@ -8,7 +8,6 @@
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
     import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
     const firebaseConfig = {
       apiKey: "AIzaSyA-E-IN6185ruhUb-TB9LkDyK5xJayLBxU",
@@ -22,15 +21,10 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const auth = getAuth(app);
 
-    let currentUserId = null;
-
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        currentUserId = user.uid;
-      }
-    });
+    // 從 sessionStorage 取得 userId（跟外層 index.html 一致）
+    const currentUserId = sessionStorage.getItem('nunuUserId');
+    console.log('目前 userId:', currentUserId);
 
     // 打贏後加椰子
     window.addCoconuts = async function(amount) {
