@@ -24,6 +24,56 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
 
+    function updateDisplay(count) {
+      // 椰子圖示最多顯示5個
+      for (let i = 1; i <= 5; i++) {
+        const pc = document.getElementById('pc-c' + i);
+        const m = document.getElementById('m-c' + i);
+        if (pc) { if (i <= Math.min(count, 5)) pc.classList.add('earned'); else pc.classList.remove('earned'); }
+        if (m)  { if (i <= Math.min(count, 5)) m.classList.add('earned');  else m.classList.remove('earned'); }
+      }
+
+      // 文字顯示
+      const pcText = document.getElementById('pc-coconutText');
+      const mText = document.getElementById('m-coconutText');
+      let displayText = '';
+      if (count >= 5) {
+        displayText = count > 5 ? `🥥 ${count} 顆　越多越好！` : `${count} / 5 顆`;
+      } else {
+        displayText = `${count} / 5 顆`;
+      }
+      if (pcText) pcText.textContent = displayText;
+      if (mText)  mText.textContent  = displayText;
+
+      // Banu 解鎖
+      const banuBtn = document.getElementById('pc-banuBtn');
+      const banuNeeded = document.getElementById('pc-banuNeeded');
+      if (!banuBtn) return;
+
+      if (count >= 5) {
+        banuBtn.classList.remove('locked');
+        banuNeeded.textContent = '👑 挑戰老大！';
+      } else {
+        banuBtn.classList.add('locked');
+        banuNeeded.textContent = '🔒 還需要 ' + (5 - count) + ' 顆椰子';
+      }
+    }
+
+    // Banu 鎖定點擊抖動
+    document.addEventListener('DOMContentLoaded', () => {
+      const banuBtn = document.getElementById('pc-banuBtn');
+      if (banuBtn) {
+        banuBtn.addEventListener('click', function(e) {
+          if (this.classList.contains('locked')) {
+            e.preventDefault();
+            const sec = document.getElementById('pc-banuSection');
+            sec.classList.add('shake');
+            setTimeout(() => sec.classList.remove('shake'), 300);
+          }
+        });
+      }
+    });
+
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         try {
@@ -375,46 +425,6 @@
   </div>
 </div>
 
-<script>
-  function updateDisplay(count) {
-    for (let i = 1; i <= 5; i++) {
-      const pc = document.getElementById('pc-c' + i);
-      const m = document.getElementById('m-c' + i);
-      if (pc) { if (i <= count) pc.classList.add('earned'); else pc.classList.remove('earned'); }
-      if (m)  { if (i <= count) m.classList.add('earned');  else m.classList.remove('earned'); }
-    }
-    const pcText = document.getElementById('pc-coconutText');
-    const mText = document.getElementById('m-coconutText');
-    if (pcText) pcText.textContent = count + ' / 5 顆';
-    if (mText)  mText.textContent  = count + ' / 5 顆';
 
-    const banuBtn = document.getElementById('pc-banuBtn');
-    const banuNeeded = document.getElementById('pc-banuNeeded');
-    if (!banuBtn) return;
-
-    if (count >= 5) {
-      banuBtn.classList.remove('locked');
-      banuNeeded.textContent = '👑 挑戰老大！';
-    } else {
-      banuBtn.classList.add('locked');
-      banuNeeded.textContent = '🔒 還需要 ' + (5 - count) + ' 顆椰子';
-    }
-  }
-
-  const banuBtn = document.getElementById('pc-banuBtn');
-  if (banuBtn) {
-    banuBtn.addEventListener('click', function(e) {
-      if (this.classList.contains('locked')) {
-        e.preventDefault();
-        const sec = document.getElementById('pc-banuSection');
-        sec.classList.add('shake');
-        setTimeout(() => sec.classList.remove('shake'), 300);
-      }
-    });
-  }
-
-  // 預設先顯示0，Firebase載入後會更新
-  updateDisplay(0);
-</script>
 </body>
 </html>
