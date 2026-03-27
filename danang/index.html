@@ -13,77 +13,96 @@
       overflow-x: hidden;
     }
 
-    /* 整個頁面相對定位 */
-    .page {
+    /* ── 電腦版：3:2 比例容器，精準定位 ── */
+    .scene {
+      display: none; /* 預設隱藏，電腦才顯示 */
+      position: relative;
+      width: 100%;
+      aspect-ratio: 3 / 2; /* 1536x1024 */
+    }
+    .scene img.bg {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+
+    /* 電腦版顯示 */
+    @media (min-width: 600px) {
+      .scene { display: block; }
+      .mobile-scene { display: none; }
+    }
+
+    /* ── 手機版：直式圖，之後再設計 ── */
+    .mobile-scene {
       position: relative;
       width: 100%;
     }
-
-    /* 底圖 */
-    .bg-img {
+    .mobile-scene img.bg {
       width: 100%;
       height: auto;
       display: block;
     }
-
-    /* 所有疊層 */
-    .overlay {
+    .mobile-overlay {
       position: absolute;
       top: 0; left: 0; right: 0; bottom: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 5%;
     }
 
-    /* 標題 */
-    .title {
+    /* ── 電腦版定位（百分比 = 像素位置 / 1536 or 1024）── */
+
+    /* 標題：上方置中 */
+    .pc-title {
       position: absolute;
       top: 3%;
       left: 50%;
       transform: translateX(-50%);
       text-align: center;
-      width: 90%;
+      white-space: nowrap;
     }
-    .title h1 {
+    .pc-title h1 {
       font-family: 'Baloo 2', cursive;
-      font-size: clamp(1.4rem, 5vw, 2.5rem);
+      font-size: clamp(1.2rem, 2.5vw, 2.2rem);
       font-weight: 800;
       color: white;
-      text-shadow: 0 2px 12px rgba(0,0,0,0.9), 0 0 30px rgba(0,0,0,0.6);
+      text-shadow: 0 2px 12px rgba(0,0,0,0.9);
     }
-    .title p {
-      font-size: clamp(0.75rem, 2.5vw, 1rem);
+    .pc-title p {
+      font-size: clamp(0.65rem, 1.2vw, 1rem);
       color: #f4e3b2;
       text-shadow: 0 2px 8px rgba(0,0,0,0.9);
       margin-top: 2px;
     }
 
-    /* 椰子進度條 */
-    .coconut-bar {
+    /* 椰子進度：左上 */
+    .pc-coconut {
       position: absolute;
-      top: 13%;
-      left: 50%;
-      transform: translateX(-50%);
+      top: 3%;
+      left: 1%;
       background: rgba(0,0,0,0.55);
-      border-radius: 16px;
-      padding: 10px 16px;
+      border-radius: 12px;
+      padding: 8px 14px;
       border: 1.5px solid rgba(255,255,255,0.25);
       backdrop-filter: blur(6px);
-      width: 75%;
-      max-width: 300px;
-      text-align: center;
     }
-    .coconut-bar-title {
-      font-size: 0.75rem;
+    .pc-coconut .bar-title {
+      font-size: 0.7vw;
       color: #f4e3b2;
       font-weight: 700;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
+      white-space: nowrap;
     }
     .coconut-icons {
       display: flex;
-      gap: 6px;
+      gap: 4px;
       justify-content: center;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
     }
     .coconut-icon {
-      font-size: 1.4rem;
+      font-size: 1.2vw;
       filter: grayscale(1) opacity(0.3);
       transition: all 0.4s;
     }
@@ -97,80 +116,85 @@
       100% { transform: scale(1); }
     }
     .coconut-progress-text {
-      font-size: 0.7rem;
+      font-size: 0.65vw;
       color: #f4e3b2;
+      text-align: center;
     }
 
-    /* 故事按鈕 - 中間沙灘 */
-    .story-btn {
+    /* 故事按鈕：中間沙灘 left:35% top:45% */
+    .pc-story {
       position: absolute;
-      top: 38%;
-      left: 35%;
+      top: 42%;
+      left: 30%;
       transform: translateX(-50%);
     }
-    .story-btn img {
-      width: clamp(100px, 28vw, 180px);
-      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.6));
+    .pc-story img {
+      width: 12vw;
+      max-width: 160px;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.7));
       transition: transform 0.15s;
       cursor: pointer;
     }
-    .story-btn img:active { transform: scale(0.95); }
+    .pc-story img:active { transform: scale(0.95); }
 
-    /* 石頭猴 - 椰子樹下石堆 */
-    .monkey-stone {
+    /* 石頭猴：椰子樹下石堆 left:58% bottom:28% */
+    .pc-stone {
       position: absolute;
-      bottom: 28%;
-      left: 48%;
+      bottom: 30%;
+      left: 56%;
     }
 
-    /* 嘴砲猴 - 海灘沙地 */
-    .monkey-loud {
-      position: absolute;
-      bottom: 12%;
-      left: 28%;
-    }
-
-    /* 壞心眼猴 - 右下背包旁 */
-    .monkey-sneaky {
+    /* 嘴砲猴：海灘沙地 left:35% bottom:12% */
+    .pc-loud {
       position: absolute;
       bottom: 8%;
-      right: 4%;
+      left: 33%;
     }
 
-    /* 猴子共用樣式 */
+    /* 壞心眼猴：右下背包旁 right:6% bottom:8% */
+    .pc-sneaky {
+      position: absolute;
+      bottom: 5%;
+      right: 5%;
+    }
+
+    /* Banu：右邊山洞口 right:4% top:20% */
+    .pc-banu {
+      position: absolute;
+      top: 18%;
+      right: 2%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* 猴子共用 */
     .monkey-btn {
       display: flex;
       flex-direction: column;
       align-items: center;
       text-decoration: none;
       transition: transform 0.15s;
+      cursor: pointer;
     }
     .monkey-btn:active { transform: scale(0.92); }
     .monkey-btn img {
-      width: clamp(70px, 22vw, 130px);
+      width: 8vw;
+      max-width: 120px;
       filter: drop-shadow(0 4px 10px rgba(0,0,0,0.7));
     }
     .monkey-tag {
-      margin-top: 4px;
+      margin-top: 3px;
       background: rgba(0,0,0,0.65);
       border-radius: 20px;
-      padding: 3px 10px;
-      font-size: clamp(0.6rem, 1.8vw, 0.75rem);
+      padding: 2px 8px;
+      font-size: 0.7vw;
       font-weight: 700;
       color: white;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
       white-space: nowrap;
     }
 
-    /* Banu - 右邊山洞口 */
-    .banu-section {
-      position: absolute;
-      top: 25%;
-      right: 3%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+    /* Banu 按鈕 */
     .banu-btn {
       display: flex;
       flex-direction: column;
@@ -181,19 +205,19 @@
     .banu-btn.locked { opacity: 0.65; cursor: not-allowed; }
     .banu-btn:not(.locked):active { transform: scale(0.95); }
     .banu-btn img {
-      width: clamp(100px, 30vw, 180px);
+      width: 10vw;
+      max-width: 150px;
       filter: drop-shadow(0 4px 20px rgba(255,80,0,0.5));
     }
     .banu-tag {
-      margin-top: 4px;
+      margin-top: 3px;
       background: rgba(0,0,0,0.7);
       border-radius: 20px;
-      padding: 4px 14px;
-      font-size: clamp(0.6rem, 1.8vw, 0.75rem);
+      padding: 3px 10px;
+      font-size: 0.65vw;
       font-weight: 700;
       color: #f4e3b2;
       white-space: nowrap;
-      margin-bottom: 6px;
     }
 
     @keyframes shake {
@@ -201,96 +225,148 @@
       25% { transform: translateX(-8px); }
       75% { transform: translateX(8px); }
     }
-    .banu-section.shake-anim {
-      animation: shake 0.3s;
+    .shake { animation: shake 0.3s; }
+
+    /* ── 手機版樣式 ── */
+    .mobile-title {
+      font-family: 'Baloo 2', cursive;
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: white;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.9);
+      text-align: center;
     }
+    .mobile-subtitle {
+      font-size: 0.75rem;
+      color: #f4e3b2;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.9);
+      margin-top: 2px;
+      text-align: center;
+    }
+    .mobile-coconut {
+      margin-top: 10px;
+      background: rgba(0,0,0,0.55);
+      border-radius: 12px;
+      padding: 8px 14px;
+      border: 1.5px solid rgba(255,255,255,0.25);
+      backdrop-filter: blur(6px);
+      text-align: center;
+      width: 75%;
+    }
+    .mobile-coconut .bar-title {
+      font-size: 0.7rem;
+      color: #f4e3b2;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .mobile-coconut .coconut-icon { font-size: 1.3rem; }
+    .mobile-coconut .coconut-progress-text { font-size: 0.65rem; }
   </style>
 </head>
 <body>
-<div class="page">
 
-  <!-- 底圖 -->
-  <picture>
-    <source media="(min-width: 600px)" srcset="https://nuniverseland.github.io/nunuquest/assets/danang/header_desktop.png">
-    <img class="bg-img" src="https://nuniverseland.github.io/nunuquest/assets/danang/header_mobile.png" alt="峴港保衛戰">
-  </picture>
+<!-- ── 電腦版 ── -->
+<div class="scene">
+  <img class="bg" src="https://nuniverseland.github.io/nunuquest/assets/danang/header_desktop.png" alt="峴港">
 
-  <div class="overlay">
+  <!-- 標題 -->
+  <div class="pc-title">
+    <h1>🐒 峴港保衛戰</h1>
+    <p>椰子收集限時活動 🥥 對抗壞猴小隊！</p>
+  </div>
 
-    <!-- 標題 -->
-    <div class="title">
-      <h1>🐒 峴港保衛戰</h1>
-      <p>椰子收集限時活動 🥥 對抗壞猴小隊！</p>
+  <!-- 椰子進度 -->
+  <div class="pc-coconut">
+    <div class="bar-title">🥥 集滿5顆挑戰Banu！</div>
+    <div class="coconut-icons">
+      <span class="coconut-icon" id="pc-c1">🥥</span>
+      <span class="coconut-icon" id="pc-c2">🥥</span>
+      <span class="coconut-icon" id="pc-c3">🥥</span>
+      <span class="coconut-icon" id="pc-c4">🥥</span>
+      <span class="coconut-icon" id="pc-c5">🥥</span>
     </div>
+    <div class="coconut-progress-text" id="pc-coconutText">0 / 5 顆</div>
+  </div>
 
-    <!-- 椰子進度 -->
-    <div class="coconut-bar">
-      <div class="coconut-bar-title">🥥 集滿5顆挑戰Banu！</div>
+  <!-- 故事按鈕 -->
+  <div class="pc-story">
+    <a href="story.html">
+      <img src="https://nuniverseland.github.io/nunuquest/assets/danang/btn_story.png" alt="故事篇章">
+    </a>
+  </div>
+
+  <!-- 石頭猴：椰子樹下石堆 -->
+  <div class="pc-stone">
+    <a href="battle_stone.html" class="monkey-btn">
+      <img src="https://nuniverseland.github.io/nunuquest/assets/danang/monkey_stone.png" alt="石頭猴">
+      <div class="monkey-tag">石頭猴 🥥×1</div>
+    </a>
+  </div>
+
+  <!-- 嘴砲猴：海灘沙地 -->
+  <div class="pc-loud">
+    <a href="battle_loud.html" class="monkey-btn">
+      <img src="https://nuniverseland.github.io/nunuquest/assets/danang/monkey_loud.png" alt="嘴砲猴">
+      <div class="monkey-tag">嘴砲猴 🥥×2</div>
+    </a>
+  </div>
+
+  <!-- 壞心眼猴：右下背包旁 -->
+  <div class="pc-sneaky">
+    <a href="battle_sneaky.html" class="monkey-btn">
+      <img src="https://nuniverseland.github.io/nunuquest/assets/danang/monkey_sneaky.png" alt="壞心眼猴">
+      <div class="monkey-tag">壞心眼猴 🥥×2</div>
+    </a>
+  </div>
+
+  <!-- Banu：山洞口 -->
+  <div class="pc-banu" id="pc-banuSection">
+    <a href="battle_banu.html" class="banu-btn locked" id="pc-banuBtn">
+      <img src="https://nuniverseland.github.io/nunuquest/assets/danang/banu.png" alt="Banu">
+      <div class="banu-tag" id="pc-banuNeeded">🔒 還需要 5 顆椰子</div>
+    </a>
+  </div>
+</div>
+
+<!-- ── 手機版（暫時簡單版，之後再設計）── -->
+<div class="mobile-scene">
+  <img class="bg" src="https://nuniverseland.github.io/nunuquest/assets/danang/header_mobile.png" alt="峴港">
+  <div class="mobile-overlay">
+    <div class="mobile-title">🐒 峴港保衛戰</div>
+    <div class="mobile-subtitle">椰子收集限時活動 🥥</div>
+    <div class="mobile-coconut">
+      <div class="bar-title">🥥 集滿5顆挑戰Banu！</div>
       <div class="coconut-icons">
-        <span class="coconut-icon" id="c1">🥥</span>
-        <span class="coconut-icon" id="c2">🥥</span>
-        <span class="coconut-icon" id="c3">🥥</span>
-        <span class="coconut-icon" id="c4">🥥</span>
-        <span class="coconut-icon" id="c5">🥥</span>
+        <span class="coconut-icon" id="m-c1">🥥</span>
+        <span class="coconut-icon" id="m-c2">🥥</span>
+        <span class="coconut-icon" id="m-c3">🥥</span>
+        <span class="coconut-icon" id="m-c4">🥥</span>
+        <span class="coconut-icon" id="m-c5">🥥</span>
       </div>
-      <div class="coconut-progress-text" id="coconutText">0 / 5 顆</div>
+      <div class="coconut-progress-text" id="m-coconutText">0 / 5 顆</div>
     </div>
-
-    <!-- 故事按鈕 -->
-    <div class="story-btn">
-      <a href="story.html">
-        <img src="https://nuniverseland.github.io/nunuquest/assets/danang/btn_story.png" alt="故事篇章">
-      </a>
-    </div>
-
-    <!-- 石頭猴 -->
-    <div class="monkey-stone">
-      <a href="battle_stone.html" class="monkey-btn">
-        <img src="https://nuniverseland.github.io/nunuquest/assets/danang/monkey_stone.png" alt="石頭猴">
-        <div class="monkey-tag">石頭猴 🥥×1</div>
-      </a>
-    </div>
-
-    <!-- 嘴砲猴 -->
-    <div class="monkey-loud">
-      <a href="battle_loud.html" class="monkey-btn">
-        <img src="https://nuniverseland.github.io/nunuquest/assets/danang/monkey_loud.png" alt="嘴砲猴">
-        <div class="monkey-tag">嘴砲猴 🥥×2</div>
-      </a>
-    </div>
-
-    <!-- 壞心眼猴 -->
-    <div class="monkey-sneaky">
-      <a href="battle_sneaky.html" class="monkey-btn">
-        <img src="https://nuniverseland.github.io/nunuquest/assets/danang/monkey_sneaky.png" alt="壞心眼猴">
-        <div class="monkey-tag">壞心眼猴 🥥×2</div>
-      </a>
-    </div>
-
-    <!-- Banu -->
-    <div class="banu-section" id="banuSection">
-      <a href="battle_banu.html" class="banu-btn locked" id="banuBtn">
-        <img src="https://nuniverseland.github.io/nunuquest/assets/danang/banu.png" alt="Banu老大">
-        <div class="banu-tag" id="banuNeeded">🔒 還需要 5 顆椰子</div>
-      </a>
-    </div>
-
   </div>
 </div>
 
 <script>
   const coconutsEarned = 0;
 
-  function updateCoconutDisplay(count) {
+  function updateDisplay(count) {
+    // 電腦版
     for (let i = 1; i <= 5; i++) {
-      const icon = document.getElementById('c' + i);
-      if (i <= count) icon.classList.add('earned');
-      else icon.classList.remove('earned');
+      const pc = document.getElementById('pc-c' + i);
+      const m = document.getElementById('m-c' + i);
+      if (pc) { if (i <= count) pc.classList.add('earned'); else pc.classList.remove('earned'); }
+      if (m)  { if (i <= count) m.classList.add('earned');  else m.classList.remove('earned'); }
     }
-    document.getElementById('coconutText').textContent = count + ' / 5 顆';
+    const pcText = document.getElementById('pc-coconutText');
+    const mText = document.getElementById('m-coconutText');
+    if (pcText) pcText.textContent = count + ' / 5 顆';
+    if (mText)  mText.textContent  = count + ' / 5 顆';
 
-    const banuBtn = document.getElementById('banuBtn');
-    const banuNeeded = document.getElementById('banuNeeded');
+    const banuBtn = document.getElementById('pc-banuBtn');
+    const banuNeeded = document.getElementById('pc-banuNeeded');
+    if (!banuBtn) return;
 
     if (count >= 5) {
       banuBtn.classList.remove('locked');
@@ -301,16 +377,19 @@
     }
   }
 
-  document.getElementById('banuBtn').addEventListener('click', function(e) {
-    if (this.classList.contains('locked')) {
-      e.preventDefault();
-      const section = document.getElementById('banuSection');
-      section.classList.add('shake-anim');
-      setTimeout(() => section.classList.remove('shake-anim'), 300);
-    }
-  });
+  const banuBtn = document.getElementById('pc-banuBtn');
+  if (banuBtn) {
+    banuBtn.addEventListener('click', function(e) {
+      if (this.classList.contains('locked')) {
+        e.preventDefault();
+        const sec = document.getElementById('pc-banuSection');
+        sec.classList.add('shake');
+        setTimeout(() => sec.classList.remove('shake'), 300);
+      }
+    });
+  }
 
-  updateCoconutDisplay(coconutsEarned);
+  updateDisplay(coconutsEarned);
 </script>
 </body>
 </html>
