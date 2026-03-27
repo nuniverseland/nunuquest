@@ -122,47 +122,45 @@
     }
 
     /* 故事按鈕：中間沙灘 left:35% top:45% */
+    /* 左側面板：猴子三列 */
+    .pc-left-panel {
+      position: absolute;
+      top: 55%;
+      left: 3%;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    /* 故事按鈕：標題正下方置中 */
     .pc-story {
       position: absolute;
-      top: 42%;
-      left: 30%;
+      top: 12%;
+      left: 50%;
       transform: translateX(-50%);
     }
     .pc-story img {
-      width: 12vw;
-      max-width: 160px;
+      width: 18vw;
+      max-width: 240px;
       filter: drop-shadow(0 4px 12px rgba(0,0,0,0.7));
       transition: transform 0.15s;
       cursor: pointer;
     }
     .pc-story img:active { transform: scale(0.95); }
 
-    /* 石頭猴：椰子樹下石堆 left:58% bottom:28% */
-    .pc-stone {
-      position: absolute;
-      bottom: 30%;
-      left: 56%;
+    /* 三隻猴子一排 */
+    .pc-monkey-row {
+      display: flex;
+      gap: 16px;
+      align-items: flex-end;
     }
 
-    /* 嘴砲猴：海灘沙地 left:35% bottom:12% */
-    .pc-loud {
-      position: absolute;
-      bottom: 8%;
-      left: 33%;
-    }
-
-    /* 壞心眼猴：右下背包旁 right:6% bottom:8% */
-    .pc-sneaky {
-      position: absolute;
-      bottom: 5%;
-      right: 5%;
-    }
-
-    /* Banu：右邊山洞口 right:4% top:20% */
+    /* Banu：山洞口，往左調 */
     .pc-banu {
       position: absolute;
-      top: 18%;
-      right: 2%;
+      top: 35%;
+      right: 8%;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -179,16 +177,16 @@
     }
     .monkey-btn:active { transform: scale(0.92); }
     .monkey-btn img {
-      width: 8vw;
-      max-width: 120px;
+      width: 15vw;
+      max-width: 200px;
       filter: drop-shadow(0 4px 10px rgba(0,0,0,0.7));
     }
     .monkey-tag {
-      margin-top: 3px;
+      margin-top: 4px;
       background: rgba(0,0,0,0.65);
       border-radius: 20px;
-      padding: 2px 8px;
-      font-size: 0.7vw;
+      padding: 3px 10px;
+      font-size: 0.8vw;
       font-weight: 700;
       color: white;
       white-space: nowrap;
@@ -288,35 +286,29 @@
     <div class="coconut-progress-text" id="pc-coconutText">0 / 5 顆</div>
   </div>
 
-  <!-- 故事按鈕 -->
+  <!-- 故事按鈕：標題正下方 -->
   <div class="pc-story">
     <a href="story.html">
       <img src="https://nuniverseland.github.io/nunuquest/assets/danang/btn_story.png" alt="故事篇章">
     </a>
   </div>
 
-  <!-- 石頭猴：椰子樹下石堆 -->
-  <div class="pc-stone">
-    <a href="battle_stone.html" class="monkey-btn">
-      <img src="https://nuniverseland.github.io/nunuquest/assets/danang/monkey_stone.png" alt="石頭猴">
-      <div class="monkey-tag">石頭猴 🥥×1</div>
-    </a>
-  </div>
-
-  <!-- 嘴砲猴：海灘沙地 -->
-  <div class="pc-loud">
-    <a href="battle_loud.html" class="monkey-btn">
-      <img src="https://nuniverseland.github.io/nunuquest/assets/danang/monkey_loud.png" alt="嘴砲猴">
-      <div class="monkey-tag">嘴砲猴 🥥×2</div>
-    </a>
-  </div>
-
-  <!-- 壞心眼猴：右下背包旁 -->
-  <div class="pc-sneaky">
-    <a href="battle_sneaky.html" class="monkey-btn">
-      <img src="https://nuniverseland.github.io/nunuquest/assets/danang/monkey_sneaky.png" alt="壞心眼猴">
-      <div class="monkey-tag">壞心眼猴 🥥×2</div>
-    </a>
+  <!-- 三隻猴子：左下沙灘 -->
+  <div class="pc-left-panel">
+    <div class="pc-monkey-row">
+      <a href="battle_stone.html" class="monkey-btn">
+        <img src="https://nuniverseland.github.io/nunuquest/assets/danang/monkey_stone.png" alt="石頭猴">
+        <div class="monkey-tag">石頭猴 🥥×1</div>
+      </a>
+      <a href="battle_loud.html" class="monkey-btn">
+        <img src="https://nuniverseland.github.io/nunuquest/assets/danang/monkey_loud.png" alt="嘴砲猴">
+        <div class="monkey-tag">嘴砲猴 🥥×2</div>
+      </a>
+      <a href="battle_sneaky.html" class="monkey-btn">
+        <img src="https://nuniverseland.github.io/nunuquest/assets/danang/monkey_sneaky.png" alt="壞心眼猴">
+        <div class="monkey-tag">壞心眼猴 🥥×2</div>
+      </a>
+    </div>
   </div>
 
   <!-- Banu：山洞口 -->
