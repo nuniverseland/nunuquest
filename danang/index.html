@@ -101,41 +101,40 @@
       color: #f4e3b2;
     }
 
-    /* 故事按鈕 - 置中偏上 */
+    /* 故事按鈕 - 中間沙灘 */
     .story-btn {
       position: absolute;
-      top: 32%;
-      left: 50%;
+      top: 38%;
+      left: 35%;
       transform: translateX(-50%);
     }
     .story-btn img {
-      width: clamp(120px, 35vw, 200px);
+      width: clamp(100px, 28vw, 180px);
       filter: drop-shadow(0 4px 12px rgba(0,0,0,0.6));
       transition: transform 0.15s;
       cursor: pointer;
     }
     .story-btn img:active { transform: scale(0.95); }
 
-    /* 石頭猴 - 左下 */
+    /* 石頭猴 - 椰子樹下石堆 */
     .monkey-stone {
       position: absolute;
-      bottom: 22%;
-      left: 2%;
+      bottom: 28%;
+      left: 48%;
     }
 
-    /* 嘴砲猴 - 中間偏下 */
+    /* 嘴砲猴 - 海灘沙地 */
     .monkey-loud {
       position: absolute;
-      bottom: 18%;
-      left: 50%;
-      transform: translateX(-50%);
+      bottom: 12%;
+      left: 28%;
     }
 
-    /* 壞心眼猴 - 右下 */
+    /* 壞心眼猴 - 右下背包旁 */
     .monkey-sneaky {
       position: absolute;
-      bottom: 22%;
-      right: 2%;
+      bottom: 8%;
+      right: 4%;
     }
 
     /* 猴子共用樣式 */
@@ -163,12 +162,11 @@
       white-space: nowrap;
     }
 
-    /* Banu - 底部中間 */
+    /* Banu - 右邊山洞口 */
     .banu-section {
       position: absolute;
-      bottom: 0%;
-      left: 50%;
-      transform: translateX(-50%);
+      top: 25%;
+      right: 3%;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -199,9 +197,9 @@
     }
 
     @keyframes shake {
-      0%,100% { transform: translateX(-50%) translateY(0); }
-      25% { transform: translateX(calc(-50% - 8px)) translateY(0); }
-      75% { transform: translateX(calc(-50% + 8px)) translateY(0); }
+      0%,100% { transform: translateX(0); }
+      25% { transform: translateX(-8px); }
+      75% { transform: translateX(8px); }
     }
     .banu-section.shake-anim {
       animation: shake 0.3s;
@@ -222,7 +220,7 @@
     <!-- 標題 -->
     <div class="title">
       <h1>🐒 峴港保衛戰</h1>
-      <p>幫小白對抗壞猴小隊！</p>
+      <p>椰子收集限時活動 🥥 對抗壞猴小隊！</p>
     </div>
 
     <!-- 椰子進度 -->
