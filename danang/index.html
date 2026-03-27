@@ -23,6 +23,11 @@
     const db = getFirestore(app);
 
     const userId = sessionStorage.getItem('nunuUserId');
+    const nickname = sessionStorage.getItem('nunuNickname') || userId || '冒險者';
+
+    // 更新狀態列暱稱
+    const statusUser = document.getElementById('statusUser');
+    if (statusUser) statusUser.textContent = '🐒 ' + nickname;
 
     async function loadCoconuts() {
       if (!userId) { updateDisplay(0); return; }
@@ -31,6 +36,9 @@
         const snap = await getDoc(ref);
         const coconuts = snap.exists() ? (snap.data()?.danang?.coconuts || 0) : 0;
         updateDisplay(coconuts);
+        // 更新狀態列椰子數
+        const statusCoconut = document.getElementById('statusCoconut');
+        if (statusCoconut) statusCoconut.textContent = '🥥 ' + coconuts + ' 顆';
       } catch(e) {
         console.error('讀取椰子失敗:', e);
         updateDisplay(0);
@@ -343,9 +351,52 @@
     }
     .mobile-coconut .coconut-icon { font-size: 1.3rem; }
     .mobile-coconut .coconut-progress-text { font-size: 0.65rem; }
+
+    /* 狀態列 */
+    .status-bar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(255,255,255,0.15);
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: 'Noto Sans TC', sans-serif;
+    }
+    .status-user {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #f4e3b2;
+    }
+    .status-coconut {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #f4e3b2;
+    }
+    .status-back {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.7);
+      cursor: pointer;
+      text-decoration: none;
+      padding: 4px 10px;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 20px;
+      transition: all 0.2s;
+    }
+    .status-back:hover { background: rgba(255,255,255,0.1); }
   </style>
 </head>
 <body>
+
+<!-- 狀態列 -->
+<div class="status-bar">
+  <a href="../index.html" class="status-back">← 回地圖</a>
+  <div class="status-user" id="statusUser">🐒 冒險者</div>
+  <div class="status-coconut" id="statusCoconut">🥥 0 顆</div>
+</div>
 
 <!-- ── 電腦版 ── -->
 <div class="scene">

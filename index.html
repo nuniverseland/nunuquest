@@ -1201,7 +1201,8 @@
     </div>
 
     <!-- 峴港保衛戰入口 -->
-    <div id="game-danang" onclick="window.location.href='danang/index.html'"
+    <div id="game-danang"
+      onclick="sessionStorage.setItem('nunuUserId', gameState.userId); sessionStorage.setItem('nunuNickname', gameState.user ? gameState.user.nickname : ''); window.location.href='danang/index.html'"
       style="position:absolute; right:3%; top:5%; cursor:pointer; text-align:center; z-index:10;">
       <img src="https://nuniverseland.github.io/nunuquest/assets/danang/btn_danang.png"
         alt="峴港保衛戰"
