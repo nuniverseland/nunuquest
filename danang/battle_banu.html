@@ -124,6 +124,18 @@
 
     /* 嘴砲猴（走動單位） */
     .unit.loud { bottom: 5%; opacity: 0.85; }
+    .stone-bubble {
+      position: absolute; bottom: 105%; left: 50%; transform: translateX(-50%);
+      background: white; border-radius: 8px; padding: 3px 8px;
+      font-size: 0.5rem; font-weight: 700; color: #333;
+      white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      display: none; pointer-events: none; z-index: 10;
+    }
+    .stone-bubble::after {
+      content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+      border-left: 4px solid transparent; border-right: 4px solid transparent;
+      border-top: 4px solid white;
+    }
     .loud-bubble {
       position: absolute; bottom: 105%; left: 50%; transform: translateX(-50%);
       background: white; border-radius: 8px; padding: 3px 8px;
@@ -621,9 +633,10 @@ function spawnStone() {
   el.className = 'unit stone';
   el.id = id;
   el.style.left = STONE_START_X + '%';
-  el.innerHTML  = `<img src="${STONE_IMG}" alt="石頭猴">`;
+  el.innerHTML  = `<div class="stone-bubble" id="sb_${id}">嗚嗚嗚先撤！</div><img src="${STONE_IMG}" alt="石頭猴">`;
   document.getElementById('battleLane').appendChild(el);
-  stones.push({ id, x: STONE_START_X, el });
+  const bubbleEl = document.getElementById('sb_' + id);
+  stones.push({ id, x: STONE_START_X, el, bubbleEl, retreating: false });
 }
 
 // ════════ 遊戲循環（20fps） ════════
@@ -639,6 +652,7 @@ function gameLoop() {
   // 石頭猴向左走
   for (let i = stones.length - 1; i >= 0; i--) {
     const s = stones[i];
+    if (s.retreating) continue;
     s.x -= STONE_SPEED;
     s.el.style.left = s.x + '%';
     if (s.x <= STONE_GOAL_X) {
@@ -690,14 +704,20 @@ function gameLoop() {
     let fought = false;
     for (let j = stones.length - 1; j >= 0; j--) {
       const s = stones[j];
-      if (Math.abs(m.x - s.x) < COLLISION_DIST) {
-        removeUnit(s, stones, j);
+      if (Math.abs(m.x - s.x) < COLLISION_DIST && !s.retreating) {
+        s.retreating = true;
+        s.bubbleEl.style.display = 'block';
         damageBanu(1);
         playSound('moki_fight');
-        // Moki 攻擊動畫
         const img = m.el.querySelector('img');
         img.src = MOKI_IMG.attack;
         setTimeout(() => { if (img) img.src = MOKI_IMG.idle; }, 400);
+        const stoneId = s.id;
+        setTimeout(() => {
+          const idx = stones.findIndex(st => st.id === stoneId);
+          if (idx !== -1) removeUnit(stones[idx], stones, idx);
+          setTimeout(() => { if (!gameOver) spawnStone(); }, 1000);
+        }, 1000);
         fought = true;
         break;
       }
