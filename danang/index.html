@@ -7,7 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
-    import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
+    import { getFirestore, doc, getDoc, collection, getDocs } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
 
     const firebaseConfig = {
       apiKey: "AIzaSyA-E-IN6185ruhUb-TB9LkDyK5xJayLBxU",
@@ -96,6 +96,45 @@
     });
 
     loadCoconuts();
+
+    // ── 椰子排行榜 ──
+    window.showLeaderboard = async function() {
+      document.getElementById('lb-modal').classList.add('active');
+      const list = document.getElementById('lb-list');
+      list.innerHTML = '<div style="text-align:center;padding:20px;color:#f4e3b2;font-weight:700;">載入中…</div>';
+      try {
+        const snap = await getDocs(collection(db, 'users'));
+        const players = [];
+        snap.forEach(d => {
+          const data = d.data();
+          const coconuts = data?.danang?.coconuts || 0;
+          players.push({ id: d.id, nickname: data.nickname || '冒險者', coconuts });
+        });
+        players.sort((a, b) => b.coconuts - a.coconuts);
+        const top = players.filter(p => p.coconuts > 0);
+        if (top.length === 0) {
+          list.innerHTML = '<div style="text-align:center;padding:24px;color:#f4e3b2;font-weight:700;">還沒有人收集椰子！</div>';
+          return;
+        }
+        const medals = ['🥇','🥈','🥉'];
+        list.innerHTML = top.map((p, i) => {
+          const isMe = p.id === userId;
+          const rank = i < 3 ? medals[i] : `${i+1}`;
+          return `
+            <div class="lb-row ${isMe ? 'lb-me' : ''}">
+              <div class="lb-rank">${rank}</div>
+              <div class="lb-name">${p.nickname}${isMe ? ' 👈' : ''}</div>
+              <div class="lb-score">🥥 ${p.coconuts} 顆</div>
+            </div>`;
+        }).join('');
+      } catch(e) {
+        list.innerHTML = '<div style="text-align:center;color:#ff6666;font-weight:700;">載入失敗</div>';
+      }
+    };
+
+    window.closeLeaderboard = function() {
+      document.getElementById('lb-modal').classList.remove('active');
+    };
   </script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -387,6 +426,71 @@
       transition: all 0.2s;
     }
     .status-back:hover { background: rgba(255,255,255,0.1); }
+    .status-lb {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #ffd700;
+      cursor: pointer;
+      padding: 4px 10px;
+      border: 1px solid rgba(255,215,0,0.4);
+      border-radius: 20px;
+      background: rgba(255,215,0,0.08);
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .status-lb:hover { background: rgba(255,215,0,0.18); }
+
+    /* ── 排行榜 Modal ── */
+    .lb-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 2000;
+      background: rgba(0,0,0,0.75);
+      align-items: center; justify-content: center;
+    }
+    .lb-overlay.active { display: flex; }
+    .lb-box {
+      background: linear-gradient(160deg, #1a3a2a, #0d2218);
+      border: 1.5px solid rgba(255,215,0,0.3);
+      border-radius: 20px;
+      padding: 28px 24px;
+      width: 92%; max-width: 400px;
+      max-height: 80vh;
+      display: flex; flex-direction: column;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+    }
+    .lb-title {
+      font-family: 'Baloo 2', cursive;
+      font-size: 1.3rem; font-weight: 800;
+      color: #ffd700; text-align: center;
+      margin-bottom: 16px;
+    }
+    .lb-list {
+      overflow-y: auto; flex: 1;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .lb-row {
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px; padding: 10px 14px;
+    }
+    .lb-row.lb-me {
+      background: rgba(255,215,0,0.12);
+      border-color: rgba(255,215,0,0.4);
+    }
+    .lb-rank { font-size: 1.1rem; min-width: 28px; text-align: center; }
+    .lb-name { flex: 1; font-size: 0.9rem; font-weight: 700; color: #f4e3b2; }
+    .lb-score { font-size: 0.9rem; font-weight: 900; color: #ffd700; white-space: nowrap; }
+    .lb-close {
+      margin-top: 16px; width: 100%;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 20px; padding: 10px;
+      color: white; font-size: 0.9rem; font-weight: 700;
+      cursor: pointer; font-family: 'Noto Sans TC', sans-serif;
+      transition: background 0.2s;
+    }
+    .lb-close:hover { background: rgba(255,255,255,0.18); }
   </style>
 </head>
 <body>
@@ -399,7 +503,10 @@
   <div class="status-bar">
     <a href="../index.html" class="status-back">← 回地圖</a>
     <div class="status-user" id="statusUser">🐒 冒險者</div>
-    <div class="status-coconut" id="statusCoconut">🥥 0 顆</div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div class="status-coconut" id="statusCoconut">🥥 0 顆</div>
+      <button class="status-lb" onclick="showLeaderboard()">🏆 排行榜</button>
+    </div>
   </div>
 
   <!-- 標題 -->
@@ -476,6 +583,17 @@
   </div>
 </div>
 
+
+<!-- ── 排行榜 Modal ── -->
+<div class="lb-overlay" id="lb-modal" onclick="if(event.target===this)closeLeaderboard()">
+  <div class="lb-box">
+    <div class="lb-title">🏆 椰子排行榜</div>
+    <div class="lb-list" id="lb-list">
+      <div style="text-align:center;padding:20px;color:#f4e3b2;font-weight:700;">載入中…</div>
+    </div>
+    <button class="lb-close" onclick="closeLeaderboard()">關閉</button>
+  </div>
+</div>
 
 </body>
 </html>
