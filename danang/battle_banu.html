@@ -524,9 +524,10 @@ function selectAnswer(answer, btn) {
     combo = 0;
 
     if (!isRetry) {
-      // 第一次錯：再試一次
+      // 第一次錯：出石頭猴 + 再試一次
       isRetry = true;
-      playSound('wrong');
+      playSound('stone_spawn');
+      spawnStone();
       document.getElementById('retryHint').classList.add('show');
       showResultMsg(false, false);
       setTimeout(() => {
@@ -536,11 +537,10 @@ function selectAnswer(answer, btn) {
         });
       }, 600);
     } else {
-      // 第二次錯：出石頭猴，下一題
+      // 第二次錯：顯示答案，下一題
       document.getElementById('answerReveal').textContent = `✨ 正確答案是：${currentQ.answer}`;
       document.getElementById('answerReveal').classList.add('show');
-      playSound('stone_spawn');
-      spawnStone();
+      playSound('wrong');
 
       questionIdx++;
       questionsDone++;
