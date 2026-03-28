@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>故事篇章 · 峴港保衛戰</title>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
+    import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA-E-IN6185ruhUb-TB9LkDyK5xJayLBxU",
+      authDomain: "nunuquest.firebaseapp.com",
+      projectId: "nunuquest",
+      storageBucket: "nunuquest.firebasestorage.app",
+      messagingSenderId: "374919361286",
+      appId: "1:374919361286:web:64108f0715eaa69f956487"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+
+    const userId   = sessionStorage.getItem('nunuUserId');
+    const nickname = sessionStorage.getItem('nunuNickname') || '冒險者';
+    document.getElementById('statusUser').textContent = '🐒 ' + nickname;
+
+    async function checkUnlocks() {
+      let stoneCount = 0, banuCount = 0;
+      if (userId) {
+        try {
+          const snap = await getDoc(doc(db, 'users', userId));
+          if (snap.exists()) {
+            const d = snap.data()?.danang || {};
+            stoneCount = d.stone_monkey_count || 0;
+            banuCount  = d.banu_defeated_count || 0;
+          }
+        } catch(e) { console.error('Firebase 讀取失敗:', e); }
+      }
+      applyUnlocks(stoneCount > 0, banuCount > 0);
+    }
+
+    function applyUnlocks(stoneUnlocked, banuUnlocked) {
+      // 第二篇：打贏石頭猴
+      const ch2 = document.getElementById('chapter-2');
+      if (stoneUnlocked) {
+        ch2.querySelector('.chapter-content').style.display = 'block';
+        ch2.querySelector('.lock-msg').style.display = 'none';
+        ch2.classList.remove('chapter-locked');
+      }
+      // 第三、四篇：打贏 Banu
+      ['chapter-3','chapter-4'].forEach(id => {
+        const ch = document.getElementById(id);
+        if (banuUnlocked) {
+          ch.querySelector('.chapter-content').style.display = 'block';
+          ch.querySelector('.lock-msg').style.display = 'none';
+          ch.classList.remove('chapter-locked');
+        }
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', checkUnlocks);
+  </script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+      background: url('https://nuniverseland.github.io/nunuquest/assets/danang/story_bg.png') repeat-y center top;
+      background-size: 100% auto;
+      background-color: #1a2a1a;
+      min-height: 100vh;
+    }
+
+    /* ── 狀態列 ── */
+    .status-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(0,0,0,0.72);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .status-back {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.75);
+      text-decoration: none;
+      padding: 5px 12px;
+      border: 1px solid rgba(255,255,255,0.22);
+      border-radius: 20px;
+      transition: background 0.2s;
+    }
+    .status-back:hover { background: rgba(255,255,255,0.1); }
+    .status-user {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #f4e3b2;
+    }
+
+    /* ── 主要容器 ── */
+    .page-content {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 32px 16px 64px;
+    }
+
+    /* ── 頁面標題 ── */
+    .page-title {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+    .page-title h1 {
+      font-family: 'Baloo 2', cursive;
+      font-size: clamp(1.5rem, 4vw, 2.2rem);
+      font-weight: 800;
+      color: #fff;
+      text-shadow: 0 2px 16px rgba(0,0,0,0.8);
+    }
+    .page-title p {
+      font-size: 0.9rem;
+      color: #c8e6c9;
+      margin-top: 6px;
+      text-shadow: 0 1px 8px rgba(0,0,0,0.6);
+    }
+
+    /* ── 篇章區塊 ── */
+    .chapter {
+      margin-bottom: 40px;
+    }
+    .chapter-locked {
+      opacity: 0.55;
+      filter: grayscale(0.6);
+    }
+
+    /* 篇章標題卡 */
+    .chapter-header {
+      background: rgba(0,0,0,0.65);
+      border-radius: 16px 16px 0 0;
+      padding: 16px 24px;
+      border-left: 4px solid #52b788;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .chapter-locked .chapter-header { border-left-color: #666; }
+    .chapter-num {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #52b788;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+    .chapter-locked .chapter-num { color: #888; }
+    .chapter-title {
+      font-family: 'Baloo 2', cursive;
+      font-size: clamp(1rem, 2.5vw, 1.3rem);
+      font-weight: 800;
+      color: #fff;
+    }
+    .lock-icon {
+      font-size: 1rem;
+      margin-left: auto;
+      color: #aaa;
+    }
+
+    /* 鎖定訊息 */
+    .lock-msg {
+      background: rgba(255,255,255,0.07);
+      border-radius: 0 0 16px 16px;
+      padding: 28px 24px;
+      text-align: center;
+      color: #999;
+      font-size: 0.9rem;
+      line-height: 1.8;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-top: none;
+    }
+    .lock-msg .lock-big { font-size: 2rem; display: block; margin-bottom: 8px; }
+
+    /* 篇章內容卡 */
+    .chapter-content {
+      display: none; /* 由 JS 解鎖 */
+      background: rgba(255,255,255,0.9);
+      border-radius: 0 0 16px 16px;
+      padding: 28px 28px 20px;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.2);
+    }
+    /* 第一篇直接顯示 */
+    #chapter-1 .chapter-content { display: block; }
+
+    /* 文字段落 */
+    .story-text {
+      font-size: 1.05rem;
+      line-height: 1.9;
+      color: #2d2d2d;
+      margin-bottom: 18px;
+    }
+    .story-text p { margin-bottom: 0.7em; }
+    .story-text p:last-child { margin-bottom: 0; }
+
+    /* 插圖 */
+    .story-img {
+      width: 100%;
+      border-radius: 14px;
+      margin: 18px 0;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+      display: block;
+    }
+
+    /* 章節結尾標記 */
+    .chapter-end {
+      text-align: center;
+      color: #888;
+      font-size: 0.8rem;
+      margin-top: 8px;
+      letter-spacing: 0.2em;
+    }
+
+    /* ── 回到地圖按鈕（底部） ── */
+    .back-btn-wrap {
+      text-align: center;
+      margin-top: 12px;
+    }
+    .back-btn {
+      display: inline-block;
+      background: linear-gradient(135deg, #52b788, #2d6a4f);
+      color: white;
+      text-decoration: none;
+      padding: 12px 32px;
+      border-radius: 24px;
+      font-size: 1rem;
+      font-weight: 700;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+      transition: transform 0.15s;
+    }
+    .back-btn:active { transform: scale(0.96); }
+  </style>
+</head>
+<body>
+
+<!-- ── 狀態列 ── -->
+<div class="status-bar">
+  <a href="index.html" class="status-back">← 回峴港地圖</a>
+  <div class="status-user" id="statusUser">🐒 冒險者</div>
+</div>
+
+<!-- ── 主要內容 ── -->
+<div class="page-content">
+
+  <div class="page-title">
+    <h1>📖 故事篇章</h1>
+    <p>峴港保衛戰的故事</p>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       第一篇：峴港的壞猴小隊（直接解鎖）
+  ══════════════════════════════════════ -->
+  <div class="chapter" id="chapter-1">
+    <div class="chapter-header">
+      <span class="chapter-num">第一篇</span>
+      <span class="chapter-title">峴港的壞猴小隊</span>
+    </div>
+    <div class="chapter-content">
+
+      <div class="story-text">
+        <p>峴港的海邊住著很多猴子。</p>
+        <p>牠們每天在沙灘曬太陽、爬樹，有時也會偷走旅客的水果。大部分的猴子其實只是有點調皮。</p>
+        <p>但有一群猴子不一樣。牠們常常搶魚、丟椰子，還會欺負比較弱小的動物。大家都叫牠們——壞猴小隊。</p>
+      </div>
+
+      <img class="story-img" src="https://nuniverseland.github.io/nunuquest/assets/danang/story_beach_nunululu.png" alt="小白與努努來到峴港">
+
+      <div class="story-text">
+        <p>這天，小白跟著努努來到峴港度假。</p>
+        <p>小白在海邊抓魚，努努在沙灘撿貝殼。海風吹過來，帶著鹹鹹的味道。一切都很平靜。</p>
+      </div>
+
+      <img class="story-img" src="https://nuniverseland.github.io/nunuquest/assets/danang/story_monkey_team.png" alt="壞猴突然出現">
+
+      <div class="story-text">
+        <p>突然——幾隻壞猴從椰子樹上跳了下來。</p>
+        <p>牠們一邊尖叫，一邊衝向沙灘。有的搶魚，有的拿起椰子亂丟。小白嚇得立刻躲在沙灘上。</p>
+      </div>
+
+      <img class="story-img" src="https://nuniverseland.github.io/nunuquest/assets/danang/story_banucave.png" alt="Banu 的山洞">
+
+      <div class="story-text">
+        <p>在山林深處，有一個遊客很少知道的地方。那裡有一個很大的山洞。</p>
+        <p>山洞裡到處都是水果，還有很多不屬於森林的東西：背包、水壺、相機、太陽眼鏡、帽子。那些全都是壞猴小隊搶來的戰利品。</p>
+        <p>在山洞最深處，有一張用石頭和木箱堆起來的王位。王位上坐著一隻巨大的猴子。他的名字叫 Banu。他的毛又深又厚，眼睛是金黃色的。脖子上掛著一條從不摘下的金色項鍊。</p>
+      </div>
+
+      <img class="story-img" src="https://nuniverseland.github.io/nunuquest/assets/danang/story_monkey_team.png" alt="壞猴三人組">
+
+      <div class="story-text">
+        <p>壞猴小隊有三個最有名的成員：</p>
+        <p>🪨 <strong>石頭猴</strong>——最強壯，手裡永遠拿著石頭，只要 Banu 一聲令下就會立刻衝。</p>
+        <p>📢 <strong>嘴砲猴</strong>——很瘦但聲音最大，每次打架前都大喊「上啊！你怕什麼！」，但打起來就躲石頭猴後面。</p>
+        <p>👀 <strong>壞心眼猴</strong>——最小最狡猾，眼睛總是瞇瞇的，專門偷東西，打完架第一個去撿戰利品。</p>
+      </div>
+
+      <img class="story-img" src="https://nuniverseland.github.io/nunuquest/assets/danang/story_beach_nunu.png" alt="努努準備應戰">
+
+      <div class="story-text">
+        <p>石頭猴往前走了一步。他舉起石頭，發出一聲低吼。</p>
+        <p>努努深深吸了一口氣。</p>
+        <p>他的知識，就是他的力量。任務開始！</p>
+      </div>
+
+      <div class="chapter-end">— 第一篇 完 —</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       第二篇：Moki 的故事（打贏石頭猴解鎖）
+  ══════════════════════════════════════ -->
+  <div class="chapter chapter-locked" id="chapter-2">
+    <div class="chapter-header">
+      <span class="chapter-num">第二篇</span>
+      <span class="chapter-title">Moki 的故事</span>
+      <span class="lock-icon">🔒</span>
+    </div>
+    <div class="lock-msg">
+      <span class="lock-big">🔒</span>
+      打贏石頭猴後解鎖
+    </div>
+    <div class="chapter-content">
+
+      <div class="story-text">
+        <p>就在這時候，一隻小猴子突然從樹叢裡跑了出來。牠的名字叫 Moki。</p>
+        <p>Moki 跟其他猴子不一樣。當其他猴子覺得搶東西很好玩時，牠心裡卻一直覺得不舒服。「為什麼要欺負別人呢？」</p>
+      </div>
+
+      <img class="story-img" src="https://nuniverseland.github.io/nunuquest/assets/danang/story_moki_protect.png" alt="Moki 保護小白">
+
+      <div class="story-text">
+        <p>當壞猴又衝過來，準備把小白的魚搶走時——Moki 忽然衝了出去。牠張開雙手，把小白抱在懷裡。「不要！」</p>
+        <p>可是——Moki 太小了。壞猴們又高又壯，而且兇巴巴的。「哈哈哈！你也想當英雄嗎？」一隻壞猴把牠推倒在沙地上。</p>
+      </div>
+
+      <img class="story-img" src="https://nuniverseland.github.io/nunuquest/assets/danang/story_moki_standup.png" alt="Moki 站起來">
+
+      <div class="story-text">
+        <p>Moki 摔倒了。牠的膝蓋擦破了皮。但牠還是慢慢站起來，再次擋在小白前面。小小的身體，卻站得很直。</p>
+      </div>
+
+      <img class="story-img" src="https://nuniverseland.github.io/nunuquest/assets/danang/story_nunu_standup.png" alt="努努站起來">
+
+      <div class="story-text">
+        <p>遠處的沙灘上，努努看見了這一切。他慢慢站了起來。海風吹過沙灘，浪花一下一下拍著岸邊。努努看著那群壞猴，眉毛慢慢皺了起來。</p>
+        <p>「夠了。」他低聲說。「欺負小白，還欺負 Moki。」</p>
+        <p>努努深深吸了一口氣，然後一步一步朝壞猴小隊走去。「今天我要把整個壞猴小隊全部打敗。」</p>
+        <p>沙灘上的風忽然變大了。</p>
+      </div>
+
+      <img class="story-img" src="https://nuniverseland.github.io/nunuquest/assets/danang/story_nunu_moki.png" alt="努努與 Moki 對視">
+
+      <div class="story-text">
+        <p>而 Moki 也抬起頭看向努努，眼睛睜得大大的。</p>
+      </div>
+
+      <div class="chapter-end">— 第二篇 完 —</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       第三篇：Banu 老大（打贏 Banu 解鎖）
+  ══════════════════════════════════════ -->
+  <div class="chapter chapter-locked" id="chapter-3">
+    <div class="chapter-header">
+      <span class="chapter-num">第三篇</span>
+      <span class="chapter-title">Banu 老大</span>
+      <span class="lock-icon">🔒</span>
+    </div>
+    <div class="lock-msg">
+      <span class="lock-big">🔒</span>
+      打贏 Banu 後解鎖
+    </div>
+    <div class="chapter-content">
+
+      <div class="story-text">
+        <p>努努一路努力。他打敗了壞猴小隊，也救下了小白。Moki 一直跟在他身邊。但所有猴子都知道——真正的老大，還沒有出現。那就是 Banu。</p>
+      </div>
+
+      <img class="story-img" src="https://nuniverseland.github.io/nunuquest/assets/danang/story_banucave.png" alt="Banu 在岩石上">
+
+      <div class="story-text">
+        <p>努努終於來到猴群的地盤。在高高的岩石上，一隻巨大的猴子正看著他。那就是 Banu。</p>
+      </div>
+
+      <img class="story-img" src="https://nuniverseland.github.io/nunuquest/assets/danang/story_banu_young.png" alt="Banu 小時候和爺爺">
+
+      <div class="story-text">
+        <p>很久很久以前，Banu 曾經不是這樣的。以前的 Banu 是一隻很快樂的小猴子。他和一位爺爺相依為命。他們一起旅行、一起看海。</p>
+        <p>有一天，他們來到了峴港海邊。那天的天氣很熱。爺爺笑著說：「等我一下，我去買椰子水。」Banu 乖乖坐在沙灘上等。海浪一下一下拍著岸邊。</p>
+      </div>
+
+      <img class="story-img" src="https://nuniverseland.github.io/nunuquest/assets/danang/story_banu_waiting.png" alt="Banu 一個人等待">
+
+      <div class="story-text">
+        <p>但是——爺爺再也沒有回來。</p>
+        <p>那天，爺爺突然心臟病發。飯店的 Buggy 車急忙把他送去醫院。在車上，爺爺把自己的項鍊交給司機。他說：「如果你遇到那隻猴子……請替我照顧他。」但 Banu 並不知道這些。</p>
+        <p>等不到爺爺的 Banu 開始挨餓。他只好偷吃旅客的水果。可是人類看到就開始丟石頭。慢慢地，他得到一個結論：人類會丟下你。於是他開始變得兇狠，立下新的規則：「所有食物都要交給我。誰都不准相信人類。」</p>
+      </div>
+
+      <img class="story-img" src="https://nuniverseland.github.io/nunuquest/assets/danang/story_buggy_necklace.png" alt="司機拿出項鍊">
+
+      <div class="story-text">
+        <p>多年後，努努來到了峴港。努努終於站在 Banu 面前。「你就是 Banu？」努努問。Banu 的眼神像石頭一樣冷。「人類。這裡不是你該來的地方。」</p>
+        <p>戰鬥開始了。沙子飛起來，猴群不停吶喊。努努拼命戰鬥。最後，他終於打敗了 Banu。但努努沒有傷害他。</p>
+        <p>就在這時候，一輛熟悉的 Buggy 車停在沙灘旁。司機慢慢走下來，從脖子上取下一條項鍊。那條項鍊已經戴了很多很多年。「你的爺爺沒有丟下你。他一直惦記著你。」</p>
+      </div>
+
+      <img class="story-img" src="https://nuniverseland.github.io/nunuquest/assets/danang/story_banu_cry.png" alt="Banu 眼睛濕了">
+
+      <div class="story-text">
+        <p>Banu 看著那條項鍊。整個世界好像突然安靜了。海浪輕輕拍著沙灘。Banu 的眼睛，慢慢濕了。</p>
+      </div>
+
+      <img class="story-img" src="https://nuniverseland.github.io/nunuquest/assets/danang/story_banu_reformed.png" alt="Banu 變成守護猴王">
+
+      <div class="story-text">
+        <p>從那天之後，Banu 不再帶著猴群搶食。他開始幫助飯店管理猴群，提醒猴子不要騷擾旅客。慢慢地，峴港變成了人類與猴群和平共處的地方。而 Banu，變成了守護峴港海灘的猴王。</p>
+      </div>
+
+      <div class="chapter-end">— 第三篇 完 —</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       第四篇：恢復和平的峴港（打贏 Banu 解鎖）
+  ══════════════════════════════════════ -->
+  <div class="chapter chapter-locked" id="chapter-4">
+    <div class="chapter-header">
+      <span class="chapter-num">第四篇</span>
+      <span class="chapter-title">恢復和平的峴港</span>
+      <span class="lock-icon">🔒</span>
+    </div>
+    <div class="lock-msg">
+      <span class="lock-big">🔒</span>
+      打贏 Banu 後解鎖
+    </div>
+    <div class="chapter-content">
+
+      <div class="story-text">
+        <p>自從那一天之後，峴港海邊慢慢變了。猴群不再到處搶食。旅客也不再害怕猴子。因為現在，猴群有一個新的管理者。他的名字是 Banu。</p>
+      </div>
+
+      <img class="story-img" src="https://nuniverseland.github.io/nunuquest/assets/danang/story_banu_reformed.png" alt="Banu 穿制服站在飯店門口">
+
+      <div class="story-text">
+        <p>他穿著紅色的管理隊長制服，站在飯店門口。胸前的項鍊在燈光下輕輕晃動。他的工作：管理猴群，維持秩序，不讓猴子偷魚，也不讓猴子欺負旅客。</p>
+      </div>
+
+      <img class="story-img" src="https://nuniverseland.github.io/nunuquest/assets/danang/story_buggy_banu.png" alt="Buggy 叔叔和 Banu">
+
+      <div class="story-text">
+        <p>每天傍晚，一台小小的 Buggy 車都會停在飯店門口。「隊長，今天辛苦了。」Buggy 叔叔總是笑著說。Banu 會點點頭。因為只有他們兩個知道，那條項鍊的故事。對 Banu 來說，Buggy 叔叔象徵一件事：世界上還是有願意相信他的大人。</p>
+      </div>
+
+      <img class="story-img" src="https://nuniverseland.github.io/nunuquest/assets/danang/story_monkey_reform.png" alt="嘴砲猴壞心眼猴學好">
+
+      <div class="story-text">
+        <p>猴群裡還有兩隻以前很調皮的小猴——嘴砲猴和壞心眼猴。以前他們最喜歡搶旅客的食物。但現在只要被 Banu 看見，一個眼神，兩隻小猴立刻乖乖站好。慢慢地，他們也開始學會幫忙，就像跟錯老大、現在慢慢學好的孩子。</p>
+      </div>
+
+      <img class="story-img" src="https://nuniverseland.github.io/nunuquest/assets/danang/story_banu_fruit.png" alt="Banu 把水果放在山洞口">
+
+      <div class="story-text">
+        <p>但不是所有猴子都改變了。在海邊後面的山裡，有一個山洞。那裡住著石頭猴。他覺得 Banu 變軟弱了，於是離開猴群，獨自躲在山洞裡。有時候旅客的水果會不見。有時候會有石頭從山上丟下來。大家都知道，那一定是石頭猴。</p>
+        <p>那天晚上，Banu 穿著制服，慢慢走到山洞前。他手上拿著一籃水果。不是最漂亮的水果，有幾顆有點小，有幾顆有點醜。但還是很甜。Banu 把籃子放在山洞外的石頭上。他沒有敲門，也沒有叫名字。只是靜靜放下，然後轉身離開。</p>
+      </div>
+
+      <img class="story-img" src="https://nuniverseland.github.io/nunuquest/assets/danang/story_stone_fruit.png" alt="石頭猴拿走水果">
+
+      <div class="story-text">
+        <p>過了一會兒，山洞深處慢慢亮起一雙眼睛。那是石頭猴。他等了很久，確認真的沒人了，才慢慢走出來。他看到那籃水果，也看到遠處 Banu 的背影。石頭猴沒有說謝謝，也沒有追上去。他只是看了一會兒，然後把水果慢慢拿走。</p>
+        <p>這是一種很奇怪的關係。不是原諒，也不是敵人。而是一種還沒有說出口的關心。</p>
+        <p>而 Banu 也沒有試著改變他。他只是讓石頭猴知道：如果有一天你餓了——我還在。</p>
+      </div>
+
+      <div class="chapter-end">— 第四篇 完 —</div>
+    </div>
+  </div>
+
+  <!-- 回到地圖 -->
+  <div class="back-btn-wrap">
+    <a href="index.html" class="back-btn">← 回峴港地圖</a>
+  </div>
+
+</div><!-- /page-content -->
+</body>
+</html>
