@@ -154,7 +154,7 @@
       position: absolute; left: 20%; right: 26%; bottom: 12%; height: 22%;
     }
     .unit {
-      position: absolute; bottom: 0; width: 18%; max-width: 115px;
+      position: absolute; bottom: 0; width: 22%; max-width: 140px;
       transition: left 0.05s linear; pointer-events: none;
     }
     .unit img { width: 100%; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.6)); }
@@ -398,7 +398,15 @@ const MOKI_IMG = { idle: BASE+'battle_banu_moki_idle.png', attack: BASE+'battle_
 const STONE_IMG = BASE + 'battle_banu_stone.png';
 
 // ════════ 初始化 ════════
+function preloadImages() {
+  [STONE_IMG, MOKI_IMG.idle, MOKI_IMG.attack,
+   BASE+'battle_banu_loud.png', BASE+'battle_banu_sneaky.png'].forEach(src => {
+    const img = new Image(); img.src = src;
+  });
+}
+
 async function init() {
+  preloadImages();
   const nickname = sessionStorage.getItem('nunuNickname') || '冒險者';
   document.getElementById('statusUser').textContent = '🐒 ' + nickname;
   if (typeof window.getCoconuts === 'function') {
