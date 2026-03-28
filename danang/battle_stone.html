@@ -582,7 +582,7 @@ function selectAnswer(answer, btn) {
     btn.classList.add('correct');
     combo++;
 
-    const isCombo = combo > 0 && combo % COMBO_THRESHOLD === 0;
+    const isCombo = combo >= COMBO_THRESHOLD;
     const dmg = isCombo ? 2 : 1;
 
     if (isCombo) { showCombo(); playSound('combo'); }
