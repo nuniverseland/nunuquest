@@ -6,8 +6,8 @@
   <title>石頭猴挑戰！</title>
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
   <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-    import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
 
     const firebaseConfig = {
       apiKey: "AIzaSyA-E-IN6185ruhUb-TB9LkDyK5xJayLBxU",
@@ -581,7 +581,6 @@ function selectAnswer(answer, btn) {
     // 答對！
     btn.classList.add('correct');
     combo++;
-    consecutiveWrong = 0;
 
     const isCombo = combo > 0 && combo % COMBO_THRESHOLD === 0;
     const dmg = isCombo ? 2 : 1;
@@ -827,7 +826,6 @@ function showResult(correct, combo) {
 
 function closeMoki() {
   document.getElementById('mokiOverlay').classList.remove('show');
-  consecutiveWrong = 0;
   document.querySelectorAll('.option-btn').forEach(b => {
     b.disabled = false;
     b.classList.remove('correct', 'wrong');
