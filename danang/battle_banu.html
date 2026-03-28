@@ -158,7 +158,7 @@
       transition: left 0.05s linear; pointer-events: none;
     }
     .unit img { width: 100%; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.6)); }
-    .unit.moki  { bottom: 10%; }
+    .unit.moki  { bottom: 10%; width: 27%; max-width: 170px; }
     .unit.stone { bottom: 0;   }
 
     /* ── 椰子資源列 ── */
@@ -659,25 +659,24 @@ function gameLoop() {
     loud.x += loud.dir * LOUD_SPEED;
     loud.el.style.left = loud.x + '%';
 
-    // 到中場：看有無 Moki
-    if (loud.dir === -1 && loud.x <= 50 && !loud.checkedCenter) {
-      loud.checkedCenter = true;
-      if (mokis.length > 0) {
+    // 碰到任何 Moki → 嚇跑，跑回右側重來
+    if (loud.dir === -1 && !loudScared) {
+      const hitMoki = mokis.some(m => Math.abs(loud.x - m.x) < COLLISION_DIST + 6);
+      if (hitMoki) {
         loudScared = true;
         loud.bubbleEl.textContent = '嗚嗚嗚先撤！';
         loud.dir = 1;
         setTimeout(() => { loudScared = false; }, 2000);
       }
     }
-    // 到左 1/4：折返
+    // 沒碰到 Moki 走到左 1/4：折返
     if (loud.dir === -1 && loud.x <= 25) {
       loud.dir = 1;
     }
-    // 回到右側：重置
+    // 回到 Banu 基地右側：重置出發
     if (loud.x >= 90) {
       loud.x = 88;
       loud.dir = -1;
-      loud.checkedCenter = false;
     }
   }
 
