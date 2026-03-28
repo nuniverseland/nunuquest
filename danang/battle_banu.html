@@ -122,18 +122,16 @@
       75%      { transform: translateX(8px); }
     }
 
-    /* 嘴砲猴 */
-    .loud-monkey {
-      position: absolute; right: 17%; bottom: 10%; width: 9%; max-width: 65px;
-    }
-    .loud-monkey img { width: 100%; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5)); }
-    .speech-bubble {
+    /* 嘴砲猴（走動單位） */
+    .unit.loud { bottom: 5%; opacity: 0.85; }
+    .loud-bubble {
       position: absolute; bottom: 105%; left: 50%; transform: translateX(-50%);
-      background: white; border-radius: 8px; padding: 3px 7px;
+      background: white; border-radius: 8px; padding: 3px 8px;
       font-size: 0.5rem; font-weight: 700; color: #333;
       white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      transition: opacity 0.3s; pointer-events: none; z-index: 10;
     }
-    .speech-bubble::after {
+    .loud-bubble::after {
       content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
       border-left: 4px solid transparent; border-right: 4px solid transparent;
       border-top: 4px solid white;
@@ -156,7 +154,7 @@
       position: absolute; left: 20%; right: 26%; bottom: 12%; height: 22%;
     }
     .unit {
-      position: absolute; bottom: 0; width: 16%; max-width: 100px;
+      position: absolute; bottom: 0; width: 18%; max-width: 115px;
       transition: left 0.05s linear; pointer-events: none;
     }
     .unit img { width: 100%; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.6)); }
@@ -301,14 +299,6 @@
       src="https://nuniverseland.github.io/nunuquest/assets/danang/nunu_battle.png" alt="努努">
   </div>
 
-  <!-- 嘴砲猴（裝飾，固定站 Banu 旁） -->
-  <div class="loud-monkey">
-    <div style="position:relative;">
-      <div class="speech-bubble">上啊！你怕什麼！</div>
-      <img src="https://nuniverseland.github.io/nunuquest/assets/danang/battle_banu_loud.png" alt="嘴砲猴">
-    </div>
-  </div>
-
   <!-- Banu -->
   <div class="banu-container">
     <img id="banuImg" class="banu-img"
@@ -372,9 +362,10 @@ const COCONUT_MAX        = 10;
 const MOKI_MAX           = 3;
 const STONE_MAX          = 3;
 const COMBO_THRESHOLD    = 3;
-const BANU_HEAL_INTERVAL = 15;   // 每 15 題 Banu +1血
+const SNEAKY_QUESTIONS   = new Set([10,20,30,40]); // 壞心眼猴觸發時機
 const MOKI_SPEED         = 0.28; // % / tick（50ms）
 const STONE_SPEED        = 0.22;
+const LOUD_SPEED         = 0.11; // 嘴砲猴速度（石頭猴一半）
 const COLLISION_DIST     = 8;    // x 差 < 8% 視為碰撞
 const MOKI_START_X       = 4;
 const STONE_START_X      = 91;
@@ -396,7 +387,10 @@ let questionIdx  = 0;
 let unitCounter  = 0;
 let mokis        = [];  // { id, x, el }
 let stones       = [];  // { id, x, el }
+let loud         = null; // { x, dir, el, bubbleEl, checkedCenter }
+let loudScared   = false;
 let loopTimer    = null;
+let dialogTimer  = null;
 
 const BASE = 'https://nuniverseland.github.io/nunuquest/assets/danang/';
 const NUNU = { battle: BASE+'nunu_battle.png', attack: BASE+'nunu_attack.png', hit: BASE+'nunu_hit.png' };
@@ -415,7 +409,9 @@ async function init() {
   updateCoconutUI();
   await loadQuestions();
   nextQuestion();
+  initLoudMonkey();
   startLoop();
+  dialogTimer = setInterval(updateLoudMonkeyDialog, 3000);
 }
 
 // ════════ 題庫 ════════
@@ -534,28 +530,50 @@ function selectAnswer(answer, btn) {
   }
 }
 
+// ════════ 嘴砲猴初始化 ════════
+function initLoudMonkey() {
+  const el = document.createElement('div');
+  el.className = 'unit loud';
+  el.id = 'loud';
+  el.style.left = '88%';
+  el.innerHTML = `
+    <div class="loud-bubble" id="loudBubble">上啊！你怕什麼！</div>
+    <img src="${BASE}battle_banu_loud.png" alt="嘴砲猴">
+  `;
+  document.getElementById('battleLane').appendChild(el);
+  loud = { x: 88, dir: -1, el, bubbleEl: document.getElementById('loudBubble'), checkedCenter: false };
+}
+
+function updateLoudMonkeyDialog() {
+  if (!loud || gameOver) return;
+  if (loudScared) return; // 已在 scared 邏輯裡設定，不覆蓋
+  const banuPct   = banuHp   / BANU_MAX_HP;
+  const playerPct = playerHp / PLAYER_MAX_HP;
+  if      (playerPct < 0.3) loud.bubbleEl.textContent = '哈哈快了快了！';
+  else if (banuPct   < 0.3) loud.bubbleEl.textContent = '老大撐住啊！';
+  else                      loud.bubbleEl.textContent = '上啊！你怕什麼！';
+}
+
 // ════════ Banu 回血觸發 ════════
 function checkBanuHeal() {
-  if (questionsDone > 0 && questionsDone % BANU_HEAL_INTERVAL === 0) {
-    triggerBanuHeal();
-  }
+  if (SNEAKY_QUESTIONS.has(questionsDone)) triggerBanuHeal();
 }
 
 function triggerBanuHeal() {
   if (gameOver) return;
-  banuHp = Math.min(banuHp + 1, BANU_MAX_HP);
+  banuHp = Math.min(banuHp + 2, BANU_MAX_HP);
   updateHpBars();
   playSound('banu_heal');
-  // 暫停答題
   document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
   const ev = document.getElementById('sneakyEvent');
+  ev.querySelector('.sneaky-text').innerHTML = '嘿嘿嘿魚是我的！<br>Banu 回血了！';
   ev.classList.add('show');
   setTimeout(() => {
     ev.classList.remove('show');
     if (!isRetry && !gameOver) {
       document.querySelectorAll('.option-btn').forEach(b => b.disabled = false);
     }
-  }, 2200);
+  }, 1500);
 }
 
 // ════════ 椰子資源 ════════
@@ -602,7 +620,10 @@ function spawnStone() {
 
 // ════════ 遊戲循環（20fps） ════════
 function startLoop() { loopTimer = setInterval(gameLoop, 50); }
-function stopLoop()  { clearInterval(loopTimer); loopTimer = null; }
+function stopLoop()  {
+  clearInterval(loopTimer);  loopTimer = null;
+  clearInterval(dialogTimer); dialogTimer = null;
+}
 
 function gameLoop() {
   if (gameOver) return;
@@ -622,6 +643,33 @@ function gameLoop() {
       nc.style.animation = 'shake 0.3s ease';
       setTimeout(() => nc.style.animation = '', 350);
       if (playerHp <= 0) { triggerLose(); return; }
+    }
+  }
+
+  // 嘴砲猴移動
+  if (loud) {
+    loud.x += loud.dir * LOUD_SPEED;
+    loud.el.style.left = loud.x + '%';
+
+    // 到中場：看有無 Moki
+    if (loud.dir === -1 && loud.x <= 50 && !loud.checkedCenter) {
+      loud.checkedCenter = true;
+      if (mokis.length > 0) {
+        loudScared = true;
+        loud.bubbleEl.textContent = '嗚嗚嗚先撤！';
+        loud.dir = 1;
+        setTimeout(() => { loudScared = false; }, 2000);
+      }
+    }
+    // 到左 1/4：折返
+    if (loud.dir === -1 && loud.x <= 25) {
+      loud.dir = 1;
+    }
+    // 回到右側：重置
+    if (loud.x >= 90) {
+      loud.x = 88;
+      loud.dir = -1;
+      loud.checkedCenter = false;
     }
   }
 
