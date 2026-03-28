@@ -362,7 +362,7 @@ const COCONUT_MAX        = 10;
 const MOKI_MAX           = 3;
 const STONE_MAX          = 3;
 const COMBO_THRESHOLD    = 3;
-const SNEAKY_QUESTIONS   = new Set([10,20,30,40]); // 壞心眼猴觸發時機
+const BANU_HEAL_INTERVAL = 15; // 每 15 題壞心眼猴觸發
 const MOKI_SPEED         = 0.28; // % / tick（50ms）
 const STONE_SPEED        = 0.22;
 const LOUD_SPEED         = 0.11; // 嘴砲猴速度（石頭猴一半）
@@ -556,12 +556,12 @@ function updateLoudMonkeyDialog() {
 
 // ════════ Banu 回血觸發 ════════
 function checkBanuHeal() {
-  if (SNEAKY_QUESTIONS.has(questionsDone)) triggerBanuHeal();
+  if (questionsDone > 0 && questionsDone % BANU_HEAL_INTERVAL === 0) triggerBanuHeal();
 }
 
 function triggerBanuHeal() {
   if (gameOver) return;
-  banuHp = Math.min(banuHp + 2, BANU_MAX_HP);
+  banuHp = Math.min(banuHp + 1, BANU_MAX_HP);
   updateHpBars();
   playSound('banu_heal');
   document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
