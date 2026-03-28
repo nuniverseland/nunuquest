@@ -112,7 +112,7 @@
 
     /* ── 角色 ── */
     .nunu-container {
-      position: absolute; left: 2%; bottom: 12%; width: 13%; max-width: 90px;
+      position: absolute; left: 1%; bottom: 8%; width: 20%; max-width: 150px;
     }
     .nunu-img { width: 100%; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.6)); }
 
@@ -141,7 +141,7 @@
 
     /* Banu */
     .banu-container {
-      position: absolute; right: 2%; bottom: 10%; width: 17%; max-width: 130px;
+      position: absolute; right: 1%; bottom: 6%; width: 26%; max-width: 200px;
     }
     .banu-img { width: 100%; filter: drop-shadow(0 4px 16px rgba(255,80,0,0.5)); }
     .banu-img.hit { animation: banu-hit 0.4s ease; }
@@ -153,10 +153,10 @@
 
     /* ── 戰場走道 ── */
     .battle-lane {
-      position: absolute; left: 16%; right: 20%; bottom: 13%; height: 22%;
+      position: absolute; left: 20%; right: 26%; bottom: 12%; height: 22%;
     }
     .unit {
-      position: absolute; bottom: 0; width: 9%; max-width: 55px;
+      position: absolute; bottom: 0; width: 11%; max-width: 65px;
       transition: left 0.05s linear; pointer-events: none;
     }
     .unit img { width: 100%; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.6)); }
@@ -400,7 +400,7 @@ let loopTimer    = null;
 
 const BASE = 'https://nuniverseland.github.io/nunuquest/assets/danang/';
 const NUNU = { battle: BASE+'nunu_battle.png', attack: BASE+'nunu_attack.png', hit: BASE+'nunu_hit.png' };
-const MOKI_IMG = { idle: BASE+'battle_banu_moki_attack.png', attack: BASE+'battle_banu_moki_attack.png' };
+const MOKI_IMG = { idle: BASE+'moki_protect.png', attack: BASE+'battle_banu_moki_attack.png' };
 const STONE_IMG = BASE + 'battle_banu_stone.png';
 
 // ════════ 初始化 ════════
