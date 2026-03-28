@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>峴港保衛戰 — Banu 決戰！</title>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA-E-IN6185ruhUb-TB9LkDyK5xJayLBxU",
+      authDomain: "nunuquest.firebaseapp.com",
+      projectId: "nunuquest",
+      storageBucket: "nunuquest.firebasestorage.app",
+      messagingSenderId: "374919361286",
+      appId: "1:374919361286:web:64108f0715eaa69f956487"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+    const currentUserId = sessionStorage.getItem('nunuUserId');
+
+    window.saveBanuWin = async function() {
+      if (!currentUserId) return { saved: false, firstWin: false };
+      try {
+        const ref  = doc(db, 'users', currentUserId);
+        const snap = await getDoc(ref);
+        const banuCount = snap.exists() ? (snap.data()?.danang?.banu_defeated_count || 0) : 0;
+        const isFirstWin = banuCount === 0;
+        const update = {
+          'danang.coconuts': increment(5),
+          'danang.banu_defeated_count': increment(1)
+        };
+        if (isFirstWin) update['danang.banu_necklace'] = true;
+        if (snap.exists()) {
+          await updateDoc(ref, update);
+        } else {
+          await setDoc(ref, { danang: { coconuts: 5, banu_defeated_count: 1, banu_necklace: true,
+            stone_monkey_count: 0, loud_monkey_count: 0, sneaky_monkey_count: 0 } }, { merge: true });
+        }
+        return { saved: true, firstWin: isFirstWin };
+      } catch(e) { console.error(e); return { saved: false, firstWin: false }; }
+    };
+
+    window.getCoconuts = async function() {
+      if (!currentUserId) return 0;
+      try {
+        const snap = await getDoc(doc(db, 'users', currentUserId));
+        return snap.exists() ? (snap.data()?.danang?.coconuts || 0) : 0;
+      } catch(e) { return 0; }
+    };
+  </script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Noto Sans TC', sans-serif; background: #1a1a2e; min-height: 100vh; overflow-x: hidden; }
+
+    /* ── 狀態列 ── */
+    .status-bar {
+      background: rgba(0,0,0,0.85);
+      padding: 8px 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .status-back { color: #f4e3b2; text-decoration: none; font-size: 0.85rem; font-weight: 700; }
+    .status-user  { color: #f4e3b2; font-size: 0.85rem; font-weight: 700; }
+    .status-coconut { color: #ffd700; font-size: 0.85rem; font-weight: 700; }
+
+    /* ── 戰鬥場景 ── */
+    .battle-scene {
+      position: relative; width: 100%;
+      aspect-ratio: 16/9; max-height: 55vh; overflow: hidden;
+    }
+    .battle-bg { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    /* ── HP 血條 ── */
+    .hp-bars {
+      position: absolute; top: 5%; left: 0; right: 0;
+      display: flex; justify-content: space-between; padding: 0 3%;
+      pointer-events: none;
+    }
+    .hp-block {
+      background: rgba(0,0,0,0.7); border-radius: 10px; padding: 5px 11px;
+      min-width: 130px; backdrop-filter: blur(4px);
+      border: 1.5px solid rgba(255,255,255,0.2);
+    }
+    .hp-label  { font-size: 0.68rem; font-weight: 700; color: #f4e3b2; margin-bottom: 3px; }
+    .hp-bar-wrap { background: rgba(255,255,255,0.15); border-radius: 20px; height: 8px; overflow: hidden; }
+    .hp-bar-fill { height: 100%; border-radius: 20px; transition: width 0.4s ease; }
+    .hp-bar-fill.player { background: linear-gradient(90deg,#44aaff,#00eeff); }
+    .hp-bar-fill.banu   { background: linear-gradient(90deg,#ff4444,#ff8800); }
+    .hp-num { font-size: 0.62rem; color: #f4e3b2; margin-top: 2px; }
+
+    /* ── 連擊提示 ── */
+    .combo-badge {
+      position: absolute; top: 8%; left: 50%; transform: translateX(-50%);
+      background: linear-gradient(135deg,#ff8800,#ffcc00);
+      border-radius: 20px; padding: 5px 14px;
+      font-size: 0.8rem; font-weight: 900; color: white;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+      display: none; z-index: 6;
+    }
+    @keyframes combo-pop {
+      0%   { transform: translateX(-50%) scale(0); }
+      60%  { transform: translateX(-50%) scale(1.2); }
+      100% { transform: translateX(-50%) scale(1); }
+    }
+
+    /* ── 角色 ── */
+    .nunu-container {
+      position: absolute; left: 2%; bottom: 12%; width: 13%; max-width: 90px;
+    }
+    .nunu-img { width: 100%; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.6)); }
+
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      25%      { transform: translateX(-8px); }
+      75%      { transform: translateX(8px); }
+    }
+
+    /* 嘴砲猴 */
+    .loud-monkey {
+      position: absolute; right: 17%; bottom: 10%; width: 9%; max-width: 65px;
+    }
+    .loud-monkey img { width: 100%; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5)); }
+    .speech-bubble {
+      position: absolute; bottom: 105%; left: 50%; transform: translateX(-50%);
+      background: white; border-radius: 8px; padding: 3px 7px;
+      font-size: 0.5rem; font-weight: 700; color: #333;
+      white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+    .speech-bubble::after {
+      content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+      border-left: 4px solid transparent; border-right: 4px solid transparent;
+      border-top: 4px solid white;
+    }
+
+    /* Banu */
+    .banu-container {
+      position: absolute; right: 2%; bottom: 10%; width: 17%; max-width: 130px;
+    }
+    .banu-img { width: 100%; filter: drop-shadow(0 4px 16px rgba(255,80,0,0.5)); }
+    .banu-img.hit { animation: banu-hit 0.4s ease; }
+    @keyframes banu-hit {
+      0%,100% { transform: translateX(0); }
+      25%      { transform: translateX(10px) rotate(3deg); }
+      75%      { transform: translateX(-8px) rotate(-3deg); }
+    }
+
+    /* ── 戰場走道 ── */
+    .battle-lane {
+      position: absolute; left: 16%; right: 20%; bottom: 13%; height: 22%;
+    }
+    .unit {
+      position: absolute; bottom: 0; width: 9%; max-width: 55px;
+      transition: left 0.05s linear; pointer-events: none;
+    }
+    .unit img { width: 100%; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.6)); }
+    .unit.moki  { bottom: 10%; }
+    .unit.stone { bottom: 0;   }
+
+    /* ── 椰子資源列 ── */
+    .resource-bar {
+      position: absolute; bottom: 3%; left: 50%; transform: translateX(-50%);
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(0,0,0,0.72); border-radius: 20px; padding: 5px 14px;
+      border: 1.5px solid rgba(255,200,0,0.45); z-index: 5;
+    }
+    .coconut-count { color: #ffd700; font-size: 0.82rem; font-weight: 900; }
+    .btn-summon {
+      background: linear-gradient(135deg,#52b788,#2d6a4f);
+      border: none; border-radius: 14px; padding: 5px 13px;
+      color: white; font-size: 0.75rem; font-weight: 700;
+      cursor: pointer; font-family: 'Noto Sans TC', sans-serif; transition: all 0.15s;
+    }
+    .btn-summon:hover:not(:disabled) { transform: scale(1.06); }
+    .btn-summon:disabled { opacity: 0.42; cursor: not-allowed; }
+
+    /* ── 壞心眼猴事件 ── */
+    .sneaky-event {
+      position: absolute; inset: 0; background: rgba(0,0,0,0.62);
+      display: none; align-items: center; justify-content: center;
+      flex-direction: column; gap: 8px; z-index: 20;
+    }
+    .sneaky-event.show { display: flex; }
+    .sneaky-event img { width: 30%; max-width: 160px; animation: sneaky-run 0.35s ease infinite alternate; }
+    @keyframes sneaky-run {
+      from { transform: translateX(-10px) rotate(-5deg); }
+      to   { transform: translateX(10px)  rotate(5deg); }
+    }
+    .sneaky-text {
+      color: #ffcc00; font-size: 1rem; font-weight: 900; text-align: center;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+      background: rgba(0,0,0,0.55); padding: 8px 20px; border-radius: 16px;
+    }
+
+    /* ── 題目區 ── */
+    .question-area {
+      background: linear-gradient(180deg,#1a1a2e,#2d2d4e);
+      padding: 14px 16px; min-height: 44vh;
+    }
+    .question-box {
+      background: rgba(255,255,255,0.08); border-radius: 14px;
+      padding: 12px 16px; margin-bottom: 12px;
+      border: 1.5px solid rgba(255,255,255,0.15);
+    }
+    .question-number { font-size: 0.7rem; color: #aaa; margin-bottom: 4px; }
+    .question-text   { font-size: 1rem; font-weight: 700; color: white; line-height: 1.5; }
+    .retry-hint { font-size: 0.75rem; color: #ff8888; margin-top: 6px; display: none; }
+    .retry-hint.show { display: block; }
+
+    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+    .option-btn {
+      background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2);
+      border-radius: 12px; padding: 12px 10px; color: white;
+      font-family: 'Noto Sans TC', sans-serif; font-size: 0.9rem; font-weight: 700;
+      cursor: pointer; transition: all 0.2s; text-align: center;
+    }
+    .option-btn:hover        { background: rgba(255,255,255,0.2); transform: scale(1.02); }
+    .option-btn.correct      { background: rgba(80,200,80,0.4); border-color: #52b788; }
+    .option-btn.wrong        { background: rgba(200,80,80,0.4); border-color: #ff4444; }
+    .option-btn:disabled     { cursor: not-allowed; opacity: 0.7; }
+
+    .answer-reveal {
+      background: rgba(255,200,0,0.15); border: 1.5px solid rgba(255,200,0,0.4);
+      border-radius: 12px; padding: 8px 12px; color: #ffcc00;
+      font-size: 0.85rem; font-weight: 700; display: none; margin-bottom: 10px;
+    }
+    .answer-reveal.show { display: block; }
+    .result-msg { text-align: center; font-size: 1rem; font-weight: 900; padding: 6px; display: none; }
+    .result-msg.show    { display: block; }
+    .result-msg.correct { color: #52b788; }
+    .result-msg.wrong   { color: #ff6666; }
+
+    /* ── 結局畫面 ── */
+    .end-screen {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88);
+      align-items: center; justify-content: center; flex-direction: column;
+      gap: 14px; z-index: 100;
+    }
+    .end-screen.show { display: flex; }
+    .end-screen img  { width: 38%; max-width: 190px; }
+    .end-title {
+      font-family: 'Baloo 2', cursive; font-size: 1.8rem; font-weight: 800;
+      color: white; text-shadow: 0 2px 12px rgba(0,0,0,0.8); text-align: center;
+    }
+    .end-subtitle { font-size: 0.95rem; color: #f4e3b2; text-align: center; }
+    .necklace-banner {
+      background: linear-gradient(135deg,#ffd700,#ff8800); border-radius: 16px;
+      padding: 10px 22px; color: white; font-size: 0.9rem; font-weight: 800;
+      display: none; text-align: center;
+    }
+    .necklace-banner.show { display: block; }
+    .end-btn { padding: 13px 26px; border-radius: 20px; border: none; font-size: 0.95rem; font-weight: 700; cursor: pointer; font-family: 'Noto Sans TC', sans-serif; }
+    .end-btn.primary   { background: linear-gradient(135deg,#52b788,#2d6a4f); color: white; }
+    .end-btn.secondary { background: rgba(255,255,255,0.15); color: white; }
+  </style>
+</head>
+<body>
+
+<!-- 狀態列 -->
+<div class="status-bar">
+  <a href="index.html" class="status-back">← 回地圖</a>
+  <div class="status-user"    id="statusUser">🐒 冒險者</div>
+  <div class="status-coconut" id="statusCoconut">🥥 0 顆</div>
+</div>
+
+<!-- 戰鬥場景 -->
+<div class="battle-scene">
+  <img class="battle-bg"
+    src="https://nuniverseland.github.io/nunuquest/assets/danang/battle_banu_bg.png" alt="Banu基地">
+
+  <!-- HP 血條 -->
+  <div class="hp-bars">
+    <div class="hp-block">
+      <div class="hp-label">🏠 己方基地</div>
+      <div class="hp-bar-wrap">
+        <div class="hp-bar-fill player" id="playerHpBar" style="width:100%"></div>
+      </div>
+      <div class="hp-num" id="playerHpNum">10 / 10</div>
+    </div>
+    <div class="hp-block" style="text-align:right;">
+      <div class="hp-label">Banu 基地 🔥</div>
+      <div class="hp-bar-wrap">
+        <div class="hp-bar-fill banu" id="banuHpBar" style="width:100%"></div>
+      </div>
+      <div class="hp-num" id="banuHpNum">50 / 50</div>
+    </div>
+  </div>
+
+  <!-- 連擊提示 -->
+  <div class="combo-badge" id="comboBadge">🥥🥥 連擊！+2椰子！</div>
+
+  <!-- 努努（己方基地旁） -->
+  <div class="nunu-container" id="nunuContainer">
+    <img id="nunuImg" class="nunu-img"
+      src="https://nuniverseland.github.io/nunuquest/assets/danang/nunu_battle.png" alt="努努">
+  </div>
+
+  <!-- 嘴砲猴（裝飾，固定站 Banu 旁） -->
+  <div class="loud-monkey">
+    <div style="position:relative;">
+      <div class="speech-bubble">上啊！你怕什麼！</div>
+      <img src="https://nuniverseland.github.io/nunuquest/assets/danang/battle_banu_loud.png" alt="嘴砲猴">
+    </div>
+  </div>
+
+  <!-- Banu -->
+  <div class="banu-container">
+    <img id="banuImg" class="banu-img"
+      src="https://nuniverseland.github.io/nunuquest/assets/danang/battle_banu_idle.png" alt="Banu">
+  </div>
+
+  <!-- 戰場走道（單位動態產生於此） -->
+  <div class="battle-lane" id="battleLane"></div>
+
+  <!-- 椰子資源 + 召喚按鈕 -->
+  <div class="resource-bar">
+    <span class="coconut-count">🥥 <span id="battleCocoCount">0</span> / 10</span>
+    <button class="btn-summon" id="btnSummon" onclick="summonMoki()" disabled>
+      召喚 Moki 🥥×2
+    </button>
+  </div>
+
+  <!-- 壞心眼猴回血事件 -->
+  <div class="sneaky-event" id="sneakyEvent">
+    <img src="https://nuniverseland.github.io/nunuquest/assets/danang/battle_banu_sneaky.png" alt="壞心眼猴">
+    <div class="sneaky-text">壞心眼猴偷吃魚！<br>Banu 回血了！</div>
+  </div>
+</div>
+
+<!-- 題目區 -->
+<div class="question-area">
+  <div class="question-box">
+    <div class="question-number" id="questionNumber">第 1 題</div>
+    <div class="question-text"   id="questionText">載入中...</div>
+    <div class="retry-hint"      id="retryHint">❌ 答錯了！再想想看...</div>
+  </div>
+  <div class="options-grid"  id="optionsGrid"></div>
+  <div class="answer-reveal" id="answerReveal"></div>
+  <div class="result-msg"    id="resultMsg"></div>
+</div>
+
+<!-- 勝利畫面 -->
+<div class="end-screen" id="winScreen">
+  <img src="https://nuniverseland.github.io/nunuquest/assets/danang/battle_banu_dead.png" alt="Banu倒下">
+  <div class="end-title">🎉 峴港保衛成功！</div>
+  <div class="end-subtitle"    id="winReward">獲得 🥥 ×5</div>
+  <div class="necklace-banner" id="necklaceBanner">🏅 首次打倒 Banu！獲得 Banu 項鍊！</div>
+  <button class="end-btn primary"   onclick="goHome()">回到峴港地圖</button>
+  <button class="end-btn secondary" onclick="retryBattle()">再挑戰一次</button>
+</div>
+
+<!-- 失敗畫面 -->
+<div class="end-screen" id="loseScreen">
+  <img src="https://nuniverseland.github.io/nunuquest/assets/danang/nunu_hit.png" alt="努努" style="opacity:0.7;">
+  <div class="end-title">💀 基地淪陷了...</div>
+  <div class="end-subtitle">再試一次！保衛峴港！</div>
+  <button class="end-btn primary"   onclick="retryBattle()">立刻重試！</button>
+  <button class="end-btn secondary" onclick="goHome()">回到地圖</button>
+</div>
+
+<script>
+// ════════ 常數 ════════
+const PLAYER_MAX_HP      = 10;
+const BANU_MAX_HP        = 50;
+const COCONUT_MAX        = 10;
+const MOKI_MAX           = 3;
+const STONE_MAX          = 3;
+const COMBO_THRESHOLD    = 3;
+const BANU_HEAL_INTERVAL = 15;   // 每 15 題 Banu +1血
+const MOKI_SPEED         = 0.28; // % / tick（50ms）
+const STONE_SPEED        = 0.22;
+const COLLISION_DIST     = 8;    // x 差 < 8% 視為碰撞
+const MOKI_START_X       = 4;
+const STONE_START_X      = 91;
+const MOKI_GOAL_X        = 95;   // 抵達 Banu 基地
+const STONE_GOAL_X       = 2;    // 抵達己方基地
+
+// ════════ 遊戲狀態 ════════
+let playerHp     = PLAYER_MAX_HP;
+let banuHp       = BANU_MAX_HP;
+let battleCocos  = 0;
+let combo        = 0;
+let questionsDone = 0;
+let isRetry      = false;
+let gameOver     = false;
+let winTriggered = false;
+let currentQ     = null;
+let questionPool = [];
+let questionIdx  = 0;
+let unitCounter  = 0;
+let mokis        = [];  // { id, x, el }
+let stones       = [];  // { id, x, el }
+let loopTimer    = null;
+
+const BASE = 'https://nuniverseland.github.io/nunuquest/assets/danang/';
+const NUNU = { battle: BASE+'nunu_battle.png', attack: BASE+'nunu_attack.png', hit: BASE+'nunu_hit.png' };
+const MOKI_IMG = { idle: BASE+'battle_banu_moki_idle.png', attack: BASE+'battle_banu_moki_attack.png' };
+const STONE_IMG = BASE + 'battle_banu_stone.png';
+
+// ════════ 初始化 ════════
+async function init() {
+  const nickname = sessionStorage.getItem('nunuNickname') || '冒險者';
+  document.getElementById('statusUser').textContent = '🐒 ' + nickname;
+  if (typeof window.getCoconuts === 'function') {
+    const total = await window.getCoconuts();
+    document.getElementById('statusCoconut').textContent = `🥥 ${total} 顆`;
+  }
+  updateHpBars();
+  updateCoconutUI();
+  await loadQuestions();
+  nextQuestion();
+  startLoop();
+}
+
+// ════════ 題庫 ════════
+async function loadQuestions() {
+  const BASE_URL = 'https://nuniverseland.github.io/nunuquest/data/';
+  const files = ['questions_science','questions_spelling','questions_grammar'];
+  let all = [];
+  for (const f of files) {
+    try {
+      const res = await fetch(BASE_URL + f + '.json', { cache: 'no-cache' });
+      if (res.ok) all = all.concat(await res.json());
+    } catch(e) { console.log('題庫載入失敗:', f); }
+  }
+  if (all.length === 0) {
+    all = [
+      { question: 'We set up a ___ in the woods.', answer: 'camp', wordBank: ['camp','pond','sing','hunt','end'] },
+      { question: 'The boat ___ to the bottom.', answer: 'sank', wordBank: ['bring','sank','next','stand','long'] },
+      { question: 'Please ___ some water.', answer: 'drink', wordBank: ['drink','stand','pond','end','stamp'] },
+      { question: 'Caryn ___ a ballet recital tonight.', answer: 'has', wordBank: ['have','has','had','is','was'] },
+    ];
+  }
+  questionPool = shuffle(all);
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length-1; i>0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function nextQuestion() {
+  if (gameOver) return;
+  if (questionIdx >= questionPool.length) { questionPool = shuffle(questionPool); questionIdx = 0; }
+  currentQ = questionPool[questionIdx];
+  isRetry  = false;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  document.getElementById('questionNumber').textContent = `第 ${questionsDone + 1} 題`;
+  document.getElementById('questionText').textContent   = currentQ.question;
+  document.getElementById('retryHint').classList.remove('show');
+  document.getElementById('answerReveal').classList.remove('show');
+  document.getElementById('resultMsg').classList.remove('show');
+
+  let opts = [...currentQ.wordBank];
+  if (!opts.includes(currentQ.answer)) opts.push(currentQ.answer);
+  opts = shuffle(opts).slice(0, 4);
+  if (!opts.includes(currentQ.answer)) opts[0] = currentQ.answer;
+  opts = shuffle(opts);
+
+  const grid = document.getElementById('optionsGrid');
+  grid.innerHTML = '';
+  opts.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.textContent = opt;
+    btn.onclick = () => selectAnswer(opt, btn);
+    grid.appendChild(btn);
+  });
+}
+
+// ════════ 答題邏輯 ════════
+function selectAnswer(answer, btn) {
+  if (gameOver) return;
+  document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
+
+  if (answer === currentQ.answer) {
+    // ── 答對 ──
+    btn.classList.add('correct');
+    combo++;
+    const isCombo   = combo >= COMBO_THRESHOLD;
+    const earned    = isCombo ? 2 : 1;
+    addBattleCocos(earned);
+    isCombo ? (showCombo(), playSound('combo')) : playSound('correct');
+    setNunuImg('attack');
+    showResultMsg(true, isCombo);
+
+    questionIdx++;
+    questionsDone++;
+    checkBanuHeal();
+    setTimeout(nextQuestion, 900);
+
+  } else {
+    // ── 答錯 ──
+    btn.classList.add('wrong');
+    combo = 0;
+
+    if (!isRetry) {
+      // 第一次錯：再試一次
+      isRetry = true;
+      playSound('wrong');
+      document.getElementById('retryHint').classList.add('show');
+      showResultMsg(false, false);
+      setTimeout(() => {
+        document.querySelectorAll('.option-btn').forEach(b => {
+          b.disabled = false;
+          b.classList.remove('correct','wrong');
+        });
+      }, 600);
+    } else {
+      // 第二次錯：出石頭猴，下一題
+      document.getElementById('answerReveal').textContent = `✨ 正確答案是：${currentQ.answer}`;
+      document.getElementById('answerReveal').classList.add('show');
+      playSound('stone_spawn');
+      spawnStone();
+
+      questionIdx++;
+      questionsDone++;
+      checkBanuHeal();
+      setTimeout(nextQuestion, 1500);
+    }
+  }
+}
+
+// ════════ Banu 回血觸發 ════════
+function checkBanuHeal() {
+  if (questionsDone > 0 && questionsDone % BANU_HEAL_INTERVAL === 0) {
+    triggerBanuHeal();
+  }
+}
+
+function triggerBanuHeal() {
+  if (gameOver) return;
+  banuHp = Math.min(banuHp + 1, BANU_MAX_HP);
+  updateHpBars();
+  playSound('banu_heal');
+  // 暫停答題
+  document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
+  const ev = document.getElementById('sneakyEvent');
+  ev.classList.add('show');
+  setTimeout(() => {
+    ev.classList.remove('show');
+    if (!isRetry && !gameOver) {
+      document.querySelectorAll('.option-btn').forEach(b => b.disabled = false);
+    }
+  }, 2200);
+}
+
+// ════════ 椰子資源 ════════
+function addBattleCocos(n) {
+  battleCocos = Math.min(battleCocos + n, COCONUT_MAX);
+  updateCoconutUI();
+}
+
+function updateCoconutUI() {
+  document.getElementById('battleCocoCount').textContent = battleCocos;
+  document.getElementById('btnSummon').disabled =
+    (battleCocos < 2 || mokis.length >= MOKI_MAX || gameOver);
+}
+
+// ════════ 召喚 Moki ════════
+function summonMoki() {
+  if (battleCocos < 2 || mokis.length >= MOKI_MAX || gameOver) return;
+  battleCocos -= 2;
+  updateCoconutUI();
+  playSound('summon');
+
+  const id  = 'moki_' + (unitCounter++);
+  const el  = document.createElement('div');
+  el.className = 'unit moki';
+  el.id = id;
+  el.style.left = MOKI_START_X + '%';
+  el.innerHTML  = `<img src="${MOKI_IMG.idle}" alt="Moki">`;
+  document.getElementById('battleLane').appendChild(el);
+  mokis.push({ id, x: MOKI_START_X, el });
+}
+
+// ════════ 石頭猴出現 ════════
+function spawnStone() {
+  if (stones.length >= STONE_MAX) return;
+  const id = 'stone_' + (unitCounter++);
+  const el = document.createElement('div');
+  el.className = 'unit stone';
+  el.id = id;
+  el.style.left = STONE_START_X + '%';
+  el.innerHTML  = `<img src="${STONE_IMG}" alt="石頭猴">`;
+  document.getElementById('battleLane').appendChild(el);
+  stones.push({ id, x: STONE_START_X, el });
+}
+
+// ════════ 遊戲循環（20fps） ════════
+function startLoop() { loopTimer = setInterval(gameLoop, 50); }
+function stopLoop()  { clearInterval(loopTimer); loopTimer = null; }
+
+function gameLoop() {
+  if (gameOver) return;
+
+  // 石頭猴向左走
+  for (let i = stones.length - 1; i >= 0; i--) {
+    const s = stones[i];
+    s.x -= STONE_SPEED;
+    s.el.style.left = s.x + '%';
+    if (s.x <= STONE_GOAL_X) {
+      removeUnit(s, stones, i);
+      playerHp = Math.max(0, playerHp - 1);
+      updateHpBars();
+      playSound('base_hit');
+      // 己方基地抖動
+      const nc = document.getElementById('nunuContainer');
+      nc.style.animation = 'shake 0.3s ease';
+      setTimeout(() => nc.style.animation = '', 350);
+      if (playerHp <= 0) { triggerLose(); return; }
+    }
+  }
+
+  // Moki 向右走 + 碰撞石頭猴
+  for (let i = mokis.length - 1; i >= 0; i--) {
+    const m = mokis[i];
+    m.x += MOKI_SPEED;
+    m.el.style.left = m.x + '%';
+
+    // 碰撞偵測
+    let fought = false;
+    for (let j = stones.length - 1; j >= 0; j--) {
+      const s = stones[j];
+      if (Math.abs(m.x - s.x) < COLLISION_DIST) {
+        removeUnit(s, stones, j);
+        damageBanu(1);
+        playSound('moki_fight');
+        // Moki 攻擊動畫
+        const img = m.el.querySelector('img');
+        img.src = MOKI_IMG.attack;
+        setTimeout(() => { if (img) img.src = MOKI_IMG.idle; }, 400);
+        fought = true;
+        break;
+      }
+    }
+
+    // 到達 Banu 基地
+    if (!fought && m.x >= MOKI_GOAL_X) {
+      removeUnit(m, mokis, i);
+      damageBanu(1);
+      playSound('moki_fight');
+    }
+  }
+}
+
+function removeUnit(unit, arr, idx) {
+  unit.el.remove();
+  arr.splice(idx, 1);
+  updateCoconutUI(); // 更新 Moki 名額狀態
+}
+
+// ════════ 傷害 / 血條 ════════
+function damageBanu(dmg) {
+  if (winTriggered) return;
+  banuHp = Math.max(0, banuHp - dmg);
+  updateHpBars();
+  const img = document.getElementById('banuImg');
+  img.classList.add('hit');
+  setTimeout(() => img.classList.remove('hit'), 400);
+  if (banuHp <= 0) { winTriggered = true; setTimeout(triggerWin, 300); }
+}
+
+function updateHpBars() {
+  document.getElementById('playerHpBar').style.width = (playerHp / PLAYER_MAX_HP * 100) + '%';
+  document.getElementById('playerHpNum').textContent = `${playerHp} / ${PLAYER_MAX_HP}`;
+  document.getElementById('banuHpBar').style.width   = (banuHp   / BANU_MAX_HP   * 100) + '%';
+  document.getElementById('banuHpNum').textContent   = `${banuHp} / ${BANU_MAX_HP}`;
+}
+
+// ════════ 角色圖片 ════════
+function setNunuImg(state) {
+  const img = document.getElementById('nunuImg');
+  img.src = NUNU[state] || NUNU.battle;
+  setTimeout(() => { img.src = NUNU.battle; }, 600);
+}
+
+// ════════ 連擊動畫 ════════
+function showCombo() {
+  const badge = document.getElementById('comboBadge');
+  badge.style.display = 'block';
+  badge.style.animation = 'none';
+  badge.offsetHeight; // reflow
+  badge.style.animation = 'combo-pop 0.3s cubic-bezier(0.36,0.07,0.19,0.97)';
+  setTimeout(() => badge.style.display = 'none', 1500);
+}
+
+function showResultMsg(correct, isCombo) {
+  const msg = document.getElementById('resultMsg');
+  msg.className = 'result-msg show ' + (correct ? 'correct' : 'wrong');
+  if      (correct && isCombo) msg.textContent = '🥥🥥 連擊！+2椰子！';
+  else if (correct)            msg.textContent = '🥥 答對！+1椰子！';
+  else                         msg.textContent = '💥 石頭猴出動了！';
+}
+
+// ════════ 勝利 / 失敗 ════════
+async function triggerWin() {
+  if (gameOver) return;
+  gameOver = true;
+  stopLoop();
+  playSound('win');
+
+  let result = { saved: false, firstWin: false };
+  if (typeof window.saveBanuWin === 'function') result = await window.saveBanuWin();
+  let total = 0;
+  if (typeof window.getCoconuts === 'function') total = await window.getCoconuts();
+
+  document.getElementById('winReward').textContent = result.saved
+    ? `獲得 🥥 ×5　現在共有 ${total} 顆！`
+    : `獲得 🥥 ×5（請登入才能儲存）`;
+  if (result.firstWin) document.getElementById('necklaceBanner').classList.add('show');
+
+  setTimeout(() => document.getElementById('winScreen').classList.add('show'), 600);
+}
+
+function triggerLose() {
+  if (gameOver) return;
+  gameOver = true;
+  stopLoop();
+  playSound('lose');
+  setNunuImg('hit');
+  setTimeout(() => document.getElementById('loseScreen').classList.add('show'), 600);
+}
+
+function goHome()      { window.location.href = 'index.html'; }
+function retryBattle() { window.location.reload(); }
+
+// ════════ 音效（Web Audio API） ════════
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function playSound(type) {
+  const ctx = audioCtx;
+  const now = ctx.currentTime;
+  const o = ctx.createOscillator();
+  const g = ctx.createGain();
+  o.connect(g); g.connect(ctx.destination);
+
+  if (type === 'correct') {
+    o.type = 'sine';
+    o.frequency.setValueAtTime(523, now);
+    o.frequency.setValueAtTime(659, now + 0.1);
+    o.frequency.setValueAtTime(784, now + 0.2);
+    g.gain.setValueAtTime(0.3, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+    o.start(now); o.stop(now + 0.4);
+
+  } else if (type === 'wrong') {
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(200, now);
+    o.frequency.exponentialRampToValueAtTime(100, now + 0.3);
+    g.gain.setValueAtTime(0.2, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+    o.start(now); o.stop(now + 0.3);
+
+  } else if (type === 'combo') {
+    o.type = 'square';
+    o.frequency.setValueAtTime(440, now);
+    o.frequency.setValueAtTime(550, now + 0.08);
+    o.frequency.setValueAtTime(660, now + 0.16);
+    o.frequency.setValueAtTime(880, now + 0.24);
+    g.gain.setValueAtTime(0.25, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+    o.start(now); o.stop(now + 0.5);
+
+  } else if (type === 'summon') {
+    o.type = 'sine';
+    o.frequency.setValueAtTime(400, now);
+    o.frequency.setValueAtTime(600, now + 0.1);
+    o.frequency.setValueAtTime(800, now + 0.2);
+    g.gain.setValueAtTime(0.25, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+    o.start(now); o.stop(now + 0.35);
+
+  } else if (type === 'stone_spawn') {
+    o.type = 'triangle';
+    o.frequency.setValueAtTime(180, now);
+    o.frequency.exponentialRampToValueAtTime(90, now + 0.3);
+    g.gain.setValueAtTime(0.3, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+    o.start(now); o.stop(now + 0.35);
+
+  } else if (type === 'moki_fight') {
+    o.type = 'triangle';
+    o.frequency.setValueAtTime(320, now);
+    o.frequency.setValueAtTime(200, now + 0.12);
+    g.gain.setValueAtTime(0.25, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+    o.start(now); o.stop(now + 0.28);
+
+  } else if (type === 'base_hit') {
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(120, now);
+    o.frequency.exponentialRampToValueAtTime(55, now + 0.4);
+    g.gain.setValueAtTime(0.32, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+    o.start(now); o.stop(now + 0.5);
+
+  } else if (type === 'banu_heal') {
+    o.type = 'sine';
+    o.frequency.setValueAtTime(300, now);
+    o.frequency.setValueAtTime(240, now + 0.18);
+    o.frequency.setValueAtTime(180, now + 0.36);
+    g.gain.setValueAtTime(0.2, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
+    o.start(now); o.stop(now + 0.55);
+
+  } else if (type === 'win') {
+    [523, 659, 784, 1047].forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, now + i * 0.12);
+      gain.gain.setValueAtTime(0.25, now + i * 0.12);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.12 + 0.3);
+      osc.start(now + i * 0.12); osc.stop(now + i * 0.12 + 0.3);
+    });
+    return;
+
+  } else if (type === 'lose') {
+    o.type = 'sine';
+    o.frequency.setValueAtTime(400, now);
+    o.frequency.exponentialRampToValueAtTime(150, now + 0.6);
+    g.gain.setValueAtTime(0.25, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
+    o.start(now); o.stop(now + 0.7);
+  }
+}
+
+// 啟動！
+init();
+</script>
+</body>
+</html>
