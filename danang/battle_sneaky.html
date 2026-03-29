@@ -228,10 +228,44 @@
     /* 椰子子彈 */
     .coconut-bullet {
       position: absolute;
-      font-size: 22px;
+      width: 32px; height: 32px;
       z-index: 25;
       pointer-events: none;
-      transition: left 0.3s linear, top 0.1s linear;
+    }
+    .coconut-bullet img { width: 100%; height: 100%; object-fit: contain; }
+
+    /* 炮台 */
+    .turret-base {
+      position: absolute;
+      bottom: 8%;
+      z-index: 12;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transform: translateX(-50%);
+    }
+    .turret-img {
+      height: 72px;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 10px rgba(0,200,255,0.55));
+    }
+    .turret-hp-bar {
+      width: 54px; height: 7px;
+      background: rgba(0,0,0,0.55);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 4px;
+      border: 1px solid rgba(0,200,255,0.4);
+    }
+    .turret-hp-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #00ccff, #0055ff);
+      border-radius: 4px;
+      transition: width 0.2s;
+    }
+    .weapon-btn.deployed {
+      border-color: rgba(0,200,255,0.7);
+      background: rgba(0,40,80,0.9);
     }
 
     /* 基地抖動 */
@@ -600,19 +634,19 @@
       </div>
     </button>
 
-    <button class="weapon-btn" id="btn-gun" onclick="fireWeapon('gun')">
-      <img src="https://nuniverseland.github.io/nunuquest/assets/danang/weapon_gun.png" alt="機關槍">
+    <button class="weapon-btn" id="btn-gun" onclick="buyTurret('gun')">
+      <img src="https://nuniverseland.github.io/nunuquest/assets/danang/weapon_gun.png" alt="機關槍炮台">
       <div class="weapon-info">
-        <div class="weapon-name">椰子機關槍</div>
-        <div class="weapon-cost" id="gun-cost-text">🥥 400 能量｜10秒持續</div>
+        <div class="weapon-name">機關槍炮台</div>
+        <div class="weapon-cost" id="gun-cost-text">🥥 400｜HP:10｜每秒20傷</div>
       </div>
     </button>
 
-    <button class="weapon-btn" id="btn-cannon" onclick="fireWeapon('cannon')">
-      <img src="https://nuniverseland.github.io/nunuquest/assets/danang/weapon_cannon.png" alt="砲台">
+    <button class="weapon-btn" id="btn-cannon" onclick="buyTurret('cannon')">
+      <img src="https://nuniverseland.github.io/nunuquest/assets/danang/weapon_cannon.png" alt="大炮炮台">
       <div class="weapon-info">
-        <div class="weapon-name">重型砲台</div>
-        <div class="weapon-cost">🥥 900 能量｜350 傷害</div>
+        <div class="weapon-name">大炮炮台</div>
+        <div class="weapon-cost" id="cannon-cost-text">🥥 900｜HP:20｜每3秒350傷</div>
       </div>
     </button>
   </div>
@@ -653,7 +687,7 @@ const G = {
   paused: false,
 
   // wave
-  wave: 0,           // 1,2,3
+  wave: 0,
   waveActive: false,
   spawnQueue: [],
   spawnTimer: null,
@@ -663,15 +697,13 @@ const G = {
   enemies: [],
   nextEnemyId: 0,
 
-  // gun
-  gunActive: false,
-  gunTimer: null,
-  gunRemaining: 0,
+  // turret (one at a time: null | { type:'gun'|'cannon', hp, maxHP, posX, el, hpFillEl, attackTimer })
+  turret: null,
 
   // question
   answerLocked: false,
   correctAnswer: null,
-  questionType: null,  // 'mult' or 'addsub'
+  questionType: null,
   multCount: 0,
 
   // banu
@@ -722,19 +754,16 @@ const SFX = {
    INIT
 ======================================================== */
 function init() {
-  // Nickname
   const nick = sessionStorage.getItem('nunuNickname') || sessionStorage.getItem('nickname') || '';
   document.getElementById('nickname-display').textContent = nick ? `🐒 ${nick}` : '🐒';
 
   renderHearts();
   updateEnergyUI();
   generateQuestion();
+  spawnTurret('gun'); // 初始機關槍炮台
   updateWeaponButtons();
 
-  // Start Wave 1 after 1s
   setTimeout(() => startWave(1), 1000);
-
-  // RAF loop
   requestAnimationFrame(gameLoop);
 }
 
@@ -1032,11 +1061,40 @@ function spawnEnemy(type) {
 function updateEnemyPositions() {
   for (let i = G.enemies.length - 1; i >= 0; i--) {
     const e = G.enemies[i];
+
+    // If attacking turret, stop moving and deal damage periodically
+    if (e.attackingTurret) {
+      if (!G.turret) {
+        // Turret gone, resume walking
+        e.attackingTurret = false;
+      }
+      continue;
+    }
+
     e.posX -= e.speedPct;
     e.el.style.left = e.posX + '%';
 
-    // Walked off screen (base hit)
+    // Hit turret?
+    if (G.turret && e.posX <= G.turret.posX + 4) {
+      e.attackingTurret = true;
+      if (!e.turretAttackTimer) {
+        e.turretAttackTimer = setInterval(() => {
+          if (G.gameOver) return;
+          if (!G.turret) {
+            clearInterval(e.turretAttackTimer);
+            e.turretAttackTimer = null;
+            e.attackingTurret = false;
+            return;
+          }
+          damageTurret(1);
+        }, 600);
+      }
+      continue;
+    }
+
+    // Walked off screen → hit base
     if (e.posX < -8) {
+      if (e.turretAttackTimer) { clearInterval(e.turretAttackTimer); e.turretAttackTimer = null; }
       damageBase(1);
       SFX.baseHit();
       shakeNunu();
@@ -1047,17 +1105,16 @@ function updateEnemyPositions() {
 
 function removeEnemy(index) {
   const e = G.enemies[index];
+  if (e.turretAttackTimer) { clearInterval(e.turretAttackTimer); e.turretAttackTimer = null; }
   if (e.el && e.el.parentNode) e.el.parentNode.removeChild(e.el);
   G.enemies.splice(index, 1);
-
-  // Check wave transition
   setTimeout(() => checkWaveTransition(), 200);
 }
 
 function killEnemy(index) {
   const e = G.enemies[index];
+  if (e.turretAttackTimer) { clearInterval(e.turretAttackTimer); e.turretAttackTimer = null; }
   SFX.monkeyDie();
-  // Flash remove
   if (e.el) {
     e.el.style.opacity = '0';
     e.el.style.transition = 'opacity 0.2s';
@@ -1107,78 +1164,128 @@ function damageEnemy(index, dmg) {
 }
 
 /* ========================================================
-   WEAPONS
+   TURRET SYSTEM
 ======================================================== */
-function fireWeapon(type) {
-  if (G.gameOver || G.paused) return;
+const TURRET_DEFS = {
+  gun:    { hp: 10,  maxHP: 10,  cost: 400, posX: 18, img: 'weapon_gun.png',    attackInterval: 1000, attackDmg: 20,  autoCannon: false },
+  cannon: { hp: 20,  maxHP: 20,  cost: 900, posX: 18, img: 'weapon_cannon.png', attackInterval: 3000, attackDmg: 350, autoCannon: true  },
+};
 
-  const costs = { single: 80, gun: 400, cannon: 900 };
-  const cost = costs[type];
+function spawnTurret(type, free = false) {
+  if (G.gameOver) return;
+  const def = TURRET_DEFS[type];
+  if (!free && !spendEnergy(def.cost)) return;
 
-  if (G.energy < cost) return;
-  if (type === 'gun' && G.gunActive) return;
+  // Remove existing turret
+  if (G.turret) destroyTurret(false);
 
-  spendEnergy(cost);
-  SFX.shoot();
+  const gameArea = document.getElementById('game-area');
+  const el = document.createElement('div');
+  el.className = 'turret-base';
+  el.id = 'turret-el';
+  el.style.left = def.posX + '%';
 
-  const nearestIdx = getNearestEnemy();
+  const hpBar = document.createElement('div');
+  hpBar.className = 'turret-hp-bar';
+  const hpFill = document.createElement('div');
+  hpFill.className = 'turret-hp-fill';
+  hpBar.appendChild(hpFill);
 
-  if (type === 'single') {
-    fireProjectile(() => {
-      const idx = getNearestEnemy();
-      if (idx >= 0) damageEnemy(idx, 50);
-    });
-  } else if (type === 'gun') {
-    fireProjectile(() => {
-      G.gunActive = true;
-      G.gunRemaining = 10;
-      updateGunUI();
-      G.gunTimer = setInterval(() => {
-        G.gunRemaining--;
-        updateGunUI();
-        // Deal damage every tick
-        const idx = getNearestEnemy();
-        if (idx >= 0) {
-          fireProjectile(() => damageEnemy(getNearestEnemy(), 20), true);
-        }
-        if (G.gunRemaining <= 0) {
-          clearInterval(G.gunTimer);
-          G.gunTimer = null;
-          G.gunActive = false;
-          updateGunUI();
-        }
-      }, 1000);
-    });
-  } else if (type === 'cannon') {
-    fireProjectile(() => {
-      const idx = getNearestEnemy();
-      if (idx >= 0) damageEnemy(idx, 350);
-    });
-  }
+  const img = document.createElement('img');
+  img.className = 'turret-img';
+  img.src = BASE_URL + def.img;
+  img.alt = type;
 
+  el.appendChild(hpBar);
+  el.appendChild(img);
+  gameArea.appendChild(el);
+
+  // Auto-attack timer
+  const attackTimer = setInterval(() => {
+    if (G.gameOver || !G.turret) return;
+    const idx = getNearestEnemy();
+    if (idx >= 0) {
+      fireProjectile(() => {
+        const i = getNearestEnemy();
+        if (i >= 0) damageEnemy(i, def.attackDmg);
+      });
+    }
+  }, def.attackInterval);
+
+  G.turret = { type, hp: def.hp, maxHP: def.maxHP, posX: def.posX, el, hpFillEl: hpFill, attackTimer };
   updateWeaponButtons();
 }
 
-function updateGunUI() {
-  const btn = document.getElementById('btn-gun');
-  const costText = document.getElementById('gun-cost-text');
-  if (G.gunActive) {
-    btn.classList.add('gun-active');
-    costText.innerHTML = `<span class="gun-countdown">🔫 持續中… ${G.gunRemaining}秒</span>`;
-  } else {
-    btn.classList.remove('gun-active');
-    costText.textContent = '🥥 400 能量｜10秒持續';
+function damageTurret(dmg) {
+  if (!G.turret) return;
+  G.turret.hp = Math.max(0, G.turret.hp - dmg);
+  const pct = (G.turret.hp / G.turret.maxHP) * 100;
+  G.turret.hpFillEl.style.width = pct + '%';
+  if (pct < 30) G.turret.hpFillEl.style.background = '#ff3333';
+  else if (pct < 60) G.turret.hpFillEl.style.background = '#ffaa00';
+  if (G.turret.hp <= 0) destroyTurret(true);
+}
+
+function destroyTurret(explode = true) {
+  if (!G.turret) return;
+  clearInterval(G.turret.attackTimer);
+  if (G.turret.el) {
+    if (explode) {
+      G.turret.el.style.opacity = '0';
+      G.turret.el.style.transition = 'opacity 0.3s';
+      setTimeout(() => G.turret.el?.remove(), 300);
+    } else {
+      G.turret.el.remove();
+    }
   }
+  G.turret = null;
+  updateWeaponButtons();
+}
+
+/* ========================================================
+   WEAPONS (single shot)
+======================================================== */
+function fireWeapon(type) {
+  if (G.gameOver || G.paused || type !== 'single') return;
+  if (!spendEnergy(80)) return;
+  fireProjectile(() => {
+    const idx = getNearestEnemy();
+    if (idx >= 0) damageEnemy(idx, 50);
+  });
+  updateWeaponButtons();
+}
+
+function buyTurret(type) {
+  if (G.gameOver || G.paused) return;
+  if (G.turret) {
+    // 已有炮台：不能購買
+    return;
+  }
+  spawnTurret(type);
+  updateWeaponButtons();
 }
 
 function updateWeaponButtons() {
   const btnS = document.getElementById('btn-single');
   const btnG = document.getElementById('btn-gun');
   const btnC = document.getElementById('btn-cannon');
+  const hasTurret = !!G.turret;
 
-  btnS.disabled = G.energy < 80 || G.gameOver;
-  btnG.disabled = G.energy < 400 || G.gunActive || G.gameOver;
-  btnC.disabled = G.energy < 900 || G.gameOver;
+  btnS.disabled = G.energy < 80  || G.gameOver;
+  btnG.disabled = G.energy < 400 || G.gameOver || hasTurret;
+  btnC.disabled = G.energy < 900 || G.gameOver || hasTurret;
+
+  if (hasTurret) {
+    const activeBtn = G.turret.type === 'gun' ? btnG : btnC;
+    activeBtn.classList.add('deployed');
+    const costEl = document.getElementById(G.turret.type === 'gun' ? 'gun-cost-text' : 'cannon-cost-text');
+    if (costEl) costEl.textContent = `🛡️ 部署中 HP:${G.turret.hp}/${G.turret.maxHP}`;
+  } else {
+    btnG.classList.remove('deployed');
+    btnC.classList.remove('deployed');
+    document.getElementById('gun-cost-text').textContent    = '🥥 400｜HP:10｜每秒20傷';
+    document.getElementById('cannon-cost-text').textContent = '🥥 900｜HP:20｜每3秒350傷';
+  }
 }
 
 /* ========================================================
@@ -1191,7 +1298,7 @@ function fireProjectile(onHit, silent = false) {
 
   const bullet = document.createElement('div');
   bullet.className = 'coconut-bullet';
-  bullet.textContent = '🥥';
+  bullet.innerHTML = `<img src="${BASE_URL}coconut_flying.png" alt="🥥">`;
 
   // Start: Nunu base position (~8% from left, bottom ~25%)
   const startLeft = gaW * 0.08;
@@ -1268,10 +1375,10 @@ async function triggerWin() {
   G.paused = true;
   SFX.win();
 
-  clearInterval(G.gunTimer);
+  if (G.turret) destroyTurret(false);
+  G.enemies.forEach(e => { if (e.turretAttackTimer) clearInterval(e.turretAttackTimer); });
   if (G.spawnTimer) clearTimeout(G.spawnTimer);
 
-  // Firebase
   const result = await window.saveSneakyWin();
   const fish = result.fish || 1;
 
@@ -1286,7 +1393,8 @@ function triggerLose() {
   G.paused = true;
   SFX.lose();
 
-  clearInterval(G.gunTimer);
+  if (G.turret) destroyTurret(false);
+  G.enemies.forEach(e => { if (e.turretAttackTimer) clearInterval(e.turretAttackTimer); });
   if (G.spawnTimer) clearTimeout(G.spawnTimer);
 
   document.getElementById('lose-overlay').classList.add('active');
