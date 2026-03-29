@@ -1,0 +1,1341 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>峴港保衛戰 — 壞心眼猴！</title>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA-E-IN6185ruhUb-TB9LkDyK5xJayLBxU",
+      authDomain: "nunuquest.firebaseapp.com",
+      projectId: "nunuquest",
+      storageBucket: "nunuquest.firebasestorage.app",
+      messagingSenderId: "374919361286",
+      appId: "1:374919361286:web:64108f0715eaa69f956487"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+    const currentUserId = sessionStorage.getItem('nunuUserId');
+
+    window.saveSneakyWin = async function() {
+      if (!currentUserId) return { saved: false, fish: 0 };
+      try {
+        const ref  = doc(db, 'users', currentUserId);
+        const snap = await getDoc(ref);
+        const update = {
+          'danang.fish': increment(1),
+          'danang.sneaky_monkey_count': increment(1)
+        };
+        if (snap.exists()) {
+          await updateDoc(ref, update);
+          const newSnap = await getDoc(ref);
+          return { saved: true, fish: newSnap.data()?.danang?.fish || 1 };
+        } else {
+          await setDoc(ref, { danang: { fish: 1, sneaky_monkey_count: 1 } }, { merge: true });
+          return { saved: true, fish: 1 };
+        }
+      } catch(e) { console.error(e); return { saved: false, fish: 0 }; }
+    };
+
+    window.getFish = async function() {
+      if (!currentUserId) return 0;
+      try {
+        const snap = await getDoc(doc(db, 'users', currentUserId));
+        return snap.exists() ? (snap.data()?.danang?.fish || 0) : 0;
+      } catch(e) { return 0; }
+    };
+  </script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+      background: #1a1a2e;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      color: #fff;
+    }
+
+    /* ── 狀態列 ── */
+    .status-bar {
+      background: rgba(0,0,0,0.85);
+      padding: 6px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      flex: 0 0 auto;
+      z-index: 100;
+    }
+    .back-btn {
+      color: #fff;
+      text-decoration: none;
+      font-family: 'Baloo 2', sans-serif;
+      font-size: 14px;
+      opacity: 0.85;
+      transition: opacity 0.2s;
+    }
+    .back-btn:hover { opacity: 1; }
+    .status-nickname {
+      font-family: 'Baloo 2', sans-serif;
+      font-size: 14px;
+      color: #ffd700;
+    }
+
+    /* ── 遊戲區域 ── */
+    .game-area {
+      flex: 0 0 52vh;
+      position: relative;
+      overflow: hidden;
+    }
+    .game-bg {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+      position: absolute;
+      top: 0; left: 0;
+    }
+    .game-bg-fallback {
+      width: 100%; height: 100%;
+      position: absolute;
+      top: 0; left: 0;
+      background: linear-gradient(180deg, #0d1b2a 0%, #1a3a2a 60%, #2d5a1b 100%);
+    }
+
+    /* Nunu 基地 */
+    .nunu-base {
+      position: absolute;
+      bottom: 12%;
+      left: 1%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 10;
+    }
+    .nunu-img {
+      height: 80px;
+      image-rendering: pixelated;
+    }
+    .hp-hearts {
+      display: flex;
+      gap: 1px;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: 90px;
+    }
+    .heart {
+      font-size: 11px;
+      line-height: 1;
+    }
+    .heart.lost { opacity: 0.3; filter: grayscale(1); }
+
+    /* 波次橫幅 */
+    .wave-banner {
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.82);
+      border: 2px solid #ff6b35;
+      border-radius: 12px;
+      padding: 6px 22px;
+      font-family: 'Baloo 2', sans-serif;
+      font-size: 18px;
+      font-weight: 800;
+      color: #ff6b35;
+      z-index: 30;
+      display: none;
+      white-space: nowrap;
+      animation: banner-pop 0.3s ease;
+    }
+    @keyframes banner-pop {
+      from { transform: translateX(-50%) scale(0.7); opacity: 0; }
+      to   { transform: translateX(-50%) scale(1);   opacity: 1; }
+    }
+
+    /* Banu HP 條 */
+    .banu-hp-bar {
+      position: absolute;
+      top: 8px;
+      left: 10%;
+      right: 10%;
+      display: none;
+      z-index: 20;
+    }
+    .banu-hp-label {
+      font-family: 'Baloo 2', sans-serif;
+      font-size: 12px;
+      color: #ff3333;
+      text-align: center;
+      margin-bottom: 2px;
+      font-weight: 800;
+    }
+    .banu-hp-track {
+      background: rgba(0,0,0,0.6);
+      border-radius: 8px;
+      height: 14px;
+      border: 1px solid #ff3333;
+      overflow: hidden;
+    }
+    .banu-hp-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #ff0000, #ff6633);
+      border-radius: 8px;
+      transition: width 0.3s;
+    }
+
+    /* 敵人 */
+    .enemy {
+      position: absolute;
+      bottom: 12%;
+      z-index: 15;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: none;
+    }
+    .enemy img {
+      height: 52px;
+      image-rendering: pixelated;
+    }
+    .enemy.mid-monkey img { height: 68px; }
+    .enemy.banu img { height: 90px; }
+    .enemy-hp-bar {
+      width: 44px;
+      height: 5px;
+      background: rgba(0,0,0,0.5);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 2px;
+    }
+    .enemy-hp-fill {
+      height: 100%;
+      background: #33ff66;
+      border-radius: 3px;
+      transition: width 0.15s;
+    }
+
+    /* 椰子子彈 */
+    .coconut-bullet {
+      position: absolute;
+      font-size: 22px;
+      z-index: 25;
+      pointer-events: none;
+      transition: left 0.3s linear, top 0.1s linear;
+    }
+
+    /* 基地抖動 */
+    @keyframes base-shake {
+      0%   { transform: translateX(0); }
+      20%  { transform: translateX(-6px); }
+      40%  { transform: translateX(6px); }
+      60%  { transform: translateX(-4px); }
+      80%  { transform: translateX(4px); }
+      100% { transform: translateX(0); }
+    }
+    .shake { animation: base-shake 0.4s ease; }
+
+    /* ── 能量條 ── */
+    .energy-bar-section {
+      flex: 0 0 5vh;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      gap: 10px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .energy-label {
+      font-family: 'Baloo 2', sans-serif;
+      font-size: 13px;
+      white-space: nowrap;
+      color: #ffd700;
+    }
+    .energy-track {
+      flex: 1;
+      height: 14px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+      border: 1px solid rgba(255,215,0,0.3);
+      overflow: hidden;
+    }
+    .energy-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #f7971e, #ffd200);
+      border-radius: 10px;
+      transition: width 0.3s ease;
+    }
+    .energy-count {
+      font-family: 'Baloo 2', sans-serif;
+      font-size: 13px;
+      white-space: nowrap;
+      color: #ffd200;
+      min-width: 70px;
+      text-align: right;
+    }
+
+    /* 浮動文字 */
+    .float-text {
+      position: absolute;
+      font-family: 'Baloo 2', sans-serif;
+      font-size: 20px;
+      font-weight: 800;
+      pointer-events: none;
+      z-index: 50;
+      animation: float-up 0.9s ease forwards;
+    }
+    @keyframes float-up {
+      0%   { transform: translateY(0); opacity: 1; }
+      100% { transform: translateY(-50px); opacity: 0; }
+    }
+
+    /* ── 下方區域 ── */
+    .bottom-area {
+      flex: 1;
+      display: flex;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    /* 題目面板 */
+    .question-panel {
+      flex: 1;
+      background: rgba(10,10,30,0.95);
+      border-right: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 12px;
+      gap: 8px;
+      overflow: hidden;
+    }
+    .q-type-badge {
+      font-family: 'Baloo 2', sans-serif;
+      font-size: 11px;
+      background: rgba(100,100,255,0.2);
+      border: 1px solid rgba(100,100,255,0.5);
+      color: #aaaaff;
+      border-radius: 20px;
+      padding: 2px 10px;
+    }
+    .q-display {
+      font-family: 'Baloo 2', sans-serif;
+      font-size: 28px;
+      font-weight: 800;
+      color: #fff;
+      text-align: center;
+      line-height: 1.2;
+    }
+    .q-display.vertical {
+      font-family: 'Courier New', monospace;
+      font-size: 22px;
+      text-align: right;
+      background: rgba(255,255,255,0.05);
+      border-radius: 8px;
+      padding: 6px 14px;
+      border: 1px solid rgba(255,255,255,0.1);
+      white-space: pre;
+    }
+    .answer-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .ans-btn {
+      font-family: 'Baloo 2', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      background: rgba(30,30,60,0.9);
+      border: 2px solid rgba(100,100,255,0.5);
+      color: #ddd;
+      border-radius: 12px;
+      padding: 6px 20px;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, transform 0.1s;
+      min-width: 64px;
+      text-align: center;
+    }
+    .ans-btn:hover:not(:disabled) {
+      background: rgba(60,60,120,0.9);
+      border-color: #7777ff;
+      transform: scale(1.05);
+    }
+    .ans-btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    .ans-btn.correct {
+      background: rgba(0,200,80,0.25);
+      border-color: #00cc50;
+      color: #00ff66;
+    }
+    .ans-btn.wrong {
+      background: rgba(220,30,30,0.25);
+      border-color: #cc0000;
+      color: #ff4444;
+    }
+    .feedback-text {
+      font-family: 'Baloo 2', sans-serif;
+      font-size: 16px;
+      font-weight: 800;
+      min-height: 22px;
+      text-align: center;
+    }
+    .feedback-text.correct { color: #00ff88; }
+    .feedback-text.wrong   { color: #ff4444; }
+
+    /* 武器商店 */
+    .weapon-shop {
+      flex: 1;
+      background: rgba(5,5,20,0.95);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 10px;
+      gap: 8px;
+      overflow: hidden;
+    }
+    .shop-title {
+      font-family: 'Baloo 2', sans-serif;
+      font-size: 13px;
+      color: #888;
+      letter-spacing: 1px;
+    }
+    .weapon-btn {
+      width: 100%;
+      max-width: 200px;
+      background: rgba(30,20,50,0.9);
+      border: 2px solid rgba(255,165,0,0.4);
+      border-radius: 12px;
+      padding: 6px 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.15s, border-color 0.15s, transform 0.1s, opacity 0.2s;
+      color: #fff;
+    }
+    .weapon-btn:hover:not(:disabled) {
+      background: rgba(60,40,90,0.9);
+      border-color: rgba(255,165,0,0.8);
+      transform: scale(1.02);
+    }
+    .weapon-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .weapon-btn img {
+      width: 36px;
+      height: 36px;
+      object-fit: contain;
+    }
+    .weapon-info {
+      flex: 1;
+      text-align: left;
+    }
+    .weapon-name {
+      font-family: 'Baloo 2', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+    .weapon-cost {
+      font-family: 'Baloo 2', sans-serif;
+      font-size: 11px;
+      color: #ffd700;
+    }
+    .weapon-btn.gun-active {
+      border-color: #00ccff;
+      background: rgba(0,50,80,0.9);
+    }
+    .gun-countdown {
+      font-family: 'Baloo 2', sans-serif;
+      font-size: 11px;
+      color: #00ccff;
+    }
+
+    /* ── 覆蓋層 ── */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.88);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      gap: 16px;
+      text-align: center;
+      padding: 20px;
+    }
+    .overlay.active { display: flex; }
+    .overlay-title {
+      font-family: 'Baloo 2', sans-serif;
+      font-size: 36px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+    .overlay-title.win  { color: #ffd700; }
+    .overlay-title.lose { color: #ff4444; }
+    .overlay-sub {
+      font-family: 'Noto Sans TC', sans-serif;
+      font-size: 18px;
+      color: #ccc;
+    }
+    .overlay-reward {
+      font-family: 'Baloo 2', sans-serif;
+      font-size: 22px;
+      color: #fff;
+      background: rgba(255,215,0,0.12);
+      border: 1px solid rgba(255,215,0,0.3);
+      border-radius: 12px;
+      padding: 10px 28px;
+    }
+    .overlay-btn {
+      font-family: 'Baloo 2', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      border: none;
+      border-radius: 12px;
+      padding: 10px 24px;
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+    .overlay-btn:hover { transform: scale(1.05); }
+    .overlay-btn.primary {
+      background: linear-gradient(135deg, #f7971e, #ffd200);
+      color: #1a1a2e;
+    }
+    .overlay-btn.secondary {
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .overlay-buttons {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+
+<!-- 狀態列 -->
+<div class="status-bar">
+  <a href="index.html" class="back-btn">← 回地圖</a>
+  <span class="status-nickname" id="nickname-display">🐒</span>
+</div>
+
+<!-- 遊戲區域 -->
+<div class="game-area" id="game-area">
+  <div class="game-bg-fallback"></div>
+  <img class="game-bg" src="https://nuniverseland.github.io/nunuquest/assets/danang/battle_sneaky_bg.png" alt="" onerror="this.style.display='none'">
+
+  <!-- Banu HP 條 -->
+  <div class="banu-hp-bar" id="banu-hp-bar">
+    <div class="banu-hp-label">💀 Banu Boss HP</div>
+    <div class="banu-hp-track">
+      <div class="banu-hp-fill" id="banu-hp-fill" style="width:100%"></div>
+    </div>
+  </div>
+
+  <!-- 波次橫幅 -->
+  <div class="wave-banner" id="wave-banner"></div>
+
+  <!-- Nunu 基地 -->
+  <div class="nunu-base" id="nunu-base">
+    <div class="hp-hearts" id="hp-hearts"></div>
+    <img class="nunu-img" src="https://nuniverseland.github.io/nunuquest/assets/danang/nunu_normal.png" alt="Nunu">
+  </div>
+
+  <!-- 敵人容器 (JS 動態生成) -->
+  <!-- 子彈容器 (JS 動態生成) -->
+</div>
+
+<!-- 能量條 -->
+<div class="energy-bar-section">
+  <span class="energy-label">🥥 椰子能量</span>
+  <div class="energy-track">
+    <div class="energy-fill" id="energy-fill" style="width:0%"></div>
+  </div>
+  <span class="energy-count" id="energy-count">0 / 1000</span>
+</div>
+
+<!-- 下方區域 -->
+<div class="bottom-area">
+
+  <!-- 題目面板 -->
+  <div class="question-panel" id="question-panel">
+    <div class="q-type-badge" id="q-type-badge">九九乘法</div>
+    <div class="q-display" id="q-display">準備中…</div>
+    <div class="answer-buttons" id="answer-buttons"></div>
+    <div class="feedback-text" id="feedback-text"></div>
+  </div>
+
+  <!-- 武器商店 -->
+  <div class="weapon-shop">
+    <div class="shop-title">⚔️ 武器選擇</div>
+
+    <button class="weapon-btn" id="btn-single" onclick="fireWeapon('single')">
+      <img src="https://nuniverseland.github.io/nunuquest/assets/danang/weapon_single.png" alt="單發">
+      <div class="weapon-info">
+        <div class="weapon-name">單發椰子</div>
+        <div class="weapon-cost">🥥 80 能量｜50 傷害</div>
+      </div>
+    </button>
+
+    <button class="weapon-btn" id="btn-gun" onclick="fireWeapon('gun')">
+      <img src="https://nuniverseland.github.io/nunuquest/assets/danang/weapon_gun.png" alt="機關槍">
+      <div class="weapon-info">
+        <div class="weapon-name">椰子機關槍</div>
+        <div class="weapon-cost" id="gun-cost-text">🥥 400 能量｜10秒持續</div>
+      </div>
+    </button>
+
+    <button class="weapon-btn" id="btn-cannon" onclick="fireWeapon('cannon')">
+      <img src="https://nuniverseland.github.io/nunuquest/assets/danang/weapon_cannon.png" alt="砲台">
+      <div class="weapon-info">
+        <div class="weapon-name">重型砲台</div>
+        <div class="weapon-cost">🥥 900 能量｜350 傷害</div>
+      </div>
+    </button>
+  </div>
+</div>
+
+<!-- 勝利覆蓋層 -->
+<div class="overlay" id="win-overlay">
+  <div class="overlay-title win">🎉 壞心眼猴被打跑了！</div>
+  <div class="overlay-reward" id="win-reward">獲得 🐟 ×1<br>現在共有 🐟 × ? 個</div>
+  <div class="overlay-buttons">
+    <button class="overlay-btn secondary" onclick="location.href='index.html'">回到峴港地圖</button>
+    <button class="overlay-btn primary" onclick="location.reload()">再挑戰一次</button>
+  </div>
+</div>
+
+<!-- 失敗覆蓋層 -->
+<div class="overlay" id="lose-overlay">
+  <div class="overlay-title lose">💀 基地淪陷了…</div>
+  <div class="overlay-sub">再試一次，你可以的！</div>
+  <div class="overlay-buttons">
+    <button class="overlay-btn primary" onclick="location.reload()">立刻重試！</button>
+    <button class="overlay-btn secondary" onclick="location.href='index.html'">回到地圖</button>
+  </div>
+</div>
+
+<script>
+/* ========================================================
+   GAME STATE
+======================================================== */
+const BASE_URL = 'https://nuniverseland.github.io/nunuquest/assets/danang/';
+
+const G = {
+  energy: 0,
+  maxEnergy: 1000,
+  baseHP: 10,
+  maxBaseHP: 10,
+  gameOver: false,
+  paused: false,
+
+  // wave
+  wave: 0,           // 1,2,3
+  waveActive: false,
+  spawnQueue: [],
+  spawnTimer: null,
+  checkingWave: false,
+
+  // enemies
+  enemies: [],
+  nextEnemyId: 0,
+
+  // gun
+  gunActive: false,
+  gunTimer: null,
+  gunRemaining: 0,
+
+  // question
+  answerLocked: false,
+  correctAnswer: null,
+  questionType: null,  // 'mult' or 'addsub'
+  multCount: 0,
+
+  // banu
+  banuMaxHP: 1000,
+};
+
+/* ========================================================
+   AUDIO
+======================================================== */
+let audioCtx = null;
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function playTones(freqs, duration = 0.12, type = 'sine', vol = 0.25) {
+  try {
+    const ctx = getAudioCtx();
+    freqs.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = type;
+      osc.frequency.value = freq;
+      const t = ctx.currentTime + i * (duration * 0.9);
+      gain.gain.setValueAtTime(vol, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+      osc.start(t);
+      osc.stop(t + duration + 0.05);
+    });
+  } catch(e) {}
+}
+
+const SFX = {
+  correctMult:  () => playTones([523, 659], 0.12),
+  correctAdd:   () => playTones([523, 659, 784], 0.12),
+  wrong:        () => playTones([400, 300], 0.15, 'sawtooth', 0.2),
+  shoot:        () => playTones([800, 600], 0.07, 'square', 0.15),
+  monkeyDie:    () => playTones([200, 150], 0.2, 'triangle', 0.3),
+  baseHit:      () => playTones([440, 330], 0.18, 'sawtooth', 0.25),
+  bossAppear:   () => playTones([150, 120, 100], 0.3, 'triangle', 0.35),
+  win:          () => playTones([523, 659, 784, 1047], 0.18),
+  lose:         () => playTones([400, 350, 280, 220], 0.2, 'sawtooth', 0.25),
+};
+
+/* ========================================================
+   INIT
+======================================================== */
+function init() {
+  // Nickname
+  const nick = sessionStorage.getItem('nunuNickname') || sessionStorage.getItem('nickname') || '';
+  document.getElementById('nickname-display').textContent = nick ? `🐒 ${nick}` : '🐒';
+
+  renderHearts();
+  updateEnergyUI();
+  generateQuestion();
+  updateWeaponButtons();
+
+  // Start Wave 1 after 1s
+  setTimeout(() => startWave(1), 1000);
+
+  // RAF loop
+  requestAnimationFrame(gameLoop);
+}
+
+/* ========================================================
+   HEARTS
+======================================================== */
+function renderHearts() {
+  const el = document.getElementById('hp-hearts');
+  el.innerHTML = '';
+  for (let i = 0; i < G.maxBaseHP; i++) {
+    const span = document.createElement('span');
+    span.className = 'heart' + (i >= G.baseHP ? ' lost' : '');
+    span.textContent = '❤️';
+    el.appendChild(span);
+  }
+}
+
+/* ========================================================
+   ENERGY
+======================================================== */
+function addEnergy(amount) {
+  G.energy = Math.min(G.maxEnergy, G.energy + amount);
+  updateEnergyUI();
+}
+
+function spendEnergy(amount) {
+  if (G.energy < amount) return false;
+  G.energy -= amount;
+  updateEnergyUI();
+  return true;
+}
+
+function updateEnergyUI() {
+  const pct = (G.energy / G.maxEnergy) * 100;
+  document.getElementById('energy-fill').style.width = pct + '%';
+  document.getElementById('energy-count').textContent = `${G.energy} / ${G.maxEnergy}`;
+  updateWeaponButtons();
+}
+
+/* ========================================================
+   QUESTIONS
+======================================================== */
+function generateQuestion() {
+  // 60% mult, 40% addsub — but enforce 2-mult-then-1-addsub pattern approximately
+  let type;
+  G.multCount++;
+  if (G.multCount >= 3) {
+    type = 'addsub';
+    G.multCount = 0;
+  } else {
+    type = Math.random() < 0.65 ? 'mult' : 'addsub';
+    if (type === 'addsub') G.multCount = 0;
+  }
+  G.questionType = type;
+
+  if (type === 'mult') {
+    generateMult();
+  } else {
+    generateAddSub();
+  }
+}
+
+function generateMult() {
+  document.getElementById('q-type-badge').textContent = '九九乘法';
+  const a = randInt(2, 9);
+  const b = randInt(2, 9);
+  G.correctAnswer = a * b;
+
+  const display = document.getElementById('q-display');
+  display.className = 'q-display';
+  display.textContent = `${a} × ${b} = ?`;
+
+  renderChoices(G.correctAnswer, 1, 9);
+}
+
+function generateAddSub() {
+  const isAdd = Math.random() < 0.5;
+  document.getElementById('q-type-badge').textContent = isAdd ? '二位數加法' : '二位數減法';
+
+  let a, b, ans, line1, op;
+  if (isAdd) {
+    a = randInt(10, 59);
+    b = randInt(10, Math.min(59, 99 - a));
+    ans = a + b;
+    op = '+';
+  } else {
+    a = randInt(30, 99);
+    b = randInt(10, Math.min(49, a - 1));
+    ans = a - b;
+    op = '−';
+  }
+  G.correctAnswer = ans;
+
+  const display = document.getElementById('q-display');
+  display.className = 'q-display vertical';
+  // Align vertically: 2 digit numbers
+  const aStr = String(a).padStart(3, ' ');
+  const bStr = String(b).padStart(3, ' ');
+  display.textContent = `${aStr}\n${op}${bStr.slice(1)}\n────\n   ?`;
+
+  renderChoices(G.correctAnswer, 5, 15);
+}
+
+function renderChoices(correct, minDelta, maxDelta) {
+  const pool = new Set([correct]);
+  while (pool.size < 3) {
+    const delta = randInt(minDelta, maxDelta) * (Math.random() < 0.5 ? 1 : -1);
+    const v = correct + delta;
+    if (v > 0 && v !== correct) pool.add(v);
+  }
+  const choices = [...pool].sort(() => Math.random() - 0.5);
+
+  const container = document.getElementById('answer-buttons');
+  container.innerHTML = '';
+  choices.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'ans-btn';
+    btn.textContent = c;
+    btn.addEventListener('click', () => handleAnswer(c, btn));
+    container.appendChild(btn);
+  });
+  document.getElementById('feedback-text').textContent = '';
+  document.getElementById('feedback-text').className = 'feedback-text';
+  G.answerLocked = false;
+}
+
+function handleAnswer(chosen, btn) {
+  if (G.answerLocked || G.gameOver) return;
+  G.answerLocked = true;
+
+  // Disable all buttons
+  document.querySelectorAll('.ans-btn').forEach(b => b.disabled = true);
+
+  const correct = chosen === G.correctAnswer;
+  const fb = document.getElementById('feedback-text');
+
+  if (correct) {
+    btn.classList.add('correct');
+    if (G.questionType === 'mult') {
+      fb.textContent = '✓ 正確！+80 能量';
+      fb.className = 'feedback-text correct';
+      addEnergy(80);
+      showFloatText('+80 🥥', '#ffd700');
+      SFX.correctMult();
+    } else {
+      fb.textContent = '✓ 正確！+250 能量';
+      fb.className = 'feedback-text correct';
+      addEnergy(250);
+      showFloatText('+250 🥥', '#ffd700');
+      SFX.correctAdd();
+    }
+  } else {
+    btn.classList.add('wrong');
+    // Show correct
+    document.querySelectorAll('.ans-btn').forEach(b => {
+      if (parseInt(b.textContent) === G.correctAnswer || b.textContent == G.correctAnswer) {
+        b.classList.add('correct');
+      }
+    });
+    fb.textContent = `✗ 答錯了！正確答案：${G.correctAnswer}`;
+    fb.className = 'feedback-text wrong';
+    damageBase(1);
+    SFX.wrong();
+    shakeNunu();
+  }
+
+  setTimeout(() => {
+    if (!G.gameOver) generateQuestion();
+  }, 800);
+}
+
+/* ========================================================
+   WAVE SYSTEM
+======================================================== */
+function startWave(n) {
+  if (G.gameOver) return;
+  G.wave = n;
+  G.waveActive = true;
+
+  if (n === 1) {
+    showBanner('⚠️ Wave 1 來了！', 1500);
+    G.spawnQueue = buildQueue(1);
+    setTimeout(() => spawnNext(), 1500);
+  } else if (n === 2) {
+    showBanner('⚠️ Wave 2 來了！', 1500);
+    G.spawnQueue = buildQueue(2);
+    setTimeout(() => spawnNext(), 1500);
+  } else if (n === 3) {
+    showBanner('💀 Banu 出現了！', 1800);
+    SFX.bossAppear();
+    document.getElementById('banu-hp-bar').style.display = 'block';
+    G.spawnQueue = buildQueue(3);
+    setTimeout(() => spawnNext(), 1800);
+  }
+}
+
+function buildQueue(wave) {
+  if (wave === 1) {
+    return Array(5).fill('small');
+  } else if (wave === 2) {
+    const q = [...Array(3).fill('small'), ...Array(2).fill('mid')];
+    return shuffle(q);
+  } else {
+    return ['banu'];
+  }
+}
+
+function spawnNext() {
+  if (G.gameOver || G.spawnQueue.length === 0) return;
+  const type = G.spawnQueue.shift();
+  spawnEnemy(type);
+
+  if (G.spawnQueue.length > 0) {
+    const interval = G.wave === 1 ? 3000 : 2500;
+    G.spawnTimer = setTimeout(() => spawnNext(), interval);
+  }
+}
+
+function checkWaveTransition() {
+  if (G.gameOver || G.checkingWave) return;
+  if (G.spawnQueue.length > 0) return;
+  if (G.enemies.length > 0) return;
+
+  G.checkingWave = true;
+  const nextWave = G.wave + 1;
+  if (nextWave <= 3) {
+    setTimeout(() => {
+      G.checkingWave = false;
+      if (!G.gameOver && G.enemies.length === 0 && G.spawnQueue.length === 0) {
+        startWave(nextWave);
+      }
+    }, 1500);
+  } else {
+    G.checkingWave = false;
+  }
+}
+
+/* ========================================================
+   ENEMIES
+======================================================== */
+function spawnEnemy(type) {
+  const id = G.nextEnemyId++;
+  const gameArea = document.getElementById('game-area');
+  const gaW = gameArea.offsetWidth;
+  const gaH = gameArea.offsetHeight;
+
+  // Speed: crosses game area in N seconds
+  // small: 8s, mid: 12s, banu: 20s
+  const speedSec = type === 'small' ? 8 : type === 'mid' ? 12 : 20;
+  const hp = type === 'small' ? 100 : type === 'mid' ? 200 : 1000;
+
+  const enemy = {
+    id,
+    type,
+    hp,
+    maxHP: hp,
+    // position as % of game-area width (100 = right edge, 0 = left edge / base)
+    posX: 102,
+    speedPct: 100 / (speedSec * 60), // percent per frame at 60fps
+    el: null,
+    hpFillEl: null,
+  };
+
+  // DOM
+  const div = document.createElement('div');
+  div.className = 'enemy' + (type === 'mid' ? ' mid-monkey' : type === 'banu' ? ' banu' : '');
+  div.id = `enemy-${id}`;
+
+  const hpBar = document.createElement('div');
+  hpBar.className = 'enemy-hp-bar';
+  const hpFill = document.createElement('div');
+  hpFill.className = 'enemy-hp-fill';
+  hpBar.appendChild(hpFill);
+
+  const img = document.createElement('img');
+  const imgFile = type === 'small' ? 'monkey_sneaky_walk.png'
+                : type === 'mid'   ? 'monkey_sneaky_mid.png'
+                : 'battle_banu_walk.png';
+  img.src = BASE_URL + imgFile;
+  img.alt = type;
+
+  div.appendChild(hpBar);
+  div.appendChild(img);
+  gameArea.appendChild(div);
+
+  // Position
+  div.style.left = '102%';
+  div.style.bottom = '12%';
+
+  enemy.el = div;
+  enemy.hpFillEl = hpFill;
+  G.enemies.push(enemy);
+}
+
+function updateEnemyPositions() {
+  for (let i = G.enemies.length - 1; i >= 0; i--) {
+    const e = G.enemies[i];
+    e.posX -= e.speedPct;
+    e.el.style.left = e.posX + '%';
+
+    // Walked off screen (base hit)
+    if (e.posX < -8) {
+      damageBase(1);
+      SFX.baseHit();
+      shakeNunu();
+      removeEnemy(i);
+    }
+  }
+}
+
+function removeEnemy(index) {
+  const e = G.enemies[index];
+  if (e.el && e.el.parentNode) e.el.parentNode.removeChild(e.el);
+  G.enemies.splice(index, 1);
+
+  // Check wave transition
+  setTimeout(() => checkWaveTransition(), 200);
+}
+
+function killEnemy(index) {
+  const e = G.enemies[index];
+  SFX.monkeyDie();
+  // Flash remove
+  if (e.el) {
+    e.el.style.opacity = '0';
+    e.el.style.transition = 'opacity 0.2s';
+  }
+  setTimeout(() => {
+    if (e.el && e.el.parentNode) e.el.parentNode.removeChild(e.el);
+  }, 200);
+  G.enemies.splice(index, 1);
+
+  // Check win
+  if (G.wave === 3 && G.enemies.length === 0 && G.spawnQueue.length === 0) {
+    triggerWin();
+    return;
+  }
+
+  setTimeout(() => checkWaveTransition(), 300);
+}
+
+function getNearestEnemy() {
+  if (G.enemies.length === 0) return -1;
+  let minX = Infinity, minIdx = -1;
+  G.enemies.forEach((e, i) => {
+    if (e.posX < minX) { minX = e.posX; minIdx = i; }
+  });
+  return minIdx;
+}
+
+function damageEnemy(index, dmg) {
+  if (index < 0 || index >= G.enemies.length) return;
+  const e = G.enemies[index];
+  e.hp = Math.max(0, e.hp - dmg);
+
+  // Update HP bar
+  const pct = (e.hp / e.maxHP) * 100;
+  e.hpFillEl.style.width = pct + '%';
+  if (pct < 30) e.hpFillEl.style.background = '#ff3333';
+  else if (pct < 60) e.hpFillEl.style.background = '#ffaa00';
+
+  // Banu HP bar
+  if (e.type === 'banu') {
+    document.getElementById('banu-hp-fill').style.width = pct + '%';
+  }
+
+  if (e.hp <= 0) {
+    killEnemy(index);
+  }
+}
+
+/* ========================================================
+   WEAPONS
+======================================================== */
+function fireWeapon(type) {
+  if (G.gameOver || G.paused) return;
+
+  const costs = { single: 80, gun: 400, cannon: 900 };
+  const cost = costs[type];
+
+  if (G.energy < cost) return;
+  if (type === 'gun' && G.gunActive) return;
+
+  spendEnergy(cost);
+  SFX.shoot();
+
+  const nearestIdx = getNearestEnemy();
+
+  if (type === 'single') {
+    fireProjectile(() => {
+      const idx = getNearestEnemy();
+      if (idx >= 0) damageEnemy(idx, 50);
+    });
+  } else if (type === 'gun') {
+    fireProjectile(() => {
+      G.gunActive = true;
+      G.gunRemaining = 10;
+      updateGunUI();
+      G.gunTimer = setInterval(() => {
+        G.gunRemaining--;
+        updateGunUI();
+        // Deal damage every tick
+        const idx = getNearestEnemy();
+        if (idx >= 0) {
+          fireProjectile(() => damageEnemy(getNearestEnemy(), 20), true);
+        }
+        if (G.gunRemaining <= 0) {
+          clearInterval(G.gunTimer);
+          G.gunTimer = null;
+          G.gunActive = false;
+          updateGunUI();
+        }
+      }, 1000);
+    });
+  } else if (type === 'cannon') {
+    fireProjectile(() => {
+      const idx = getNearestEnemy();
+      if (idx >= 0) damageEnemy(idx, 350);
+    });
+  }
+
+  updateWeaponButtons();
+}
+
+function updateGunUI() {
+  const btn = document.getElementById('btn-gun');
+  const costText = document.getElementById('gun-cost-text');
+  if (G.gunActive) {
+    btn.classList.add('gun-active');
+    costText.innerHTML = `<span class="gun-countdown">🔫 持續中… ${G.gunRemaining}秒</span>`;
+  } else {
+    btn.classList.remove('gun-active');
+    costText.textContent = '🥥 400 能量｜10秒持續';
+  }
+}
+
+function updateWeaponButtons() {
+  const btnS = document.getElementById('btn-single');
+  const btnG = document.getElementById('btn-gun');
+  const btnC = document.getElementById('btn-cannon');
+
+  btnS.disabled = G.energy < 80 || G.gameOver;
+  btnG.disabled = G.energy < 400 || G.gunActive || G.gameOver;
+  btnC.disabled = G.energy < 900 || G.gameOver;
+}
+
+/* ========================================================
+   PROJECTILE ANIMATION
+======================================================== */
+function fireProjectile(onHit, silent = false) {
+  const gameArea = document.getElementById('game-area');
+  const gaW = gameArea.offsetWidth;
+  const gaH = gameArea.offsetHeight;
+
+  const bullet = document.createElement('div');
+  bullet.className = 'coconut-bullet';
+  bullet.textContent = '🥥';
+
+  // Start: Nunu base position (~8% from left, bottom ~25%)
+  const startLeft = gaW * 0.08;
+  const startBottom = gaH * 0.22;
+
+  bullet.style.left = startLeft + 'px';
+  bullet.style.bottom = startBottom + 'px';
+  gameArea.appendChild(bullet);
+
+  // Target: nearest enemy x position (or 90% if no enemy)
+  const nearestIdx = getNearestEnemy();
+  const targetPct = nearestIdx >= 0 ? G.enemies[nearestIdx].posX : 88;
+  const targetLeft = (targetPct / 100) * gaW;
+
+  // Animate via RAF
+  const startTime = performance.now();
+  const duration = 300; // ms
+
+  function animFrame(now) {
+    const elapsed = now - startTime;
+    const t = Math.min(elapsed / duration, 1);
+    const currentLeft = startLeft + (targetLeft - startLeft) * t;
+    bullet.style.left = currentLeft + 'px';
+
+    if (t < 1) {
+      requestAnimationFrame(animFrame);
+    } else {
+      bullet.remove();
+      if (onHit) onHit();
+    }
+  }
+  requestAnimationFrame(animFrame);
+
+  if (!silent) SFX.shoot();
+}
+
+/* ========================================================
+   RAF GAME LOOP
+======================================================== */
+let lastTime = 0;
+function gameLoop(timestamp) {
+  if (!G.gameOver && !G.paused) {
+    updateEnemyPositions();
+  }
+  requestAnimationFrame(gameLoop);
+}
+
+/* ========================================================
+   BASE DAMAGE
+======================================================== */
+function damageBase(amount) {
+  if (G.gameOver) return;
+  G.baseHP = Math.max(0, G.baseHP - amount);
+  renderHearts();
+  if (G.baseHP <= 0) {
+    triggerLose();
+  }
+}
+
+function shakeNunu() {
+  const base = document.getElementById('nunu-base');
+  base.classList.remove('shake');
+  void base.offsetWidth; // reflow
+  base.classList.add('shake');
+  setTimeout(() => base.classList.remove('shake'), 500);
+}
+
+/* ========================================================
+   WIN / LOSE
+======================================================== */
+async function triggerWin() {
+  if (G.gameOver) return;
+  G.gameOver = true;
+  G.paused = true;
+  SFX.win();
+
+  clearInterval(G.gunTimer);
+  if (G.spawnTimer) clearTimeout(G.spawnTimer);
+
+  // Firebase
+  const result = await window.saveSneakyWin();
+  const fish = result.fish || 1;
+
+  document.getElementById('win-reward').innerHTML =
+    `獲得 🐟 ×1<br>現在共有 🐟 × ${fish} 個`;
+  document.getElementById('win-overlay').classList.add('active');
+}
+
+function triggerLose() {
+  if (G.gameOver) return;
+  G.gameOver = true;
+  G.paused = true;
+  SFX.lose();
+
+  clearInterval(G.gunTimer);
+  if (G.spawnTimer) clearTimeout(G.spawnTimer);
+
+  document.getElementById('lose-overlay').classList.add('active');
+}
+
+/* ========================================================
+   UI HELPERS
+======================================================== */
+function showBanner(text, duration) {
+  const el = document.getElementById('wave-banner');
+  el.textContent = text;
+  el.style.display = 'block';
+  setTimeout(() => { el.style.display = 'none'; }, duration);
+}
+
+function showFloatText(text, color) {
+  const panel = document.getElementById('question-panel');
+  const rect = panel.getBoundingClientRect();
+
+  const el = document.createElement('div');
+  el.className = 'float-text';
+  el.textContent = text;
+  el.style.color = color;
+  el.style.left = (rect.left + rect.width * 0.3) + 'px';
+  el.style.top  = (rect.top + 10) + 'px';
+  el.style.position = 'fixed';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 950);
+}
+
+/* ========================================================
+   UTILS
+======================================================== */
+function randInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+/* ========================================================
+   BOOT
+======================================================== */
+window.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
