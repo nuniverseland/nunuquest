@@ -659,7 +659,6 @@
   <div class="overlay-reward" id="win-reward">獲得 🐟 ×1<br>現在共有 🐟 × ? 個</div>
   <div class="overlay-buttons">
     <button class="overlay-btn secondary" onclick="location.href='index.html'">回到峴港地圖</button>
-    <button class="overlay-btn primary" onclick="location.reload()">再挑戰一次</button>
   </div>
 </div>
 
@@ -761,7 +760,7 @@ function init() {
   renderHearts();
   updateEnergyUI();
   generateQuestion();
-  spawnTurret('gun'); // 初始機關槍炮台
+  spawnTurret('gun', true); // 初始機關槍炮台（免費）
   updateWeaponButtons();
 
   setTimeout(() => startWave(1), 10000);
@@ -1230,16 +1229,17 @@ function damageTurret(dmg) {
 function destroyTurret(explode = true) {
   if (!G.turret) return;
   clearInterval(G.turret.attackTimer);
-  if (G.turret.el) {
+  const el = G.turret.el;
+  G.turret = null; // 先清掉，讓按鈕立即解鎖
+  if (el) {
     if (explode) {
-      G.turret.el.style.opacity = '0';
-      G.turret.el.style.transition = 'opacity 0.3s';
-      setTimeout(() => G.turret.el?.remove(), 300);
+      el.style.opacity = '0';
+      el.style.transition = 'opacity 0.3s';
+      setTimeout(() => el.remove(), 300);
     } else {
-      G.turret.el.remove();
+      el.remove();
     }
   }
-  G.turret = null;
   updateWeaponButtons();
 }
 
