@@ -115,7 +115,7 @@
     /* Nunu 基地 */
     .nunu-base {
       position: absolute;
-      bottom: 12%;
+      bottom: 8%;
       left: 1%;
       display: flex;
       flex-direction: column;
@@ -123,18 +123,19 @@
       z-index: 10;
     }
     .nunu-img {
-      height: 80px;
+      height: 130px;
       image-rendering: pixelated;
+      filter: drop-shadow(0 3px 10px rgba(0,0,0,0.7));
     }
     .hp-hearts {
       display: flex;
-      gap: 1px;
+      gap: 2px;
       flex-wrap: wrap;
       justify-content: center;
-      max-width: 90px;
+      max-width: 110px;
     }
     .heart {
-      font-size: 11px;
+      font-size: 13px;
       line-height: 1;
     }
     .heart.lost { opacity: 0.3; filter: grayscale(1); }
@@ -205,11 +206,11 @@
       transition: none;
     }
     .enemy img {
-      height: 52px;
+      height: 70px;
       image-rendering: pixelated;
     }
-    .enemy.mid-monkey img { height: 68px; }
-    .enemy.banu img { height: 90px; }
+    .enemy.mid-monkey img { height: 90px; }
+    .enemy.banu img { height: 140px; }
     .enemy-hp-bar {
       width: 44px;
       height: 5px;
@@ -245,7 +246,7 @@
       transform: translateX(-50%);
     }
     .turret-img {
-      height: 72px;
+      height: 100px;
       object-fit: contain;
       filter: drop-shadow(0 2px 10px rgba(0,200,255,0.55));
     }
@@ -763,7 +764,7 @@ function init() {
   spawnTurret('gun'); // 初始機關槍炮台
   updateWeaponButtons();
 
-  setTimeout(() => startWave(1), 1000);
+  setTimeout(() => startWave(1), 5000);
   requestAnimationFrame(gameLoop);
 }
 
@@ -1012,7 +1013,7 @@ function spawnEnemy(type) {
 
   // Speed: crosses game area in N seconds
   // small: 8s, mid: 12s, banu: 20s
-  const speedSec = type === 'small' ? 8 : type === 'mid' ? 12 : 20;
+  const speedSec = type === 'small' ? 13 : type === 'mid' ? 18 : 32;
   const hp = type === 'small' ? 100 : type === 'mid' ? 200 : 1000;
 
   const enemy = {
@@ -1167,8 +1168,8 @@ function damageEnemy(index, dmg) {
    TURRET SYSTEM
 ======================================================== */
 const TURRET_DEFS = {
-  gun:    { hp: 10,  maxHP: 10,  cost: 400, posX: 18, img: 'weapon_gun.png',    attackInterval: 1000, attackDmg: 20,  autoCannon: false },
-  cannon: { hp: 20,  maxHP: 20,  cost: 900, posX: 18, img: 'weapon_cannon.png', attackInterval: 3000, attackDmg: 350, autoCannon: true  },
+  gun:    { hp: 10,  maxHP: 10,  cost: 400, posX: 12, img: 'weapon_gun.png',    attackInterval: 1000, attackDmg: 20,  autoCannon: false },
+  cannon: { hp: 20,  maxHP: 20,  cost: 900, posX: 12, img: 'weapon_cannon.png', attackInterval: 3000, attackDmg: 350, autoCannon: true  },
 };
 
 function spawnTurret(type, free = false) {
