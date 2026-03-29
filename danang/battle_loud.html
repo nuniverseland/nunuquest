@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>嘴砲猴挑戰！</title>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA-E-IN6185ruhUb-TB9LkDyK5xJayLBxU",
+      authDomain: "nunuquest.firebaseapp.com",
+      projectId: "nunuquest",
+      storageBucket: "nunuquest.firebasestorage.app",
+      messagingSenderId: "374919361286",
+      appId: "1:374919361286:web:64108f0715eaa69f956487"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const currentUserId = sessionStorage.getItem('nunuUserId');
+
+    window.addCoconuts = async function() {
+      if (!currentUserId) {
+        console.log('未登入，無法存椰子');
+        return false;
+      }
+      try {
+        const ref = doc(db, 'users', currentUserId);
+        const snap = await getDoc(ref);
+        if (snap.exists()) {
+          await updateDoc(ref, {
+            'danang.coconuts': increment(2),
+            'danang.loud_monkey_count': increment(1)
+          });
+        } else {
+          await setDoc(ref, {
+            danang: {
+              coconuts: 2,
+              loud_monkey_count: 1,
+              stone_monkey_count: 0,
+              sneaky_monkey_count: 0,
+              banu_defeated_count: 0,
+              banu_necklace: false
+            }
+          }, { merge: true });
+        }
+        return true;
+      } catch(e) {
+        console.error('存椰子失敗:', e);
+        return false;
+      }
+    };
+
+    window.getCoconuts = async function() {
+      if (!currentUserId) return 0;
+      try {
+        const ref = doc(db, 'users', currentUserId);
+        const snap = await getDoc(ref);
+        if (snap.exists()) {
+          return snap.data()?.danang?.coconuts || 0;
+        }
+        return 0;
+      } catch(e) {
+        return 0;
+      }
+    };
+
+    window.getNickname = async function() {
+      if (!currentUserId) return null;
+      try {
+        const ref = doc(db, 'users', currentUserId);
+        const snap = await getDoc(ref);
+        if (snap.exists()) {
+          return snap.data()?.nickname || null;
+        }
+        return null;
+      } catch(e) {
+        return null;
+      }
+    };
+  </script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+      background: #1a1a2e;
+      height: 100vh;
+      overflow: hidden;
+      min-width: 768px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── 頂部狀態列 ── */
+    .status-bar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(15,15,35,0.95);
+      border-bottom: 1.5px solid rgba(255,255,255,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 20px;
+      backdrop-filter: blur(8px);
+    }
+    .back-btn {
+      background: rgba(255,255,255,0.1);
+      border: 1.5px solid rgba(255,255,255,0.2);
+      border-radius: 20px;
+      padding: 6px 14px;
+      color: #f4e3b2;
+      font-family: 'Noto Sans TC', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+      text-decoration: none;
+    }
+    .back-btn:hover { background: rgba(255,255,255,0.2); }
+    .nickname-tag {
+      color: #f4e3b2;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    /* ── 戰鬥場景 ── */
+    .battle-scene {
+      position: relative;
+      width: 100%;
+      flex: 0 0 auto;
+      height: 52vh;
+      overflow: hidden;
+    }
+    .battle-bg {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Round 顯示 */
+    .round-badge {
+      position: absolute;
+      top: 5%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.7);
+      border: 1.5px solid rgba(255,220,50,0.5);
+      border-radius: 20px;
+      padding: 5px 18px;
+      color: #ffcc00;
+      font-family: 'Baloo 2', cursive;
+      font-size: 0.95rem;
+      font-weight: 800;
+      white-space: nowrap;
+      z-index: 5;
+    }
+
+    /* 猴子對話泡泡 */
+    .monkey-dialog {
+      position: absolute;
+      right: 8%;
+      bottom: 68%;
+      background: white;
+      border-radius: 16px;
+      padding: 8px 14px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #333;
+      max-width: 200px;
+      text-align: center;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+      z-index: 6;
+    }
+    .monkey-dialog::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      right: 24px;
+      border: 6px solid transparent;
+      border-top-color: white;
+      border-bottom: none;
+    }
+    .monkey-dialog.visible { opacity: 1; }
+
+    /* 努努角色（左側） */
+    .nunu-shake-wrap {
+      position: absolute;
+      left: 6%;
+      bottom: 0;
+      width: 22%;
+      max-width: 180px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .nunu-container {
+      width: 100%;
+      transform-origin: bottom center;
+    }
+    .nunu-img {
+      width: 100%;
+      display: block;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.6));
+    }
+    .nunu-platform {
+      width: 120%;
+      height: 14px;
+      background: radial-gradient(ellipse at center, rgba(0,0,0,0.45) 0%, transparent 70%);
+      margin-top: 2px;
+    }
+
+    /* 嘴砲猴角色（右側） */
+    .monkey-shake-wrap {
+      position: absolute;
+      right: 6%;
+      bottom: 0;
+      width: 24%;
+      max-width: 200px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .monkey-container {
+      width: 100%;
+      transform-origin: bottom center;
+    }
+    .monkey-img {
+      width: 100%;
+      display: block;
+      filter: drop-shadow(0 4px 16px rgba(0,0,0,0.6));
+    }
+    .monkey-platform {
+      width: 120%;
+      height: 14px;
+      background: radial-gradient(ellipse at center, rgba(0,0,0,0.45) 0%, transparent 70%);
+      margin-top: 2px;
+    }
+
+    /* Shake animation */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      15%       { transform: translateX(-10px); }
+      30%       { transform: translateX(10px); }
+      45%       { transform: translateX(-8px); }
+      60%       { transform: translateX(8px); }
+      75%       { transform: translateX(-5px); }
+      90%       { transform: translateX(5px); }
+    }
+    .shaking { animation: shake 0.5s ease; }
+
+    /* ── 題目區 ── */
+    .question-area {
+      background: linear-gradient(180deg, #1a1a2e, #2d2d4e);
+      padding: 14px 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .question-box {
+      background: rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 14px 18px;
+      margin-bottom: 12px;
+      border: 1.5px solid rgba(255,255,255,0.15);
+      flex-shrink: 0;
+    }
+    .sentence-text {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: white;
+      line-height: 1.6;
+      word-break: break-word;
+    }
+    .sentence-text .blank {
+      display: inline-block;
+      min-width: 80px;
+      border-bottom: 3px solid #ffcc00;
+      color: #ffcc00;
+      font-style: italic;
+      text-align: center;
+      padding: 0 4px;
+    }
+    .replay-btn {
+      background: rgba(255,200,50,0.15);
+      border: 1.5px solid rgba(255,200,50,0.4);
+      border-radius: 20px;
+      padding: 5px 14px;
+      color: #ffcc00;
+      font-family: 'Noto Sans TC', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: background 0.2s;
+    }
+    .replay-btn:hover { background: rgba(255,200,50,0.25); }
+
+    .result-msg {
+      font-size: 1rem;
+      font-weight: 900;
+      text-align: center;
+      padding: 6px;
+      min-height: 28px;
+      flex-shrink: 0;
+    }
+    .result-msg.correct { color: #52b788; }
+    .result-msg.wrong   { color: #ff6666; }
+
+    /* 輸入區 */
+    .input-row {
+      display: flex;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .spell-input {
+      flex: 1;
+      background: rgba(255,255,255,0.1);
+      border: 2px solid rgba(255,255,255,0.25);
+      border-radius: 12px;
+      padding: 12px 16px;
+      color: white;
+      font-family: 'Noto Sans TC', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .spell-input:focus { border-color: rgba(255,200,50,0.6); }
+    .spell-input::placeholder { color: rgba(255,255,255,0.35); }
+    .submit-btn {
+      background: linear-gradient(135deg, #ffcc00, #ff8800);
+      border: none;
+      border-radius: 12px;
+      padding: 12px 22px;
+      color: #1a1a2e;
+      font-family: 'Noto Sans TC', sans-serif;
+      font-size: 1rem;
+      font-weight: 900;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      white-space: nowrap;
+    }
+    .submit-btn:hover { opacity: 0.9; transform: scale(1.02); }
+    .submit-btn:active { transform: scale(0.98); }
+
+    /* ── 載入畫面 ── */
+    .loading-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15,15,35,0.97);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 20px;
+      z-index: 200;
+    }
+    .loading-overlay.hidden { display: none; }
+    .loading-title {
+      font-family: 'Baloo 2', cursive;
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #ffcc00;
+      text-shadow: 0 2px 12px rgba(255,200,0,0.4);
+    }
+    .loading-subtitle {
+      color: rgba(255,255,255,0.6);
+      font-size: 0.9rem;
+    }
+    .start-btn {
+      background: linear-gradient(135deg, #ffcc00, #ff8800);
+      border: none;
+      border-radius: 24px;
+      padding: 14px 36px;
+      color: #1a1a2e;
+      font-family: 'Noto Sans TC', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 900;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s;
+      display: none;
+    }
+    .start-btn:hover { opacity: 0.9; transform: scale(1.03); }
+
+    /* ── 結局畫面 ── */
+    .end-screen {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.88);
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 18px;
+      z-index: 100;
+    }
+    .end-screen.show { display: flex; }
+    .end-title {
+      font-family: 'Baloo 2', cursive;
+      font-size: 2rem;
+      font-weight: 800;
+      color: white;
+      text-shadow: 0 2px 16px rgba(0,0,0,0.8);
+      text-align: center;
+    }
+    .end-subtitle {
+      font-size: 1rem;
+      color: #f4e3b2;
+      text-align: center;
+    }
+    .end-btn {
+      padding: 14px 28px;
+      border-radius: 22px;
+      border: none;
+      font-family: 'Noto Sans TC', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .end-btn:hover { opacity: 0.9; transform: scale(1.02); }
+    .end-btn.primary { background: linear-gradient(135deg, #52b788, #2d6a4f); color: white; }
+    .end-btn.danger  { background: linear-gradient(135deg, #ff6666, #cc3333); color: white; }
+    .end-btn.secondary { background: rgba(255,255,255,0.15); color: white; }
+    .end-btn-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+
+<!-- 頂部狀態列 -->
+<div class="status-bar">
+  <a class="back-btn" href="index.html">← 回地圖</a>
+  <div class="nickname-tag" id="nicknameTag">🐒 ...</div>
+</div>
+
+<!-- 戰鬥場景 -->
+<div class="battle-scene">
+  <img class="battle-bg" src="https://nuniverseland.github.io/nunuquest/assets/danang/battle_loud_bg.png" alt="戰場">
+
+  <!-- Round 顯示 -->
+  <div class="round-badge" id="roundBadge">ROUND 1 / 10</div>
+
+  <!-- 猴子對話泡泡 -->
+  <div class="monkey-dialog" id="monkeyDialog">準備好了嗎？</div>
+
+  <!-- 努努（左側）-->
+  <div class="nunu-shake-wrap" id="nunuShakeWrap">
+    <div class="nunu-container" id="nunuContainer">
+      <img class="nunu-img" id="nunuImg"
+        src="https://nuniverseland.github.io/nunuquest/assets/danang/nunu_normal.png" alt="努努">
+    </div>
+    <div class="platform nunu-platform"></div>
+  </div>
+
+  <!-- 嘴砲猴（右側）-->
+  <div class="monkey-shake-wrap" id="monkeyShakeWrap">
+    <div class="monkey-container" id="monkeyContainer">
+      <img class="monkey-img" id="monkeyImg"
+        src="https://nuniverseland.github.io/nunuquest/assets/danang/monkey_loud_normal.png" alt="嘴砲猴">
+    </div>
+    <div class="platform monkey-platform"></div>
+  </div>
+</div>
+
+<!-- 題目區 -->
+<div class="question-area">
+  <div class="question-box">
+    <div class="sentence-text" id="sentenceText">載入中...</div>
+    <button class="replay-btn" id="replayBtn" onclick="replayTTS()">🔊 再聽一次</button>
+  </div>
+
+  <div class="result-msg" id="resultMsg"></div>
+
+  <div class="input-row">
+    <input
+      class="spell-input"
+      id="spellInput"
+      type="text"
+      placeholder="拼出這個單字..."
+      autocomplete="off"
+      autocorrect="off"
+      autocapitalize="off"
+      spellcheck="false"
+    >
+    <button class="submit-btn" id="submitBtn" onclick="submitAnswer()">確認 ↵</button>
+  </div>
+</div>
+
+<!-- 載入畫面 -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-title">嘴砲猴挑戰！</div>
+  <div class="loading-subtitle" id="loadingStatus">載入題目中...</div>
+  <button class="start-btn" id="startBtn" onclick="startGame()">開始挑戰！</button>
+</div>
+
+<!-- 勝利畫面 -->
+<div class="end-screen" id="winScreen">
+  <div class="end-title">🎉 打倒嘴砲猴！</div>
+  <div class="end-subtitle" id="winReward">獲得 🥥 ×2</div>
+  <div class="end-btn-row">
+    <button class="end-btn primary" onclick="goHome()">回到峴港地圖</button>
+    <button class="end-btn secondary" onclick="retryBattle()">再挑戰一次</button>
+  </div>
+</div>
+
+<!-- 失敗畫面 -->
+<div class="end-screen" id="loseScreen">
+  <div class="end-title">💀 挑戰失敗...</div>
+  <div class="end-subtitle">再練練吧！</div>
+  <div class="end-btn-row">
+    <button class="end-btn danger" onclick="retryBattle()">立刻重試！</button>
+    <button class="end-btn secondary" onclick="goHome()">回到地圖</button>
+  </div>
+</div>
+
+<script>
+// ──────────────────────────────────────────
+// 常數
+// ──────────────────────────────────────────
+const BASE_IMG = 'https://nuniverseland.github.io/nunuquest/assets/danang/';
+const NUNU_IMGS = {
+  normal: BASE_IMG + 'nunu_normal.png',
+  happy:  BASE_IMG + 'nunu_happy.png',
+  sad:    BASE_IMG + 'nunu_sad.png',
+};
+const MONKEY_IMGS = {
+  normal: BASE_IMG + 'monkey_loud_normal.png',
+  happy:  BASE_IMG + 'monkey_loud_happy.png',
+  sad:    BASE_IMG + 'monkey_loud_sad.png',
+};
+
+const SIZES = [0.5, 0.75, 1.0, 1.35, 1.7];
+
+const CORRECT_DIALOGS = [
+  '欸？！你真的會拼！',
+  '運氣好而已啦！',
+  '下一題你就不行了！',
+  '才一題而已！',
+];
+const WRONG_DIALOGS = [
+  '哈哈！這都不會！',
+  '太簡單了吧！',
+  '再來！再來！',
+  '嘴砲猴：1，努努：0！',
+];
+
+// ──────────────────────────────────────────
+// 遊戲狀態
+// ──────────────────────────────────────────
+let allQuestions = [];
+let questions = [];
+let maxRounds = 10;
+let currentRound = 0;
+
+let nunuSizeIdx = 2;
+let loudSizeIdx = 2;
+
+let dialogTimer = null;
+let imageTimer = null;
+let isProcessing = false;
+
+// ──────────────────────────────────────────
+// Audio (Web Audio API)
+// ──────────────────────────────────────────
+let audioCtx = null;
+
+function getAudioCtx() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  return audioCtx;
+}
+
+function playTone(freqs, type = 'sine', interval = 0.12, duration = 0.25, gain = 0.28) {
+  try {
+    const ctx = getAudioCtx();
+    const now = ctx.currentTime;
+    freqs.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      osc.connect(g);
+      g.connect(ctx.destination);
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, now + i * interval);
+      g.gain.setValueAtTime(gain, now + i * interval);
+      g.gain.exponentialRampToValueAtTime(0.001, now + i * interval + duration);
+      osc.start(now + i * interval);
+      osc.stop(now + i * interval + duration);
+    });
+  } catch(e) {}
+}
+
+function playSound(type) {
+  switch(type) {
+    case 'correct':
+      playTone([523, 659, 784], 'sine', 0.1, 0.2);
+      break;
+    case 'wrong':
+      playTone([400, 300], 'sawtooth', 0.15, 0.25, 0.22);
+      break;
+    case 'size_up':
+      playTone([180], 'triangle', 0, 0.35, 0.3);
+      break;
+    case 'size_down':
+      playTone([600, 500, 400], 'sine', 0.08, 0.15, 0.2);
+      break;
+    case 'win':
+      playTone([523, 659, 784, 1047], 'sine', 0.12, 0.3);
+      break;
+    case 'lose':
+      playTone([400, 350, 280, 220], 'triangle', 0.15, 0.35, 0.25);
+      break;
+  }
+}
+
+// ──────────────────────────────────────────
+// TTS
+// ──────────────────────────────────────────
+function speak(word) {
+  speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(word);
+  utter.lang = 'en-US';
+  utter.rate = 0.85;
+  utter.pitch = 1.0;
+  speechSynthesis.speak(utter);
+}
+
+function replayTTS() {
+  if (questions[currentRound]) {
+    speak(questions[currentRound].tts || questions[currentRound].word);
+  }
+}
+
+// ──────────────────────────────────────────
+// 載入題目
+// ──────────────────────────────────────────
+async function loadQuestions() {
+  const url = 'https://nuniverseland.github.io/nunuquest/data/spelling_battle.json';
+  const res = await fetch(url, { cache: 'no-cache' });
+  if (!res.ok) throw new Error('fetch failed');
+  const data = await res.json();
+  return data;
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// ──────────────────────────────────────────
+// 初始化
+// ──────────────────────────────────────────
+async function init() {
+  // 顯示 nickname
+  const tag = document.getElementById('nicknameTag');
+  if (typeof window.getNickname === 'function') {
+    const nick = await window.getNickname();
+    tag.textContent = nick ? `🐒 ${nick}` : '🐒 挑戰者';
+  } else {
+    tag.textContent = '🐒 挑戰者';
+  }
+
+  const minWait = new Promise(r => setTimeout(r, 1000));
+
+  let raw = [];
+  try {
+    raw = await loadQuestions();
+  } catch(e) {
+    console.error('題目載入失敗:', e);
+    document.getElementById('loadingStatus').textContent = '題目載入失敗，請重新整理';
+    return;
+  }
+
+  await minWait;
+
+  allQuestions = shuffle(raw);
+  questions = allQuestions.slice(0, 10);
+  maxRounds = 10;
+
+  document.getElementById('loadingStatus').textContent = '準備好了！';
+  document.getElementById('startBtn').style.display = 'block';
+}
+
+function startGame() {
+  document.getElementById('loadingOverlay').classList.add('hidden');
+  renderQuestion();
+  // Speak first question (triggered by user click — iOS safe)
+  speak(questions[0].tts || questions[0].word);
+  document.getElementById('spellInput').focus();
+}
+
+// ──────────────────────────────────────────
+// 渲染題目
+// ──────────────────────────────────────────
+function renderQuestion() {
+  const q = questions[currentRound];
+
+  // Round badge
+  const roundBadge = document.getElementById('roundBadge');
+  if (currentRound >= 10) {
+    roundBadge.textContent = '⚡ 延長賽！';
+  } else {
+    roundBadge.textContent = `ROUND ${currentRound + 1} / 10`;
+  }
+
+  // Sentence with ___
+  const sentence = q.sentence;
+  const sentenceEl = document.getElementById('sentenceText');
+  // Replace ___ with styled span
+  const parts = sentence.split('___');
+  if (parts.length >= 2) {
+    sentenceEl.innerHTML =
+      escapeHtml(parts[0]) +
+      '<span class="blank">___</span>' +
+      escapeHtml(parts.slice(1).join('___'));
+  } else {
+    sentenceEl.textContent = sentence;
+  }
+
+  // Clear input and result
+  const input = document.getElementById('spellInput');
+  input.value = '';
+  input.disabled = false;
+  document.getElementById('submitBtn').disabled = false;
+  document.getElementById('resultMsg').textContent = '';
+  document.getElementById('resultMsg').className = 'result-msg';
+
+  isProcessing = false;
+}
+
+function escapeHtml(str) {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+// ──────────────────────────────────────────
+// 提交答案
+// ──────────────────────────────────────────
+function submitAnswer() {
+  if (isProcessing) return;
+
+  const input = document.getElementById('spellInput');
+  const userAnswer = input.value.trim();
+  if (!userAnswer) return;
+
+  isProcessing = true;
+  input.disabled = true;
+  document.getElementById('submitBtn').disabled = true;
+
+  const q = questions[currentRound];
+  const correct = userAnswer.toLowerCase() === q.word.toLowerCase();
+
+  if (correct) {
+    handleCorrect();
+  } else {
+    handleWrong();
+  }
+}
+
+// ──────────────────────────────────────────
+// 大小系統
+// ──────────────────────────────────────────
+function applySize(containerEl, idx, animate) {
+  const scale = SIZES[idx];
+  const container = containerEl;
+
+  if (!animate) {
+    container.style.transition = 'none';
+    container.style.transform = `scale(${scale})`;
+    return;
+  }
+
+  const growing = animate === 'grow';
+  const overshoot = growing ? scale * 1.18 : scale * 0.82;
+
+  container.style.transition = 'transform 0.15s ease-out';
+  container.style.transform = `scale(${overshoot})`;
+
+  setTimeout(() => {
+    container.style.transition = 'transform 0.2s ease-out';
+    container.style.transform = `scale(${scale})`;
+  }, 150);
+}
+
+function shakeElement(shakeWrapEl) {
+  shakeWrapEl.classList.remove('shaking');
+  void shakeWrapEl.offsetWidth; // reflow
+  shakeWrapEl.classList.add('shaking');
+  setTimeout(() => shakeWrapEl.classList.remove('shaking'), 500);
+}
+
+// ──────────────────────────────────────────
+// 答對
+// ──────────────────────────────────────────
+function handleCorrect() {
+  playSound('correct');
+
+  // Image swap
+  setImages('happy');
+
+  // Result message
+  const resultEl = document.getElementById('resultMsg');
+  resultEl.textContent = '✅ 答對了！';
+  resultEl.className = 'result-msg correct';
+
+  // Size changes
+  const newNunuIdx = nunuSizeIdx + 1;
+  const newLoudIdx = loudSizeIdx - 1;
+
+  let dialog = CORRECT_DIALOGS[Math.floor(Math.random() * CORRECT_DIALOGS.length)];
+
+  if (nunuSizeIdx >= 4) {
+    // Already Giant — can't grow more, shake monkey instead
+    shakeElement(document.getElementById('nunuShakeWrap'));
+  } else {
+    nunuSizeIdx = newNunuIdx;
+    applySize(document.getElementById('nunuContainer'), nunuSizeIdx, 'grow');
+    playSound('size_up');
+  }
+
+  if (loudSizeIdx <= 0) {
+    // Already Tiny — can't shrink more, shake Nunu instead
+    shakeElement(document.getElementById('monkeyShakeWrap'));
+    dialog = '好啦好啦，差不多就好！';
+  } else {
+    loudSizeIdx = newLoudIdx;
+    applySize(document.getElementById('monkeyContainer'), loudSizeIdx, 'shrink');
+    playSound('size_down');
+  }
+
+  showMonkeyDialog(dialog);
+
+  setTimeout(() => {
+    setImages('normal');
+    setTimeout(() => nextRound(), 300);
+  }, 800);
+}
+
+// ──────────────────────────────────────────
+// 答錯
+// ──────────────────────────────────────────
+function handleWrong() {
+  playSound('wrong');
+
+  // Image swap
+  setImages('sad');
+
+  // Result message
+  const q = questions[currentRound];
+  const resultEl = document.getElementById('resultMsg');
+  resultEl.textContent = `❌ 答錯了！正確答案：${q.word}`;
+  resultEl.className = 'result-msg wrong';
+
+  // Size changes
+  const newNunuIdx = nunuSizeIdx - 1;
+  const newLoudIdx = loudSizeIdx + 1;
+
+  let dialog = WRONG_DIALOGS[Math.floor(Math.random() * WRONG_DIALOGS.length)];
+
+  if (nunuSizeIdx <= 0) {
+    // Already Tiny — shake monkey
+    shakeElement(document.getElementById('nunuShakeWrap'));
+    dialog = '撐住！努努撐住！';
+  } else {
+    nunuSizeIdx = newNunuIdx;
+    applySize(document.getElementById('nunuContainer'), nunuSizeIdx, 'shrink');
+    playSound('size_down');
+  }
+
+  if (loudSizeIdx >= 4) {
+    // Already Giant — shake Nunu
+    shakeElement(document.getElementById('monkeyShakeWrap'));
+  } else {
+    loudSizeIdx = newLoudIdx;
+    applySize(document.getElementById('monkeyContainer'), loudSizeIdx, 'grow');
+    playSound('size_up');
+  }
+
+  showMonkeyDialog(dialog);
+
+  setTimeout(() => {
+    setImages('normal');
+    setTimeout(() => nextRound(), 300);
+  }, 800);
+}
+
+// ──────────────────────────────────────────
+// 下一回合 / 判勝
+// ──────────────────────────────────────────
+function nextRound() {
+  currentRound++;
+
+  if (currentRound >= maxRounds) {
+    // 判勝
+    if (nunuSizeIdx > loudSizeIdx) {
+      showWin();
+    } else if (loudSizeIdx > nunuSizeIdx) {
+      showLose();
+    } else {
+      // 平手 → 延長賽
+      if (allQuestions.length > questions.length) {
+        questions.push(allQuestions[questions.length]);
+        maxRounds++;
+        renderQuestion();
+        speak(questions[currentRound].tts || questions[currentRound].word);
+      } else {
+        // 題目用完了，平手算失敗
+        showLose();
+      }
+    }
+    return;
+  }
+
+  renderQuestion();
+  speak(questions[currentRound].tts || questions[currentRound].word);
+  document.getElementById('spellInput').focus();
+}
+
+// ──────────────────────────────────────────
+// 圖片切換
+// ──────────────────────────────────────────
+function setImages(state) {
+  if (imageTimer) {
+    clearTimeout(imageTimer);
+    imageTimer = null;
+  }
+  document.getElementById('nunuImg').src = NUNU_IMGS[state] || NUNU_IMGS.normal;
+  document.getElementById('monkeyImg').src =
+    state === 'happy' ? MONKEY_IMGS.sad :
+    state === 'sad'   ? MONKEY_IMGS.happy :
+    MONKEY_IMGS.normal;
+}
+
+// ──────────────────────────────────────────
+// 猴子對話泡泡
+// ──────────────────────────────────────────
+function showMonkeyDialog(text) {
+  if (dialogTimer) {
+    clearTimeout(dialogTimer);
+    dialogTimer = null;
+  }
+  const el = document.getElementById('monkeyDialog');
+  el.textContent = text;
+  el.classList.add('visible');
+  dialogTimer = setTimeout(() => {
+    el.classList.remove('visible');
+    dialogTimer = null;
+  }, 2000);
+}
+
+// ──────────────────────────────────────────
+// 勝利 / 失敗
+// ──────────────────────────────────────────
+async function showWin() {
+  playSound('win');
+
+  // 猴子縮到 Tiny，顯示悲傷
+  loudSizeIdx = 0;
+  applySize(document.getElementById('monkeyContainer'), 0, 'shrink');
+  document.getElementById('monkeyImg').src = MONKEY_IMGS.sad;
+  showMonkeyDialog('好啦好啦，你今天很強。');
+
+  let saved = false;
+  if (typeof window.addCoconuts === 'function') {
+    saved = await window.addCoconuts();
+  }
+
+  let total = 0;
+  if (typeof window.getCoconuts === 'function') {
+    total = await window.getCoconuts();
+  }
+
+  const rewardEl = document.getElementById('winReward');
+  rewardEl.textContent = saved
+    ? `獲得 🥥 ×2　現在共有 ${total} 顆！`
+    : '獲得 🥥 ×2（請登入才能儲存）';
+
+  setTimeout(() => {
+    document.getElementById('winScreen').classList.add('show');
+  }, 800);
+}
+
+function showLose() {
+  playSound('lose');
+
+  // 猴子放大到 Giant，顯示開心
+  loudSizeIdx = 4;
+  applySize(document.getElementById('monkeyContainer'), 4, 'grow');
+  document.getElementById('monkeyImg').src = MONKEY_IMGS.happy;
+  showMonkeyDialog('哈哈！再練練吧！');
+
+  setTimeout(() => {
+    document.getElementById('loseScreen').classList.add('show');
+  }, 800);
+}
+
+// ──────────────────────────────────────────
+// 導航
+// ──────────────────────────────────────────
+function retryBattle() { location.reload(); }
+function goHome() { window.location.href = 'index.html'; }
+
+// ──────────────────────────────────────────
+// Enter 鍵提交
+// ──────────────────────────────────────────
+document.getElementById('spellInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') submitAnswer();
+});
+
+// ──────────────────────────────────────────
+// 啟動初始化
+// ──────────────────────────────────────────
+// Apply initial sizes (both index 2 = scale 1.0)
+applySize(document.getElementById('nunuContainer'), 2, false);
+applySize(document.getElementById('monkeyContainer'), 2, false);
+
+init();
+</script>
+</body>
+</html>

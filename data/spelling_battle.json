@@ -1,0 +1,402 @@
+[
+  {
+    "word": "read",
+    "sentence": "I like to ___ comic books.",
+    "tts": "read"
+  },
+  {
+    "word": "write",
+    "sentence": "Can you ___ your name here?",
+    "tts": "write"
+  },
+  {
+    "word": "draw",
+    "sentence": "I want to ___ a cat.",
+    "tts": "draw"
+  },
+  {
+    "word": "talk",
+    "sentence": "Please don't ___ in class.",
+    "tts": "talk"
+  },
+  {
+    "word": "sing",
+    "sentence": "She likes to ___ in the shower.",
+    "tts": "sing"
+  },
+  {
+    "word": "dance",
+    "sentence": "Let's ___ to this song!",
+    "tts": "dance"
+  },
+  {
+    "word": "bedroom",
+    "sentence": "I sleep in my ___ every night.",
+    "tts": "bedroom"
+  },
+  {
+    "word": "bathroom",
+    "sentence": "I brush my teeth in the ___.",
+    "tts": "bathroom"
+  },
+  {
+    "word": "kitchen",
+    "sentence": "Mom is cooking in the ___.",
+    "tts": "kitchen"
+  },
+  {
+    "word": "bed",
+    "sentence": "I jump on my ___ every morning.",
+    "tts": "bed"
+  },
+  {
+    "word": "bookshelf",
+    "sentence": "Put the book back on the ___.",
+    "tts": "bookshelf"
+  },
+  {
+    "word": "table",
+    "sentence": "We eat dinner at the ___.",
+    "tts": "table"
+  },
+  {
+    "word": "sofa",
+    "sentence": "Dad is sleeping on the ___.",
+    "tts": "sofa"
+  },
+  {
+    "word": "clock",
+    "sentence": "The ___ on the wall says three o'clock.",
+    "tts": "clock"
+  },
+  {
+    "word": "computer",
+    "sentence": "I play games on the ___.",
+    "tts": "computer"
+  },
+  {
+    "word": "chair",
+    "sentence": "Please sit on the ___.",
+    "tts": "chair"
+  },
+  {
+    "word": "are",
+    "sentence": "We ___ best friends.",
+    "tts": "are"
+  },
+  {
+    "word": "hand",
+    "sentence": "Raise your ___ if you know the answer.",
+    "tts": "hand"
+  },
+  {
+    "word": "kept",
+    "sentence": "She ___ the door open for me.",
+    "tts": "kept"
+  },
+  {
+    "word": "king",
+    "sentence": "The ___ lives in a big castle.",
+    "tts": "king"
+  },
+  {
+    "word": "land",
+    "sentence": "The plane will ___ soon.",
+    "tts": "land"
+  },
+  {
+    "word": "long",
+    "sentence": "This rope is very ___.",
+    "tts": "long"
+  },
+  {
+    "word": "thing",
+    "sentence": "What is that ___ on the floor?",
+    "tts": "thing"
+  },
+  {
+    "word": "think",
+    "sentence": "I ___ it will rain today.",
+    "tts": "think"
+  },
+  {
+    "word": "wish",
+    "sentence": "I ___ I had a puppy.",
+    "tts": "wish"
+  },
+  {
+    "word": "next",
+    "sentence": "Who is ___?",
+    "tts": "next"
+  },
+  {
+    "word": "end",
+    "sentence": "We are at the ___ of the road.",
+    "tts": "end"
+  },
+  {
+    "word": "camp",
+    "sentence": "We set up a ___ in the woods.",
+    "tts": "camp"
+  },
+  {
+    "word": "sank",
+    "sentence": "The boat ___ to the bottom of the lake.",
+    "tts": "sank"
+  },
+  {
+    "word": "drink",
+    "sentence": "Please ___ some water.",
+    "tts": "drink"
+  },
+  {
+    "word": "hunt",
+    "sentence": "Let's ___ for Easter eggs!",
+    "tts": "hunt"
+  },
+  {
+    "word": "stand",
+    "sentence": "Please ___ up straight.",
+    "tts": "stand"
+  },
+  {
+    "word": "stamp",
+    "sentence": "I put a ___ on the letter.",
+    "tts": "stamp"
+  },
+  {
+    "word": "pond",
+    "sentence": "There are frogs in the ___.",
+    "tts": "pond"
+  },
+  {
+    "word": "bring",
+    "sentence": "Can you ___ your book to school?",
+    "tts": "bring"
+  },
+  {
+    "word": "globe",
+    "sentence": "I can find Japan on the ___.",
+    "tts": "globe"
+  },
+  {
+    "word": "swim",
+    "sentence": "I love to ___ in the pool.",
+    "tts": "swim"
+  },
+  {
+    "word": "stove",
+    "sentence": "Don't touch the hot ___!",
+    "tts": "stove"
+  },
+  {
+    "word": "just",
+    "sentence": "I ___ finished my homework.",
+    "tts": "just"
+  },
+  {
+    "word": "friend",
+    "sentence": "Tom is my best ___.",
+    "tts": "friend"
+  },
+  {
+    "word": "young",
+    "sentence": "This puppy is very ___.",
+    "tts": "young"
+  },
+  {
+    "word": "across",
+    "sentence": "The cat ran ___ the street.",
+    "tts": "across"
+  },
+  {
+    "word": "car",
+    "sentence": "Dad drives a red ___.",
+    "tts": "car"
+  },
+  {
+    "word": "down",
+    "sentence": "The ball rolled ___ the hill.",
+    "tts": "down"
+  },
+  {
+    "word": "fell",
+    "sentence": "He ___ off his bike.",
+    "tts": "fell"
+  },
+  {
+    "word": "full",
+    "sentence": "I am ___ after dinner.",
+    "tts": "full"
+  },
+  {
+    "word": "held",
+    "sentence": "She ___ my hand tightly.",
+    "tts": "held"
+  },
+  {
+    "word": "mountain",
+    "sentence": "We hiked up the big ___.",
+    "tts": "mountain"
+  },
+  {
+    "word": "pull",
+    "sentence": "Can you ___ the door open?",
+    "tts": "pull"
+  },
+  {
+    "word": "push",
+    "sentence": "___ the button to start.",
+    "tts": "push"
+  },
+  {
+    "word": "spell",
+    "sentence": "Can you ___ your name?",
+    "tts": "spell"
+  },
+  {
+    "word": "dress",
+    "sentence": "She wore a pink ___ to the party.",
+    "tts": "dress"
+  },
+  {
+    "word": "mess",
+    "sentence": "My room is a big ___.",
+    "tts": "mess"
+  },
+  {
+    "word": "add",
+    "sentence": "___ two and three to get five.",
+    "tts": "add"
+  },
+  {
+    "word": "hill",
+    "sentence": "We rolled down the ___.",
+    "tts": "hill"
+  },
+  {
+    "word": "spill",
+    "sentence": "Don't ___ your milk!",
+    "tts": "spill"
+  },
+  {
+    "word": "class",
+    "sentence": "Our ___ has twenty students.",
+    "tts": "class"
+  },
+  {
+    "word": "doll",
+    "sentence": "She plays with her ___ every day.",
+    "tts": "doll"
+  },
+  {
+    "word": "kiss",
+    "sentence": "Mom gave me a ___ goodnight.",
+    "tts": "kiss"
+  },
+  {
+    "word": "off",
+    "sentence": "Please turn ___ the light.",
+    "tts": "off"
+  },
+  {
+    "word": "place",
+    "sentence": "This is my favorite ___ to read.",
+    "tts": "place"
+  },
+  {
+    "word": "address",
+    "sentence": "What is your home ___?",
+    "tts": "address"
+  },
+  {
+    "word": "even",
+    "sentence": "Two, four, and six are ___ numbers.",
+    "tts": "even"
+  },
+  {
+    "word": "mouse",
+    "sentence": "The cat chased the ___.",
+    "tts": "mouse"
+  },
+  {
+    "word": "other",
+    "sentence": "Where is the ___ sock?",
+    "tts": "other"
+  },
+  {
+    "word": "shall",
+    "sentence": "___ we go to the park?",
+    "tts": "shall"
+  },
+  {
+    "word": "these",
+    "sentence": "___ are my favorite shoes.",
+    "tts": "these"
+  },
+  {
+    "word": "when",
+    "sentence": "___ does school start?",
+    "tts": "when"
+  },
+  {
+    "word": "while",
+    "sentence": "I read a book ___ I waited.",
+    "tts": "while"
+  },
+  {
+    "word": "white",
+    "sentence": "Snow is ___ and cold.",
+    "tts": "white"
+  },
+  {
+    "word": "dish",
+    "sentence": "Please wash the ___ after dinner.",
+    "tts": "dish"
+  },
+  {
+    "word": "than",
+    "sentence": "A whale is bigger ___ a dog.",
+    "tts": "than"
+  },
+  {
+    "word": "chest",
+    "sentence": "There is treasure in the ___.",
+    "tts": "chest"
+  },
+  {
+    "word": "such",
+    "sentence": "It was ___ a fun day!",
+    "tts": "such"
+  },
+  {
+    "word": "thin",
+    "sentence": "This paper is very ___.",
+    "tts": "thin"
+  },
+  {
+    "word": "shine",
+    "sentence": "The stars ___ at night.",
+    "tts": "shine"
+  },
+  {
+    "word": "chase",
+    "sentence": "The dog likes to ___ the ball.",
+    "tts": "chase"
+  },
+  {
+    "word": "flash",
+    "sentence": "Lightning can ___ across the sky.",
+    "tts": "flash"
+  },
+  {
+    "word": "whisper",
+    "sentence": "Please ___ in the library.",
+    "tts": "whisper"
+  },
+  {
+    "word": "thumb",
+    "sentence": "I hurt my ___ playing basketball.",
+    "tts": "thumb"
+  }
+]
