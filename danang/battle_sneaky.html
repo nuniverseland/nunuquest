@@ -647,7 +647,7 @@
       <img src="https://nuniverseland.github.io/nunuquest/assets/danang/weapon_cannon.png" alt="大炮炮台">
       <div class="weapon-info">
         <div class="weapon-name">大炮炮台</div>
-        <div class="weapon-cost" id="cannon-cost-text">🥥 900｜HP:20｜每3秒350傷</div>
+        <div class="weapon-cost" id="cannon-cost-text">🥥 700｜HP:20｜每3秒50傷</div>
       </div>
     </button>
   </div>
@@ -1159,8 +1159,8 @@ function damageEnemy(index, dmg) {
    TURRET SYSTEM
 ======================================================== */
 const TURRET_DEFS = {
-  gun:    { hp: 10,  maxHP: 10,  cost: 400, posX: 10, img: 'weapon_gun.png',    attackInterval: 2000, attackDmg: 5,   autoCannon: false },
-  cannon: { hp: 20,  maxHP: 20,  cost: 900, posX: 10, img: 'weapon_cannon.png', attackInterval: 5000, attackDmg: 50,  autoCannon: true  },
+  gun:    { hp: 10,  maxHP: 10,  cost: 400, posX: 10, img: 'weapon_gun.png',    attackInterval: 2000, attackDmg: 10,  autoCannon: false },
+  cannon: { hp: 20,  maxHP: 20,  cost: 700, posX: 10, img: 'weapon_cannon.png', attackInterval: 3000, attackDmg: 50,  autoCannon: true  },
 };
 
 function spawnTurret(type, free = false) {
@@ -1277,7 +1277,7 @@ function updateWeaponButtons() {
     btnG.classList.remove('deployed');
     btnC.classList.remove('deployed');
     document.getElementById('gun-cost-text').textContent    = '🥥 400｜HP:10｜每秒20傷';
-    document.getElementById('cannon-cost-text').textContent = '🥥 900｜HP:20｜每3秒350傷';
+    document.getElementById('cannon-cost-text').textContent = '🥥 700｜HP:20｜每3秒50傷';
   }
 }
 
