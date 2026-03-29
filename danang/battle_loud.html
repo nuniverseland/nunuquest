@@ -852,17 +852,10 @@ function handleCorrect() {
 
   showMonkeyDialog(dialog);
 
-  // 錯題重考：每個單字只加回一次
-  const wrongWord = q.word;
-  if (!retriedWords.has(wrongWord)) {
-    retriedWords.add(wrongWord);
-    questions.push(q);
-    maxRounds++;
-  }
-
-  // 圖片 800ms 還原，答案再多顯示 1.5 秒才跳題
-  setTimeout(() => setImages('normal'), 800);
-  setTimeout(() => nextRound(), 2500);
+  setTimeout(() => {
+    setImages('normal');
+    setTimeout(() => nextRound(), 300);
+  }, 800);
 }
 
 // ──────────────────────────────────────────
