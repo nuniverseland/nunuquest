@@ -943,32 +943,25 @@ function startWave(n) {
   G.wave = n;
   G.waveActive = true;
 
-  if (n === 1) {
-    showBanner('⚠️ Wave 1 來了！', 1500);
-    G.spawnQueue = buildQueue(1);
-    setTimeout(() => spawnNext(), 1500);
-  } else if (n === 2) {
-    showBanner('⚠️ Wave 2 來了！', 1500);
-    G.spawnQueue = buildQueue(2);
-    setTimeout(() => spawnNext(), 1500);
-  } else if (n === 3) {
+  if (n === 5) {
     showBanner('💀 Banu 出現了！', 1800);
     SFX.bossAppear();
     document.getElementById('banu-hp-bar').style.display = 'block';
-    G.spawnQueue = buildQueue(3);
+    G.spawnQueue = buildQueue(5);
     setTimeout(() => spawnNext(), 1800);
+  } else {
+    showBanner(`⚠️ Wave ${n} 來了！`, 1500);
+    G.spawnQueue = buildQueue(n);
+    setTimeout(() => spawnNext(), 1500);
   }
 }
 
 function buildQueue(wave) {
-  if (wave === 1) {
-    return Array(5).fill('small');
-  } else if (wave === 2) {
-    const q = [...Array(3).fill('small'), ...Array(2).fill('mid')];
-    return shuffle(q);
-  } else {
-    return ['banu'];
-  }
+  if (wave === 1) return Array(5).fill('small');
+  if (wave === 2) return Array(2).fill('mid');
+  if (wave === 3) return shuffle([...Array(3).fill('small'), ...Array(2).fill('mid')]);
+  if (wave === 4) return shuffle([...Array(3).fill('small'), ...Array(2).fill('mid')]);
+  return ['banu'];
 }
 
 function spawnNext() {
@@ -977,8 +970,7 @@ function spawnNext() {
   spawnEnemy(type);
 
   if (G.spawnQueue.length > 0) {
-    const interval = G.wave === 1 ? 3000 : 2500;
-    G.spawnTimer = setTimeout(() => spawnNext(), interval);
+    G.spawnTimer = setTimeout(() => spawnNext(), 3000);
   }
 }
 
@@ -989,7 +981,7 @@ function checkWaveTransition() {
 
   G.checkingWave = true;
   const nextWave = G.wave + 1;
-  if (nextWave <= 3) {
+  if (nextWave <= 5) {
     setTimeout(() => {
       G.checkingWave = false;
       if (!G.gameOver && G.enemies.length === 0 && G.spawnQueue.length === 0) {
@@ -1012,7 +1004,7 @@ function spawnEnemy(type) {
 
   // Speed: crosses game area in N seconds
   // small: 8s, mid: 12s, banu: 20s
-  const speedSec = type === 'small' ? 15 : type === 'mid' ? 25 : 40;
+  const speedSec = type === 'small' ? 18 : type === 'mid' ? 30 : 50;
   const hp = type === 'small' ? 100 : type === 'mid' ? 200 : 1000;
 
   const enemy = {
@@ -1125,7 +1117,7 @@ function killEnemy(index) {
   G.enemies.splice(index, 1);
 
   // Check win
-  if (G.wave === 3 && G.enemies.length === 0 && G.spawnQueue.length === 0) {
+  if (G.wave === 5 && G.enemies.length === 0 && G.spawnQueue.length === 0) {
     triggerWin();
     return;
   }
@@ -1167,8 +1159,8 @@ function damageEnemy(index, dmg) {
    TURRET SYSTEM
 ======================================================== */
 const TURRET_DEFS = {
-  gun:    { hp: 10,  maxHP: 10,  cost: 400, posX: 10, img: 'weapon_gun.png',    attackInterval: 1000, attackDmg: 20,  autoCannon: false },
-  cannon: { hp: 20,  maxHP: 20,  cost: 900, posX: 10, img: 'weapon_cannon.png', attackInterval: 3000, attackDmg: 350, autoCannon: true  },
+  gun:    { hp: 10,  maxHP: 10,  cost: 400, posX: 10, img: 'weapon_gun.png',    attackInterval: 2000, attackDmg: 5,   autoCannon: false },
+  cannon: { hp: 20,  maxHP: 20,  cost: 900, posX: 10, img: 'weapon_cannon.png', attackInterval: 5000, attackDmg: 50,  autoCannon: true  },
 };
 
 function spawnTurret(type, free = false) {
