@@ -36,20 +36,23 @@
         const d = snap.exists() ? (snap.data()?.danang || {}) : {};
         const stone    = d.stone    || 0;
         const mic      = d.mic      || 0;
+        const fish     = d.fish     || 0;
         const coconuts = d.coconuts || 0;
-        updateDisplay(stone, mic);
+        updateDisplay(stone, mic, fish);
         const statusCoconut = document.getElementById('statusCoconut');
         if (statusCoconut) statusCoconut.textContent = '🥥 ' + coconuts + ' 顆';
       } catch(e) {
-        updateDisplay(0, 0);
+        updateDisplay(0, 0, 0);
       }
     }
 
-    function updateDisplay(stone, mic) {
+    function updateDisplay(stone, mic, fish = 0) {
       document.getElementById('pc-stoneCount').textContent = stone;
       document.getElementById('pc-micCount').textContent   = mic;
+      document.getElementById('pc-fishCount').textContent  = fish;
       document.getElementById('pc-stoneItem').classList.toggle('item-ready', stone >= 1);
       document.getElementById('pc-micItem').classList.toggle('item-ready',   mic   >= 1);
+      document.getElementById('pc-fishItem').classList.toggle('item-ready',  fish  >= 1);
 
       const banuBtn    = document.getElementById('pc-banuBtn');
       const banuNeeded = document.getElementById('pc-banuNeeded');
@@ -530,9 +533,9 @@
         <span class="weapon-icon">🎤</span>
         <span class="weapon-count" id="pc-micCount">0</span>
       </div>
-      <div class="weapon-item weapon-soon">
+      <div class="weapon-item" id="pc-fishItem">
         <span class="weapon-icon">🐟</span>
-        <span class="weapon-count" style="font-size:0.55vw;opacity:0.55;">即將推出</span>
+        <span class="weapon-count" id="pc-fishCount">0</span>
       </div>
     </div>
   </div>
@@ -556,10 +559,10 @@
         <img src="https://nuniverseland.github.io/nunuquest/assets/danang/monkey_loud.png" alt="嘴砲猴">
         <div class="monkey-tag">嘴砲猴 🎤×1</div>
       </a>
-      <div class="monkey-btn" style="opacity:0.45;cursor:not-allowed;">
+      <a href="battle_sneaky.html" class="monkey-btn">
         <img src="https://nuniverseland.github.io/nunuquest/assets/danang/monkey_sneaky.png" alt="壞心眼猴">
-        <div class="monkey-tag">壞心眼猴 🔜</div>
-      </div>
+        <div class="monkey-tag">壞心眼猴 🐟×1</div>
+      </a>
     </div>
   </div>
 
