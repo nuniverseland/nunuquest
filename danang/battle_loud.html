@@ -566,6 +566,7 @@ let allQuestions = [];
 let questions = [];
 let maxRounds = 10;
 let currentRound = 0;
+const retriedWords = new Set(); // 每個錯題只重考一次
 
 let nunuSizeIdx = 2;
 let loudSizeIdx = 2;
@@ -851,10 +852,17 @@ function handleCorrect() {
 
   showMonkeyDialog(dialog);
 
-  setTimeout(() => {
-    setImages('normal');
-    setTimeout(() => nextRound(), 300);
-  }, 800);
+  // 錯題重考：每個單字只加回一次
+  const wrongWord = q.word;
+  if (!retriedWords.has(wrongWord)) {
+    retriedWords.add(wrongWord);
+    questions.push(q);
+    maxRounds++;
+  }
+
+  // 圖片 800ms 還原，答案再多顯示 1.5 秒才跳題
+  setTimeout(() => setImages('normal'), 800);
+  setTimeout(() => nextRound(), 2500);
 }
 
 // ──────────────────────────────────────────
