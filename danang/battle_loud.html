@@ -23,50 +23,31 @@
 
     const currentUserId = sessionStorage.getItem('nunuUserId');
 
-    window.addCoconuts = async function() {
-      if (!currentUserId) {
-        console.log('未登入，無法存椰子');
-        return false;
-      }
+    window.addMic = async function() {
+      if (!currentUserId) return false;
       try {
         const ref = doc(db, 'users', currentUserId);
         const snap = await getDoc(ref);
         if (snap.exists()) {
           await updateDoc(ref, {
-            'danang.coconuts': increment(2),
+            'danang.mic': increment(1),
             'danang.loud_monkey_count': increment(1)
           });
         } else {
           await setDoc(ref, {
-            danang: {
-              coconuts: 2,
-              loud_monkey_count: 1,
-              stone_monkey_count: 0,
-              sneaky_monkey_count: 0,
-              banu_defeated_count: 0,
-              banu_necklace: false
-            }
+            danang: { mic: 1, loud_monkey_count: 1 }
           }, { merge: true });
         }
         return true;
-      } catch(e) {
-        console.error('存椰子失敗:', e);
-        return false;
-      }
+      } catch(e) { return false; }
     };
 
-    window.getCoconuts = async function() {
+    window.getMic = async function() {
       if (!currentUserId) return 0;
       try {
-        const ref = doc(db, 'users', currentUserId);
-        const snap = await getDoc(ref);
-        if (snap.exists()) {
-          return snap.data()?.danang?.coconuts || 0;
-        }
-        return 0;
-      } catch(e) {
-        return 0;
-      }
+        const snap = await getDoc(doc(db, 'users', currentUserId));
+        return snap.exists() ? (snap.data()?.danang?.mic || 0) : 0;
+      } catch(e) { return 0; }
     };
 
     window.getNickname = async function() {
@@ -983,19 +964,14 @@ async function showWin() {
   showMonkeyDialog('好啦好啦，你今天很強。');
 
   let saved = false;
-  if (typeof window.addCoconuts === 'function') {
-    saved = await window.addCoconuts();
-  }
-
+  if (typeof window.addMic === 'function') saved = await window.addMic();
   let total = 0;
-  if (typeof window.getCoconuts === 'function') {
-    total = await window.getCoconuts();
-  }
+  if (typeof window.getMic === 'function') total = await window.getMic();
 
   const rewardEl = document.getElementById('winReward');
   rewardEl.textContent = saved
-    ? `獲得 🥥 ×2　現在共有 ${total} 顆！`
-    : '獲得 🥥 ×2（請登入才能儲存）';
+    ? `獲得 🎤 ×1　現在共有 🎤 ${total} 個！`
+    : '獲得 🎤 ×1（請登入才能儲存）';
 
   setTimeout(() => {
     document.getElementById('winScreen').classList.add('show');

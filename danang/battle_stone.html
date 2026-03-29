@@ -27,51 +27,31 @@
     console.log('目前 userId:', currentUserId);
 
     // 打贏後加椰子
-    window.addCoconuts = async function(amount) {
-      if (!currentUserId) {
-        console.log('未登入，無法存椰子');
-        return false;
-      }
+    window.addStone = async function() {
+      if (!currentUserId) return false;
       try {
         const ref = doc(db, 'users', currentUserId);
         const snap = await getDoc(ref);
         if (snap.exists()) {
           await updateDoc(ref, {
-            'danang.coconuts': increment(amount),
+            'danang.stone': increment(1),
             'danang.stone_monkey_count': increment(1)
           });
         } else {
           await setDoc(ref, {
-            danang: {
-              coconuts: amount,
-              stone_monkey_count: 1,
-              loud_monkey_count: 0,
-              sneaky_monkey_count: 0,
-              banu_defeated_count: 0,
-              banu_necklace: false
-            }
+            danang: { stone: 1, stone_monkey_count: 1 }
           }, { merge: true });
         }
         return true;
-      } catch(e) {
-        console.error('存椰子失敗:', e);
-        return false;
-      }
+      } catch(e) { return false; }
     };
 
-    // 讀取目前椰子數
-    window.getCoconuts = async function() {
+    window.getStone = async function() {
       if (!currentUserId) return 0;
       try {
-        const ref = doc(db, 'users', currentUserId);
-        const snap = await getDoc(ref);
-        if (snap.exists()) {
-          return snap.data()?.danang?.coconuts || 0;
-        }
-        return 0;
-      } catch(e) {
-        return 0;
-      }
+        const snap = await getDoc(doc(db, 'users', currentUserId));
+        return snap.exists() ? (snap.data()?.danang?.stone || 0) : 0;
+      } catch(e) { return 0; }
     };
   </script>
   <style>
@@ -837,23 +817,16 @@ async function showWin() {
   setMonkeyImg('dead');
   playSound('win');
 
-  // 存椰子到 Firebase
-  const REWARD = 1;
   let saved = false;
-  if (typeof window.addCoconuts === 'function') {
-    saved = await window.addCoconuts(REWARD);
-  }
+  if (typeof window.addStone === 'function') saved = await window.addStone();
+  let total = 0;
+  if (typeof window.getStone === 'function') total = await window.getStone();
 
-  setTimeout(async () => {
-    // 顯示目前總椰子數
-    let total = 0;
-    if (typeof window.getCoconuts === 'function') {
-      total = await window.getCoconuts();
-    }
+  setTimeout(() => {
     const rewardEl = document.getElementById('winReward');
     rewardEl.textContent = saved
-      ? `獲得 🥥 ×${REWARD}　現在共有 ${total} 顆！`
-      : `獲得 🥥 ×${REWARD}（請登入才能儲存）`;
+      ? `獲得 🪨 ×1　現在共有 🪨 ${total} 個！`
+      : '獲得 🪨 ×1（請登入才能儲存）';
     document.getElementById('winScreen').classList.add('show');
   }, 600);
 }

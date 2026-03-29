@@ -24,23 +24,35 @@
     const db  = getFirestore(app);
     const currentUserId = sessionStorage.getItem('nunuUserId');
 
+    window.checkWeapons = async function() {
+      if (!currentUserId) return { stone: 0, mic: 0 };
+      try {
+        const snap = await getDoc(doc(db, 'users', currentUserId));
+        const d = snap.exists() ? (snap.data()?.danang || {}) : {};
+        return { stone: d.stone || 0, mic: d.mic || 0 };
+      } catch(e) { return { stone: 0, mic: 0 }; }
+    };
+
     window.saveBanuWin = async function() {
       if (!currentUserId) return { saved: false, firstWin: false };
       try {
         const ref  = doc(db, 'users', currentUserId);
         const snap = await getDoc(ref);
-        const banuCount = snap.exists() ? (snap.data()?.danang?.banu_defeated_count || 0) : 0;
+        const d    = snap.exists() ? (snap.data()?.danang || {}) : {};
+        const banuCount  = d.banu_defeated_count || 0;
         const isFirstWin = banuCount === 0;
         const update = {
-          'danang.coconuts': increment(5),
+          'danang.coconuts':           increment(5),
           'danang.banu_defeated_count': increment(1)
         };
         if (isFirstWin) update['danang.banu_necklace'] = true;
+        // 扣除道具（確認 ≥ 1 才扣）
+        if ((d.stone || 0) >= 1) update['danang.stone'] = increment(-1);
+        if ((d.mic   || 0) >= 1) update['danang.mic']   = increment(-1);
         if (snap.exists()) {
           await updateDoc(ref, update);
         } else {
-          await setDoc(ref, { danang: { coconuts: 5, banu_defeated_count: 1, banu_necklace: true,
-            stone_monkey_count: 0, loud_monkey_count: 0, sneaky_monkey_count: 0 } }, { merge: true });
+          await setDoc(ref, { danang: { coconuts: 5, banu_defeated_count: 1, banu_necklace: true } }, { merge: true });
         }
         return { saved: true, firstWin: isFirstWin };
       } catch(e) { console.error(e); return { saved: false, firstWin: false }; }
@@ -357,6 +369,14 @@
   <button class="end-btn secondary" onclick="retryBattle()">再挑戰一次</button>
 </div>
 
+<!-- 道具不足擋板 -->
+<div class="end-screen" id="weaponBlock">
+  <div class="end-title">🔒 道具不足</div>
+  <div class="end-subtitle" id="weaponBlockMsg">還缺：🪨 石頭、🎤 麥克風</div>
+  <div class="end-subtitle" style="font-size:0.9rem;opacity:0.8;margin-top:4px;">打敗小猴子才能挑戰 Banu！</div>
+  <button class="end-btn primary" onclick="goHome()">回到峴港地圖</button>
+</div>
+
 <!-- 失敗畫面 -->
 <div class="end-screen" id="loseScreen">
   <img src="https://nuniverseland.github.io/nunuquest/assets/danang/nunu_hit.png" alt="努努" style="opacity:0.7;">
@@ -425,6 +445,21 @@ async function init() {
     const total = await window.getCoconuts();
     document.getElementById('statusCoconut').textContent = `🥥 ${total} 顆`;
   }
+
+  // ── 道具入場檢查 ──
+  if (typeof window.checkWeapons === 'function') {
+    const { stone, mic } = await window.checkWeapons();
+    if (stone < 1 || mic < 1) {
+      const missing = [];
+      if (stone < 1) missing.push('🪨 石頭');
+      if (mic   < 1) missing.push('🎤 麥克風');
+      document.getElementById('weaponBlockMsg').textContent =
+        '還缺：' + missing.join('、');
+      document.getElementById('weaponBlock').classList.add('show');
+      return; // 不進入戰鬥
+    }
+  }
+
   updateHpBars();
   updateCoconutUI();
   await loadQuestions();
@@ -794,7 +829,7 @@ async function triggerWin() {
   if (typeof window.getCoconuts === 'function') total = await window.getCoconuts();
 
   document.getElementById('winReward').textContent = result.saved
-    ? `獲得 🥥 ×5　現在共有 ${total} 顆！`
+    ? `消耗 🪨×1 🎤×1　獲得 🥥×5　現在共有 ${total} 顆！`
     : `獲得 🥥 ×5（請登入才能儲存）`;
   if (result.firstWin) document.getElementById('necklaceBanner').classList.add('show');
 

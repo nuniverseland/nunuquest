@@ -29,54 +29,41 @@
     const statusUser = document.getElementById('statusUser');
     if (statusUser) statusUser.textContent = '🐒 ' + nickname;
 
-    async function loadCoconuts() {
-      if (!userId) { updateDisplay(0); return; }
+    async function loadItems() {
+      if (!userId) { updateDisplay(0, 0); return; }
       try {
-        const ref = doc(db, 'users', userId);
-        const snap = await getDoc(ref);
-        const coconuts = snap.exists() ? (snap.data()?.danang?.coconuts || 0) : 0;
-        updateDisplay(coconuts);
-        // 更新狀態列椰子數
+        const snap = await getDoc(doc(db, 'users', userId));
+        const d = snap.exists() ? (snap.data()?.danang || {}) : {};
+        const stone    = d.stone    || 0;
+        const mic      = d.mic      || 0;
+        const coconuts = d.coconuts || 0;
+        updateDisplay(stone, mic);
         const statusCoconut = document.getElementById('statusCoconut');
         if (statusCoconut) statusCoconut.textContent = '🥥 ' + coconuts + ' 顆';
       } catch(e) {
-        console.error('讀取椰子失敗:', e);
-        updateDisplay(0);
+        updateDisplay(0, 0);
       }
     }
 
-    function updateDisplay(count) {
-      // 椰子圖示最多顯示5個
-      for (let i = 1; i <= 5; i++) {
-        const pc = document.getElementById('pc-c' + i);
-        const m = document.getElementById('m-c' + i);
-        if (pc) { if (i <= Math.min(count, 5)) pc.classList.add('earned'); else pc.classList.remove('earned'); }
-        if (m)  { if (i <= Math.min(count, 5)) m.classList.add('earned');  else m.classList.remove('earned'); }
-      }
+    function updateDisplay(stone, mic) {
+      document.getElementById('pc-stoneCount').textContent = stone;
+      document.getElementById('pc-micCount').textContent   = mic;
+      document.getElementById('pc-stoneItem').classList.toggle('item-ready', stone >= 1);
+      document.getElementById('pc-micItem').classList.toggle('item-ready',   mic   >= 1);
 
-      // 文字顯示
-      const pcText = document.getElementById('pc-coconutText');
-      const mText = document.getElementById('m-coconutText');
-      let displayText = '';
-      if (count >= 5) {
-        displayText = count > 5 ? `🥥 ${count} 顆　越多越好！` : `${count} / 5 顆`;
-      } else {
-        displayText = `${count} / 5 顆`;
-      }
-      if (pcText) pcText.textContent = displayText;
-      if (mText)  mText.textContent  = displayText;
-
-      // Banu 解鎖
-      const banuBtn = document.getElementById('pc-banuBtn');
+      const banuBtn    = document.getElementById('pc-banuBtn');
       const banuNeeded = document.getElementById('pc-banuNeeded');
       if (!banuBtn) return;
-
-      if (count >= 5) {
+      const canChallenge = stone >= 1 && mic >= 1;
+      if (canChallenge) {
         banuBtn.classList.remove('locked');
         banuNeeded.textContent = '👑 挑戰老大！';
       } else {
         banuBtn.classList.add('locked');
-        banuNeeded.textContent = '🔒 還需要 ' + (5 - count) + ' 顆椰子';
+        const missing = [];
+        if (stone < 1) missing.push('🪨');
+        if (mic   < 1) missing.push('🎤');
+        banuNeeded.textContent = '🔒 還缺 ' + missing.join(' ');
       }
     }
 
@@ -95,7 +82,7 @@
       }
     });
 
-    loadCoconuts();
+    loadItems();
 
     // ── 椰子排行榜 ──
     window.showLeaderboard = async function() {
@@ -349,6 +336,22 @@
       white-space: nowrap;
     }
 
+    .weapon-item {
+      display: flex; flex-direction: column; align-items: center;
+      background: rgba(255,255,255,0.08);
+      border: 1.5px solid rgba(255,255,255,0.15);
+      border-radius: 10px; padding: 4px 10px;
+      transition: all 0.3s;
+    }
+    .weapon-item.item-ready {
+      background: rgba(82,183,136,0.22);
+      border-color: rgba(82,183,136,0.6);
+    }
+    .weapon-item.weapon-soon { opacity: 0.5; }
+    .weapon-icon { font-size: 1.3vw; }
+    .weapon-count { font-size: 0.7vw; font-weight: 900; color: #f4e3b2; }
+    .weapon-item.item-ready .weapon-count { color: #52b788; }
+
     @keyframes shake {
       0%,100% { transform: translateX(0); }
       25% { transform: translateX(-8px); }
@@ -512,20 +515,26 @@
   <!-- 標題 -->
   <div class="pc-title">
     <h1>🐒 峴港保衛戰</h1>
-    <p>椰子收集限時活動 🥥 對抗壞猴小隊！</p>
+    <p>收集壞猴武器，挑戰 Banu！</p>
   </div>
 
-  <!-- 椰子進度 -->
+  <!-- 道具進度 -->
   <div class="pc-coconut">
-    <div class="bar-title">🥥 集滿5顆挑戰Banu！</div>
-    <div class="coconut-icons">
-      <span class="coconut-icon" id="pc-c1">🥥</span>
-      <span class="coconut-icon" id="pc-c2">🥥</span>
-      <span class="coconut-icon" id="pc-c3">🥥</span>
-      <span class="coconut-icon" id="pc-c4">🥥</span>
-      <span class="coconut-icon" id="pc-c5">🥥</span>
+    <div class="bar-title">集滿壞猴武器，挑戰 Banu！</div>
+    <div style="display:flex;gap:8px;justify-content:center;margin-top:6px;">
+      <div class="weapon-item" id="pc-stoneItem">
+        <span class="weapon-icon">🪨</span>
+        <span class="weapon-count" id="pc-stoneCount">0</span>
+      </div>
+      <div class="weapon-item" id="pc-micItem">
+        <span class="weapon-icon">🎤</span>
+        <span class="weapon-count" id="pc-micCount">0</span>
+      </div>
+      <div class="weapon-item weapon-soon">
+        <span class="weapon-icon">🐟</span>
+        <span class="weapon-count" style="font-size:0.55vw;opacity:0.55;">即將推出</span>
+      </div>
     </div>
-    <div class="coconut-progress-text" id="pc-coconutText">0 / 5 顆</div>
   </div>
 
   <!-- 故事按鈕：標題正下方 -->
@@ -541,16 +550,16 @@
     <div class="pc-monkey-row">
       <a href="battle_stone.html" class="monkey-btn">
         <img src="https://nuniverseland.github.io/nunuquest/assets/danang/monkey_stone.png" alt="石頭猴">
-        <div class="monkey-tag">石頭猴 🥥×1</div>
+        <div class="monkey-tag">石頭猴 🪨×1</div>
       </a>
       <a href="battle_loud.html" class="monkey-btn">
         <img src="https://nuniverseland.github.io/nunuquest/assets/danang/monkey_loud.png" alt="嘴砲猴">
-        <div class="monkey-tag">嘴砲猴 🥥×2</div>
+        <div class="monkey-tag">嘴砲猴 🎤×1</div>
       </a>
-      <a href="battle_sneaky.html" class="monkey-btn">
+      <div class="monkey-btn" style="opacity:0.45;cursor:not-allowed;">
         <img src="https://nuniverseland.github.io/nunuquest/assets/danang/monkey_sneaky.png" alt="壞心眼猴">
-        <div class="monkey-tag">壞心眼猴 🥥×2</div>
-      </a>
+        <div class="monkey-tag">壞心眼猴 🔜</div>
+      </div>
     </div>
   </div>
 
