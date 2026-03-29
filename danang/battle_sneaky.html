@@ -123,7 +123,7 @@
       z-index: 10;
     }
     .nunu-img {
-      height: 130px;
+      height: 200px;
       image-rendering: pixelated;
       filter: drop-shadow(0 3px 10px rgba(0,0,0,0.7));
     }
@@ -210,7 +210,7 @@
       image-rendering: pixelated;
     }
     .enemy.mid-monkey img { height: 90px; }
-    .enemy.banu img { height: 140px; }
+    .enemy.banu img { height: 200px; }
     .enemy-hp-bar {
       width: 44px;
       height: 5px;
@@ -246,7 +246,7 @@
       transform: translateX(-50%);
     }
     .turret-img {
-      height: 100px;
+      height: 130px;
       object-fit: contain;
       filter: drop-shadow(0 2px 10px rgba(0,200,255,0.55));
     }
@@ -596,7 +596,7 @@
   <!-- Nunu 基地 -->
   <div class="nunu-base" id="nunu-base">
     <div class="hp-hearts" id="hp-hearts"></div>
-    <img class="nunu-img" src="https://nuniverseland.github.io/nunuquest/assets/danang/nunu_normal.png" alt="Nunu">
+    <img class="nunu-img" src="https://nuniverseland.github.io/nunuquest/assets/danang/nunu_attack.png" alt="Nunu">
   </div>
 
   <!-- 敵人容器 (JS 動態生成) -->
@@ -764,7 +764,7 @@ function init() {
   spawnTurret('gun'); // 初始機關槍炮台
   updateWeaponButtons();
 
-  setTimeout(() => startWave(1), 5000);
+  setTimeout(() => startWave(1), 10000);
   requestAnimationFrame(gameLoop);
 }
 
@@ -1013,7 +1013,7 @@ function spawnEnemy(type) {
 
   // Speed: crosses game area in N seconds
   // small: 8s, mid: 12s, banu: 20s
-  const speedSec = type === 'small' ? 13 : type === 'mid' ? 18 : 32;
+  const speedSec = type === 'small' ? 15 : type === 'mid' ? 25 : 40;
   const hp = type === 'small' ? 100 : type === 'mid' ? 200 : 1000;
 
   const enemy = {
@@ -1168,8 +1168,8 @@ function damageEnemy(index, dmg) {
    TURRET SYSTEM
 ======================================================== */
 const TURRET_DEFS = {
-  gun:    { hp: 10,  maxHP: 10,  cost: 400, posX: 12, img: 'weapon_gun.png',    attackInterval: 1000, attackDmg: 20,  autoCannon: false },
-  cannon: { hp: 20,  maxHP: 20,  cost: 900, posX: 12, img: 'weapon_cannon.png', attackInterval: 3000, attackDmg: 350, autoCannon: true  },
+  gun:    { hp: 10,  maxHP: 10,  cost: 400, posX: 10, img: 'weapon_gun.png',    attackInterval: 1000, attackDmg: 20,  autoCannon: false },
+  cannon: { hp: 20,  maxHP: 20,  cost: 900, posX: 10, img: 'weapon_cannon.png', attackInterval: 3000, attackDmg: 350, autoCannon: true  },
 };
 
 function spawnTurret(type, free = false) {
